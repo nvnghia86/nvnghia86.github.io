@@ -134,7 +134,6 @@ async function loadExerciseLibrary() {
   const button = $('#generateBtn');
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
-  $('#inputHint').textContent = 'Đang tải kho bài luyện tập';
 
   try {
     const response = await fetch('./data/exercises.json');
@@ -147,7 +146,6 @@ async function loadExerciseLibrary() {
     pick();
   } catch (error) {
     console.error(error);
-    $('#inputHint').textContent = 'Đang dùng các bài mẫu có sẵn';
   } finally {
     button.disabled = false;
     button.removeAttribute('aria-busy');
@@ -211,7 +209,6 @@ function reset(clearInput = true) {
   $('#wpm').textContent = '0';
   $('#accuracy').textContent = '100%';
   $('#progressBar').style.width = '0%';
-  $('#inputHint').textContent = 'Nhấn phím bất kỳ để bắt đầu';
   input.disabled = false;
   renderPrompt();
   updateGuide();
@@ -269,7 +266,6 @@ input.addEventListener('input', () => {
     tick();
     input.disabled = true;
     input.blur();
-    $('#inputHint').textContent = 'Hoàn thành! Tuyệt vời';
     showResults();
   }
 });

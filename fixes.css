@@ -36,13 +36,26 @@
 }
 
 .prompt {
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.6;
   overflow-wrap: anywhere;
-  white-space: pre-wrap;
+  word-break: normal;
+  white-space: normal;
 }
 
 .prompt span {
-  white-space: pre-wrap;
+  white-space: normal;
+}
+
+.type-input-wrap input {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 19px;
+  letter-spacing: 0;
 }
 
 .prompt .space-char {
