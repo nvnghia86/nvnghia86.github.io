@@ -1,0 +1,11 @@
+{
+  "name": "go-muoi-ngon",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Website luyện gõ 10 ngón Việt/Anh với 1.000 bài tập có sẵn.",
+  "scripts": {
+    "start": "node server.js",
+    "generate:data": "node scripts/generate-exercises.js",
+    "check": "node --check app.js && node --check server.js && node --check scripts/generate-exercises.js"
+  }
+}

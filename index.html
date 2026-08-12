@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gõ Mười Ngón — luyện gõ thông minh</title>
+  <meta name="description" content="Luyện gõ 10 ngón tiếng Việt và tiếng Anh với bàn tay, bàn phím trực quan và AI tạo nội dung." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="fixes.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#"><span class="brand-mark">gõ</span><span>MƯỜI NGÓN</span></a>
+      <nav class="main-nav"><a class="active" href="#practice">Luyện tập</a><a href="#progress">Tiến độ</a><a href="#guide">Hướng dẫn</a></nav>
+      <div class="header-actions"><button class="icon-btn" aria-label="Đổi giao diện">☼</button><button class="profile-btn"><span class="avatar">A</span> Alex <span class="chevron">⌄</span></button></div>
+    </header>
+
+    <main id="practice">
+      <section class="hero-row">
+        <div><div class="eyebrow"><span class="pulse-dot"></span> PHIÊN LUYỆN TẬP</div><h1>Gõ đúng trước,<br><em>gõ nhanh sau.</em></h1><p class="hero-copy">Xây dựng trí nhớ cơ bắp với bài tập được cá nhân hoá bởi AI.</p></div>
+        <div class="hero-stats"><div><strong>07</strong><span>ngày liên tục</span></div><div><strong>42</strong><span>WPM tốt nhất</span></div><div><strong>96%</strong><span>độ chính xác</span></div></div>
+      </section>
+
+      <section class="control-panel" aria-label="Thiết lập bài tập">
+        <div class="control-group"><label>Ngôn ngữ</label><div class="segmented"><button class="selected" data-lang="vi">Tiếng Việt</button><button data-lang="en">English</button></div></div>
+        <div class="control-group"><label>Độ khó</label><div class="difficulty"><button class="diff" data-level="easy"><span class="level-dot mint"></span>Dễ</button><button class="diff active" data-level="medium"><span class="level-dot amber"></span>Vừa</button><button class="diff" data-level="hard"><span class="level-dot coral"></span>Khó</button></div></div>
+        <div class="control-group ai-control"><label>Nội dung bài tập</label><button id="generateBtn" class="ai-button"><span>✦</span> Tạo đoạn mới</button></div>
+      </section>
+
+      <section class="practice-grid">
+        <div class="typing-card card">
+          <div class="card-top"><div><span class="section-kicker">BÀI TẬP HIỆN TẠI</span><span id="exerciseTag" class="tag">DỄ · TIẾNG VIỆT</span></div><button id="resetBtn" class="reset-btn">↻ Đổi bài</button></div>
+          <div id="prompt" class="prompt" aria-live="polite"></div>
+          <div class="type-input-wrap"><input id="typeInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Bắt đầu gõ tại đây..." aria-label="Ô luyện gõ" /><span id="inputHint">Nhấn phím bất kỳ để bắt đầu</span></div>
+          <div class="metrics"><div><span>THỜI GIAN</span><strong id="time">00:00</strong></div><div><span>TỐC ĐỘ</span><strong><b id="wpm">0</b> <small>WPM</small></strong></div><div><span>CHÍNH XÁC</span><strong id="accuracy">100%</strong></div><div class="progress-metric"><span>TIẾN ĐỘ</span><div class="mini-progress"><i id="progressBar"></i></div></div></div>
+        </div>
+
+        <aside class="hand-card card">
+          <div class="card-top"><div><span class="section-kicker">TƯ THẾ NGÓN TAY</span><span class="subtle">QWERTY · Telex tiếng Việt</span></div><span id="fingerLabel" class="finger-chip">ĐẶT TAY LÊN HÀNG CƠ SỞ</span></div>
+          <div class="hands" aria-label="Minh hoạ hai bàn tay"><div class="hand left"><span class="finger pinky"></span><span class="finger ring"></span><span class="finger middle"></span><span class="finger index"></span><span class="thumb"></span></div><div class="hand right"><span class="thumb"></span><span class="finger index"></span><span class="finger middle"></span><span class="finger ring"></span><span class="finger pinky"></span></div></div>
+          <div class="hand-legend"><span><i class="legend-dot left-dot"></i>Tay trái</span><span><i class="legend-dot right-dot"></i>Tay phải</span><span class="active-key-legend"><i></i>Ngón cần dùng</span></div>
+        </aside>
+      </section>
+
+      <section class="keyboard-card card"><div class="card-top"><div><span class="section-kicker">BÀN PHÍM TRỰC QUAN</span><span class="subtle">Chỉ phím kế tiếp được tô sáng</span></div><span class="qwerty-label">QWERTY</span></div><div id="keyboard" class="keyboard"></div><div class="keyboard-footer"><span><i class="key-swatch next"></i>Phím tiếp theo</span><span><i class="key-swatch wrong"></i>Gõ sai</span><span class="home-guide">⌁ Hàng cơ sở: <b>A S D F</b> &nbsp; <b>J K L ;</b></span></div></section>
+
+      <section id="progress" class="bottom-row"><div class="tip-card"><span class="tip-icon">✦</span><div><strong>Mẹo hôm nay</strong><p>Đừng nhìn xuống bàn phím. Hãy để các ngón tay tự tìm về hàng cơ sở.</p></div></div><div class="streak-card"><div><span class="section-kicker">MỤC TIÊU HÔM NAY</span><strong>12 <small>/ 15 phút</small></strong></div><div class="streak-ring"><span>80%</span></div></div></section>
+    </main>
+    <footer><span>© 2024 Gõ Mười Ngón</span><span>Học đúng kỹ thuật · Tiến bộ mỗi ngày</span></footer>
+  </div>
+
+  <div id="resultModal" class="result-modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle" hidden>
+    <div class="result-backdrop"></div>
+    <div class="result-dialog">
+      <div class="result-badge">✓</div>
+      <span class="section-kicker">HOÀN THÀNH BÀI TẬP</span>
+      <h2 id="resultTitle">Tuyệt vời!</h2>
+      <p>Bạn đã hoàn thành đoạn luyện tập.</p>
+      <div class="result-score"><strong id="resultScore">0</strong><span>ĐIỂM</span></div>
+      <div class="result-stats">
+        <div><strong id="resultWpm">0</strong><span>WPM</span></div>
+        <div><strong id="resultAccuracy">100%</strong><span>CHÍNH XÁC</span></div>
+        <div><strong id="resultTime">00:00</strong><span>THỜI GIAN</span></div>
+      </div>
+      <button id="playAgainBtn" class="play-again-btn">Chơi lại</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
