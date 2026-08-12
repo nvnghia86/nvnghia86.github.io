@@ -151,6 +151,7 @@ async function loadExerciseLibrary() {
   } finally {
     button.disabled = false;
     button.removeAttribute('aria-busy');
+    revealPracticeArea();
   }
 }
 
@@ -214,7 +215,15 @@ function reset(clearInput = true) {
   input.disabled = false;
   renderPrompt();
   updateGuide();
-  input.focus();
+  input.focus({ preventScroll: true });
+}
+
+function revealPracticeArea() {
+  const practiceArea = $('#practice');
+  if (practiceArea && !window.location.hash) {
+    practiceArea.scrollIntoView({ behavior: 'auto', block: 'start' });
+  }
+  input.focus({ preventScroll: true });
 }
 
 function tick() {

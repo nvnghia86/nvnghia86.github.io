@@ -26,6 +26,7 @@
 .practice-grid {
   grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr);
   align-items: stretch;
+  scroll-margin-top: 18px;
 }
 
 .typing-card,
