@@ -35,6 +35,7 @@ let targetKeys = [];
 let typedKeys = [];
 let physicalErrors = new Set();
 let started = false;
+let exerciseRecorded = false;
 let startTime = 0;
 let timer = null;
 let composing = false;
@@ -43,8 +44,90 @@ let lastCompletedChars = 0;
 let exerciseLibrary = [];
 let currentExerciseId = '';
 const recentExerciseIds = [];
+const statsCookieName = 'go_muoi_ngon_stats';
+const statsCookieMaxAge = 60 * 60 * 24 * 365 * 10;
+const defaultStats = { streakDays: 0, bestWpm: 0, bestAccuracy: 0, totalCorrectWords: 0, lastPracticeDate: '' };
+let savedStats = loadSavedStats();
 const $ = selector => document.querySelector(selector);
 const input = $('#typeInput');
+
+function loadSavedStats() {
+  const cookie = document.cookie.split('; ').find(item => item.startsWith(`${statsCookieName}=`));
+  if (!cookie) return { ...defaultStats };
+  try {
+    const parsed = JSON.parse(decodeURIComponent(cookie.slice(statsCookieName.length + 1)));
+    return {
+      streakDays: Number.isFinite(parsed.streakDays) ? Math.max(0, Math.floor(parsed.streakDays)) : 0,
+      bestWpm: Number.isFinite(parsed.bestWpm) ? Math.max(0, Math.floor(parsed.bestWpm)) : 0,
+      bestAccuracy: Number.isFinite(parsed.bestAccuracy) ? Math.max(0, Math.min(100, Math.floor(parsed.bestAccuracy))) : 0,
+      totalCorrectWords: Number.isFinite(parsed.totalCorrectWords) ? Math.max(0, Math.floor(parsed.totalCorrectWords)) : 0,
+      lastPracticeDate: typeof parsed.lastPracticeDate === 'string' ? parsed.lastPracticeDate : ''
+    };
+  } catch {
+    return { ...defaultStats };
+  }
+}
+
+function saveStats() {
+  document.cookie = `${statsCookieName}=${encodeURIComponent(JSON.stringify(savedStats))}; Max-Age=${statsCookieMaxAge}; Path=/; SameSite=Lax`;
+}
+
+function renderSavedStats() {
+  $('#streakDays').textContent = savedStats.streakDays;
+  $('#bestWpm').textContent = savedStats.bestWpm;
+  $('#bestAccuracy').textContent = `${savedStats.bestAccuracy}%`;
+  $('#totalCorrectWords').textContent = savedStats.totalCorrectWords;
+}
+
+function dateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function previousDateKey() {
+  const date = new Date();
+  date.setDate(date.getDate() - 1);
+  return dateKey(date);
+}
+
+function countCorrectWords() {
+  const targetChars = [...normalizedTarget()];
+  let keyIndex = 0;
+  let wordLength = 0;
+  let wordHasError = false;
+  let correctWords = 0;
+
+  for (const char of targetChars) {
+    const keys = lang === 'vi' ? telexKeysForChar(char) : [keyForChar(char)];
+    if (char === ' ') {
+      if (wordLength && !wordHasError) correctWords += 1;
+      wordLength = 0;
+      wordHasError = false;
+    } else {
+      wordLength += 1;
+      if (keys.some((_, offset) => physicalErrors.has(keyIndex + offset))) wordHasError = true;
+    }
+    keyIndex += keys.length;
+  }
+
+  if (wordLength && !wordHasError) correctWords += 1;
+  return correctWords;
+}
+
+function recordCompletedExercise(wpm, accuracy) {
+  const today = dateKey();
+  if (savedStats.lastPracticeDate !== today) {
+    savedStats.streakDays = savedStats.lastPracticeDate === previousDateKey() ? savedStats.streakDays + 1 : 1;
+    savedStats.lastPracticeDate = today;
+  }
+  savedStats.bestWpm = Math.max(savedStats.bestWpm, wpm);
+  savedStats.bestAccuracy = Math.max(savedStats.bestAccuracy, accuracy);
+  savedStats.totalCorrectWords += countCorrectWords();
+  saveStats();
+  renderSavedStats();
+}
 
 function keyForChar(char) {
   if (!char) return '';
@@ -202,6 +285,7 @@ function reset(clearInput = true) {
   startTime = 0;
   typedKeys = [];
   physicalErrors = new Set();
+  exerciseRecorded = false;
   lastVisibleLength = 0;
   lastCompletedChars = 0;
   if (clearInput) input.value = '';
@@ -233,6 +317,10 @@ function showResults() {
   const elapsed = Math.max(1, Math.floor((Date.now() - startTime) / 1000));
   const wpm = Number($('#wpm').textContent) || Math.round((normalizedInput().length / 5) / (elapsed / 60));
   const accuracy = Number.parseInt($('#accuracy').textContent, 10) || 100;
+  if (!exerciseRecorded) {
+    recordCompletedExercise(wpm, accuracy);
+    exerciseRecorded = true;
+  }
   const speedScore = Math.min(100, Math.round(wpm / 60 * 100));
   const score = Math.round(accuracy * .7 + speedScore * .3);
   $('#resultScore').textContent = score;
@@ -300,6 +388,7 @@ document.querySelectorAll('.diff').forEach(button => button.addEventListener('cl
 $('#generateBtn').addEventListener('click', pick);
 $('#resetBtn').addEventListener('click', () => pick());
 $('#playAgainBtn').addEventListener('click', () => { hideResults(); pick(); });
+renderSavedStats();
 buildKeyboard();
 pick();
 loadExerciseLibrary();
