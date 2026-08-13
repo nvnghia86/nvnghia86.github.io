@@ -79,6 +79,10 @@ function renderSavedStats() {
   $('#totalCorrectWords').textContent = savedStats.totalCorrectWords;
 }
 
+function renderLanguageGuide() {
+  $('#telexHint').hidden = lang !== 'vi';
+}
+
 function dateKey(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -383,12 +387,13 @@ input.addEventListener('keydown', event => {
   updateGuide();
 });
 
-document.querySelectorAll('[data-lang]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-lang]').forEach(item => item.classList.remove('selected')); button.classList.add('selected'); lang = button.dataset.lang; pick(); }));
+document.querySelectorAll('[data-lang]').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('[data-lang]').forEach(item => item.classList.remove('selected')); button.classList.add('selected'); lang = button.dataset.lang; renderLanguageGuide(); pick(); }));
 document.querySelectorAll('.diff').forEach(button => button.addEventListener('click', () => { document.querySelectorAll('.diff').forEach(item => item.classList.remove('active')); button.classList.add('active'); level = button.dataset.level; pick(); }));
 $('#generateBtn').addEventListener('click', pick);
 $('#resetBtn').addEventListener('click', () => pick());
 $('#playAgainBtn').addEventListener('click', () => { hideResults(); pick(); });
 renderSavedStats();
 buildKeyboard();
+renderLanguageGuide();
 pick();
 loadExerciseLibrary();
