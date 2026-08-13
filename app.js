@@ -47,9 +47,25 @@ const recentExerciseIds = [];
 const statsCookieName = 'go_muoi_ngon_stats';
 const statsCookieMaxAge = 60 * 60 * 24 * 365 * 10;
 const defaultStats = { streakDays: 0, bestWpm: 0, bestAccuracy: 0, totalCorrectWords: 0, lastPracticeDate: '' };
+const themeStorageKey = 'go_muoi_ngon_theme';
 let savedStats = loadSavedStats();
 const $ = selector => document.querySelector(selector);
 const input = $('#typeInput');
+
+function applyTheme(theme) {
+  const isDark = theme !== 'light';
+  document.body.classList.toggle('dark-theme', isDark);
+  const button = $('#themeToggle');
+  button.textContent = isDark ? '☀' : '☾';
+  button.setAttribute('aria-label', isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối');
+  button.title = isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối';
+}
+
+function initTheme() {
+  let savedTheme = 'dark';
+  try { savedTheme = localStorage.getItem(themeStorageKey) || 'dark'; } catch {}
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark');
+}
 
 function loadSavedStats() {
   const cookie = document.cookie.split('; ').find(item => item.startsWith(`${statsCookieName}=`));
@@ -392,6 +408,12 @@ document.querySelectorAll('.diff').forEach(button => button.addEventListener('cl
 $('#generateBtn').addEventListener('click', pick);
 $('#resetBtn').addEventListener('click', () => pick());
 $('#playAgainBtn').addEventListener('click', () => { hideResults(); pick(); });
+$('#themeToggle').addEventListener('click', () => {
+  const nextTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+  applyTheme(nextTheme);
+  try { localStorage.setItem(themeStorageKey, nextTheme); } catch {}
+});
+initTheme();
 renderSavedStats();
 buildKeyboard();
 renderLanguageGuide();

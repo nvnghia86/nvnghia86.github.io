@@ -99,6 +99,165 @@
   font: 700 11px 'Space Grotesk';
 }
 
+/* Dark theme is the default and keeps the practice area comfortable in low light. */
+body.dark-theme {
+  --ink: #e6f1ee;
+  --muted: #9aafaa;
+  --paper: #0e1b20;
+  --card: #172a30;
+  --line: #2b4248;
+  --mint: #1c5042;
+  --mint-strong: #55d8a4;
+  --navy: #e7f4f0;
+  --coral: #ff9d87;
+  --amber: #f4c766;
+}
+
+body.dark-theme .control-panel {
+  background: #14282e;
+  border-color: #294149;
+}
+
+body.dark-theme .segmented button,
+body.dark-theme .diff {
+  color: #a7bab5;
+}
+
+body.dark-theme .segmented button.selected,
+body.dark-theme .diff {
+  background: #20373d;
+  color: var(--navy);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .2);
+}
+
+body.dark-theme .diff.active {
+  border-color: #35765f;
+  background: #1c3b38;
+}
+
+body.dark-theme .ai-button {
+  border-color: #34795f;
+  background: #173a34;
+  color: #70e0b3;
+}
+
+body.dark-theme .subtle,
+body.dark-theme .reset-btn,
+body.dark-theme .hero-stats span,
+body.dark-theme .keyboard-footer,
+body.dark-theme .tip-card p,
+body.dark-theme .streak-card small {
+  color: #9aafaa;
+}
+
+body.dark-theme .tag {
+  background: #1d4038;
+  color: #70d8aa;
+}
+
+body.dark-theme .prompt {
+  color: #718c87;
+}
+
+body.dark-theme .prompt .incorrect {
+  background: #4b2d2d;
+}
+
+body.dark-theme .type-input-wrap input {
+  border-color: #3a555b;
+  color: var(--navy);
+}
+
+body.dark-theme .metrics span,
+body.dark-theme .qwerty-label {
+  color: #91a7a2;
+}
+
+body.dark-theme .metrics small {
+  color: #9aafaa;
+}
+
+body.dark-theme .mini-progress {
+  background: #294047;
+}
+
+body.dark-theme .keyboard {
+  background: #102126;
+}
+
+body.dark-theme .key {
+  background: #20363c;
+  border-color: #395159;
+  color: #b4c7c3;
+  box-shadow: 0 2px 0 #14272c;
+}
+
+body.dark-theme .key.next {
+  background: #267354;
+  border-color: #55d8a4;
+  color: #effff8;
+  box-shadow: 0 2px 0 #174f3b;
+}
+
+body.dark-theme .key.wrong {
+  background: #5a3433;
+  border-color: #e47768;
+  color: #ffd3c9;
+}
+
+body.dark-theme .telex-hint {
+  border-color: #31564e;
+  background: #173630;
+  color: #a8bdb7;
+}
+
+body.dark-theme .telex-hint strong {
+  color: #e7f4f0;
+}
+
+body.dark-theme .telex-hint kbd {
+  border-color: #4d9b78;
+  background: #224b40;
+  color: #80e8b9;
+}
+
+body.dark-theme .tip-card,
+body.dark-theme .streak-card {
+  background: var(--card);
+}
+
+body.dark-theme .tip-icon {
+  background: #4b302f;
+}
+
+body.dark-theme .streak-ring {
+  background: radial-gradient(closest-side, var(--card) 76%, transparent 78% 100%), conic-gradient(var(--mint-strong) 80%, #294047 0);
+}
+
+body.dark-theme .result-backdrop {
+  background: rgba(3, 11, 14, .76);
+}
+
+body.dark-theme .result-dialog {
+  background: #172a30;
+  border-color: #355057;
+}
+
+body.dark-theme .result-dialog > p,
+body.dark-theme .result-score span,
+body.dark-theme .result-stats span {
+  color: #9aafaa;
+}
+
+body.dark-theme .result-stats {
+  background: #102126;
+  border-color: #2b4248;
+}
+
+body.dark-theme .result-stats div + div {
+  border-color: #2b4248;
+}
+
 .prompt .space-char {
   display: inline;
 }
