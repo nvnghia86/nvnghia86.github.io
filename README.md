@@ -21,3 +21,7 @@ npm run generate:data
 ```
 
 Lệnh này tạo lại đúng 1.000 bài không trùng nội dung và kiểm tra giới hạn độ dài theo từng mức.
+
+## Bật Google Analytics
+
+Measurement ID hiện tại là `G-9FVG9T2JC2`. Website sẽ tự gửi lượt truy cập trang và event `typing_completed` khi người dùng hoàn thành bài. Nếu cần đổi property, cập nhật biến `measurementId` trong `analytics.js`. Cách cài đặt dùng Google tag `gtag.js` theo hướng dẫn chính thức của Google: https://developers.google.com/tag-platform/gtagjs.

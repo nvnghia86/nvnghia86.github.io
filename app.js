@@ -144,9 +144,17 @@ function recordCompletedExercise(wpm, accuracy) {
   }
   savedStats.bestWpm = Math.max(savedStats.bestWpm, wpm);
   savedStats.bestAccuracy = Math.max(savedStats.bestAccuracy, accuracy);
-  savedStats.totalCorrectWords += countCorrectWords();
+  const correctWords = countCorrectWords();
+  savedStats.totalCorrectWords += correctWords;
   saveStats();
   renderSavedStats();
+  window.trackAnalyticsEvent('typing_completed', {
+    language: lang,
+    difficulty: level,
+    wpm,
+    accuracy,
+    correct_words: correctWords
+  });
 }
 
 function keyForChar(char) {
