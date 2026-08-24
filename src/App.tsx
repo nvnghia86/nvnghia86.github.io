@@ -25,6 +25,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { OfficeHubModal } from './components/office/OfficeHubModal';
 import { ServicesPromoModal } from './components/services/ServicesPromoModal';
+import { FloatingContactWidget } from './components/FloatingContactWidget';
 import { LanguageProvider } from './i18n';
 import { Language } from './types';
 
@@ -289,6 +290,9 @@ export default function App() {
             onClose={() => setShowServicesPromo(false)}
           />
         )}
+
+        {/* Floating Zalo Chat & Hotline Call Contact Widget */}
+        <FloatingContactWidget onOpenServices={handleOpenServices} />
       </div>
     </LanguageProvider>
   );

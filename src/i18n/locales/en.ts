@@ -452,6 +452,17 @@ export const en: TranslationSchema = {
     email: 'Contact Email',
     location: 'Locations',
     workingHours: 'Working Hours',
+    contactBubble: {
+      tooltip: '24/7 Support & Advice (Zalo & Hotline)',
+      title: 'Hi Space Advisory & Support',
+      subtitle: 'Coding, Office Productivity & Digital Transformation',
+      callHotline: 'Call Hotline Now',
+      chatZalo: 'Chat via Zalo',
+      requestConsultation: 'Request Free Consultation',
+      copyPhone: 'Copy Phone Number',
+      phoneCopied: 'Phone Copied!',
+      onlineNow: 'Online 24/7',
+    },
     form: {
       title: 'Request a Free Consultation & Roadmap',
       subtitle: 'Leave your details and our technical specialists will reach out to advise you within 30 minutes',
