@@ -301,7 +301,14 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
 
       const activeToken = lineState.activeToken;
-      const actualKey = e.key;
+      let actualKey = e.key;
+
+      // Extract physical letter key from e.code if available (e.g. KeyD -> 'd') to bypass OS IME overrides
+      if (e.code && e.code.startsWith('Key') && e.code.length === 4) {
+        const letter = e.code.slice(3);
+        actualKey = e.shiftKey ? letter.toUpperCase() : letter.toLowerCase();
+      }
+
       const newTotalKeys = totalKeystrokes + 1;
       setTotalKeystrokes(newTotalKeys);
 
