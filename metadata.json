@@ -1,0 +1,6 @@
+{
+  "name": "Hi Space - Không gian học tập, rèn luyện kỹ năng số",
+  "description": "Hi Space - Không gian học tập, rèn luyện kỹ năng số. Hệ sinh thái học tập và rèn luyện kỹ năng tin học, 10 ngón và kỹ năng văn phòng không giới hạn.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

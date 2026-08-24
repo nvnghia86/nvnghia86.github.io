@@ -1,0 +1,2670 @@
+{
+  "version": 2,
+  "name": "Lộ trình học gõ 10 ngón tiếng Việt chuẩn",
+  "description": "Lộ trình luyện gõ 10 ngón từ cơ bản đến nâng cao, tích hợp chuẩn gõ tiếng Việt, phím số, ký hiệu và văn bản thực tế.",
+  "totalLessons": 94,
+  "totalUnits": 13,
+  "units": [
+    {
+      "id": 1,
+      "title": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "subtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "color": "#0284c7",
+      "icon": "Keyboard",
+      "description": "Luyện 10 ngón tay trên hàng phím cơ sở với các ngón định vị và tổ hợp mở rộng.",
+      "lessonIds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "subtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "color": "#16a34a",
+      "icon": "ArrowUpCircle",
+      "description": "Vươn ngón tay lên hàng phím trên để gõ các nguyên âm và phụ âm.",
+      "lessonIds": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "subtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "color": "#d97706",
+      "icon": "ArrowDownCircle",
+      "description": "Hạ ngón tay xuống hàng phím dưới để hoàn thiện toàn bộ bảng chữ cái.",
+      "lessonIds": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Unit 4: 4. Luyện tổ hợp phím chữ không dấu",
+      "subtitle": "Cụm từ âm tiết mở & chuyển dòng",
+      "color": "#2563eb",
+      "icon": "BookOpen",
+      "description": "Rèn luyện nhịp điệu gõ đều đặn và sự nhịp nhàng giữa hai bàn tay.",
+      "lessonIds": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "subtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "color": "#059669",
+      "icon": "Sparkles",
+      "description": "Thành thạo quy tắc Telex cho 7 nguyên âm có dấu mũ/móc và chữ Đ.",
+      "lessonIds": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "subtitle": "S, F, R, X, J",
+      "color": "#10b981",
+      "icon": "Zap",
+      "description": "Quy tắc bỏ dấu thanh Telex chuẩn xác trên các nguyên âm tiếng Việt.",
+      "lessonIds": [
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "subtitle": "Shift trái & phải, địa danh, tên riêng",
+      "color": "#9333ea",
+      "icon": "ArrowBigUp",
+      "description": "Thành thạo phối hợp hai tay dùng phím Shift khi viết hoa danh từ riêng.",
+      "lessonIds": [
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "subtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "color": "#ea580c",
+      "icon": "Hash",
+      "description": "Vươn ngón tay lên hàng phím số chính xác mà không cần nhìn bàn phím.",
+      "lessonIds": [
+        60,
+        61,
+        62,
+        63,
+        64,
+        65
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "subtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "color": "#0d9488",
+      "icon": "Code2",
+      "description": "Soạn thảo văn bản hoàn chỉnh với dấu câu và các ký hiệu thông dụng.",
+      "lessonIds": [
+        66,
+        67,
+        68,
+        69,
+        70,
+        71
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "subtitle": "Shift số, email, URL, mã nguồn code",
+      "color": "#6366f1",
+      "icon": "Code2",
+      "description": "Gõ nhanh các ký hiệu toán học, email, website và cú pháp lập trình.",
+      "lessonIds": [
+        72,
+        73,
+        74,
+        75,
+        76,
+        77
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "subtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "color": "#8b5cf6",
+      "icon": "AlertCircle",
+      "description": "Luyện tập chuyên sâu các phụ âm đầu và dấu thanh dễ nhầm lẫn.",
+      "lessonIds": [
+        78,
+        79,
+        80,
+        81,
+        82,
+        83
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "subtitle": "Ca dao, tục ngữ & danh ngôn",
+      "color": "#0284c7",
+      "icon": "BookOpen",
+      "description": "Gia tăng tốc độ gõ mạch lạc với các câu thành ngữ tiếng Việt kinh điển.",
+      "lessonIds": [
+        84,
+        85,
+        86,
+        87,
+        88,
+        89
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Unit 13: 13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế",
+      "subtitle": "Đoạn văn hoàn chỉnh, bứt phá tốc độ",
+      "color": "#f59e0b",
+      "icon": "Flame",
+      "description": "Ứng dụng soạn thảo văn bản thực tế trong công việc và học tập.",
+      "lessonIds": [
+        90,
+        91,
+        92,
+        93,
+        94
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 1: Luyện 2 phím định vị F (trỏ trái) và J (trỏ phải)",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện 2 phím định vị F (trỏ trái) và J (trỏ phải)",
+      "targetKeys": [
+        "f",
+        "j"
+      ],
+      "content": [
+        "f j f j ff jj",
+        "jf fj jf fj fj jf",
+        "f j fj jf fff jjj",
+        "ff jj fj jf ff jj fj"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 2,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 2: Luyện phím D (giữa trái) và K (giữa phải)",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện phím D (giữa trái) và K (giữa phải)",
+      "targetKeys": [
+        "d",
+        "k"
+      ],
+      "content": [
+        "d k d k dd kk",
+        "kd dk kd dk dk kd",
+        "d k dk kd ddd kkk",
+        "dd kk dk kd dd kk dk"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 3,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 3: Luyện phím S (áp út trái) và L (áp út phải)",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện phím S (áp út trái) và L (áp út phải)",
+      "targetKeys": [
+        "s",
+        "l"
+      ],
+      "content": [
+        "s l s l ss ll",
+        "ls sl ls sl sl ls",
+        "s l sl ls sss lll",
+        "ss ll sl ls ss ll sl"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 4,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 4: Luyện phím A (út trái) và dấu ; (út phải)",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện phím A (út trái) và dấu ; (út phải)",
+      "targetKeys": [
+        "a",
+        ";"
+      ],
+      "content": [
+        "a ; a ; aa ;;",
+        ";a a; ;a a; ;a a;",
+        "a ; a; ;a aaa ;;;",
+        "aa ;; a; ;a aa ;; a;"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 5,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 5: Luyện phối hợp các cặp ngón tay đối xứng",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện phối hợp các cặp ngón tay đối xứng",
+      "targetKeys": [
+        "f",
+        "j",
+        "d",
+        "k",
+        "s",
+        "l",
+        "a",
+        ";"
+      ],
+      "content": [
+        "fj dk sl a; fj dk",
+        "sl a; jf kd ls ;a",
+        "asdf ;lkj fds a;lk",
+        "fa sd jk l; asdf ;lkj"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 6,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 6: Luyện mở rộng ngón trỏ sang phím G và H",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện mở rộng ngón trỏ sang phím G và H",
+      "targetKeys": [
+        "g",
+        "h"
+      ],
+      "content": [
+        "g h g h gg hh fg jh",
+        "gh hg fg jh gf hj gh",
+        "g h fg jh gh hg fgh",
+        "fgh jhg gf hj gh fg jh"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 7,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 7: Phối hợp ngón trỏ và ngón giữa hai bàn tay",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Phối hợp ngón trỏ và ngón giữa hai bàn tay",
+      "targetKeys": [
+        "f",
+        "g",
+        "j",
+        "h",
+        "d",
+        "k"
+      ],
+      "content": [
+        "all sad ask dad flash",
+        "fall glad half flask lag",
+        "salad dash flag glass salsa",
+        "alfalfa shall gala flask alas"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 8,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 8: Chuỗi ngón tay hàng cơ sở từ ngoài vào trong",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Chuỗi ngón tay hàng cơ sở từ ngoài vào trong",
+      "targetKeys": [
+        "a",
+        "s",
+        "d",
+        "f",
+        "j",
+        "k",
+        "l",
+        ";"
+      ],
+      "content": [
+        "a fall lad had a salad",
+        "glad dad ask a lad",
+        "all lads shall fall",
+        "a sad flask has salad"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 9,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 9: Các tổ hợp phím hàng cơ sở tạo thành âm tiết",
+      "type": "lesson",
+      "description": "1. Hàng phím cơ sở (Home Row) · Các tổ hợp phím hàng cơ sở tạo thành âm tiết",
+      "targetKeys": [
+        "f",
+        "a",
+        "d",
+        "j",
+        "k",
+        "l",
+        "g",
+        "s"
+      ],
+      "content": [
+        "half glad half sad flag",
+        "dad ask all glad lads",
+        "a flash gala shall fall",
+        "alas a lad had half glass"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 10,
+      "unitId": 1,
+      "unitTitle": "Unit 1: 1. Hàng phím cơ sở (Home Row)",
+      "unitSubtitle": "F, J, D, K, S, L, A, ;, G, H",
+      "title": "Bài 10: Luyện phản xạ ngón tay liền mạch trên hàng cơ sở",
+      "type": "test",
+      "description": "1. Hàng phím cơ sở (Home Row) · Luyện phản xạ ngón tay liền mạch trên hàng cơ sở",
+      "targetKeys": [
+        "s",
+        "a",
+        "d",
+        "l",
+        "g",
+        "f",
+        "h"
+      ],
+      "content": [
+        "asdf g hjkl; fall salad glad",
+        "a glad lad shall ask dad",
+        "flash flag half flask salad dash",
+        "dad had a glass; all lads ask"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 15
+    },
+    {
+      "id": 11,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 11: Vươn ngón trỏ lên phím R và U",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Vươn ngón trỏ lên phím R và U",
+      "targetKeys": [
+        "r",
+        "u"
+      ],
+      "content": [
+        "r u r u rr uu fr ju",
+        "ru ur fru jur ruf jur",
+        "fur jar rug jug run rug",
+        "far jar fur rug run jug"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 12,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 12: Vươn ngón giữa lên phím E và I",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Vươn ngón giữa lên phím E và I",
+      "targetKeys": [
+        "e",
+        "i"
+      ],
+      "content": [
+        "e i e i ee ii de ki",
+        "ei ie dei kie ide kid",
+        "die lie kid red fed rid",
+        "like fire side ride silk life"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 13,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 13: Vươn ngón áp út lên phím W và O",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Vươn ngón áp út lên phím W và O",
+      "targetKeys": [
+        "w",
+        "o"
+      ],
+      "content": [
+        "w o w o ww oo sw lo",
+        "wo ow swo low owl how",
+        "slow blow flow work word wood",
+        "show world folk look slow flow"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 14,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 14: Vươn ngón út lên phím Q và P",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Vươn ngón út lên phím Q và P",
+      "targetKeys": [
+        "q",
+        "p"
+      ],
+      "content": [
+        "q p q p qq pp aq ;p",
+        "qp pq qui pop map tap",
+        "quit pure page post push drop",
+        "quick path proud play pool deep"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 15,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 15: Mở rộng ngón trỏ lên phím T và Y",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Mở rộng ngón trỏ lên phím T và Y",
+      "targetKeys": [
+        "t",
+        "y"
+      ],
+      "content": [
+        "t y t y tt yy ft jy",
+        "ty yt try yet toy joy",
+        "type year stay play tiny duty",
+        "today yard style tasty story city"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 16,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 16: Tập hợp các ngón vươn hàng trên",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Tập hợp các ngón vươn hàng trên",
+      "targetKeys": [
+        "r",
+        "u",
+        "e",
+        "i",
+        "w",
+        "o",
+        "q",
+        "p"
+      ],
+      "content": [
+        "tie out pet row you war",
+        "true wire pure tour pour write",
+        "quiet power tower route reply youth",
+        "yellow water flower pretty report write"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 17,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 17: Ghép từ đơn giản kết hợp hàng trên và hàng cơ sở",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Ghép từ đơn giản kết hợp hàng trên và hàng cơ sở",
+      "targetKeys": [
+        "t",
+        "h",
+        "e",
+        "y",
+        "o",
+        "u",
+        "r"
+      ],
+      "content": [
+        "time work year play pure style",
+        "quick flow free slow open tree",
+        "quiet power trip write youth route",
+        "yellow fruit great water paper street"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 18,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 18: Luyện linh hoạt giữa hàng phím trên và hàng cơ sở",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Luyện linh hoạt giữa hàng phím trên và hàng cơ sở",
+      "targetKeys": [
+        "t",
+        "r",
+        "u",
+        "e",
+        "q",
+        "i",
+        "p",
+        "o"
+      ],
+      "content": [
+        "we try to write true words",
+        "open your heart to learn more",
+        "quiet people write great poems",
+        "yellow flower grows near the water"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 19,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 19: Câu luyện tập phản xạ hàng phím trên",
+      "type": "lesson",
+      "description": "2. Hàng phím trên (Top Row) · Câu luyện tập phản xạ hàng phím trên",
+      "targetKeys": [
+        "t",
+        "y",
+        "p",
+        "e",
+        "o",
+        "u",
+        "r",
+        "q"
+      ],
+      "content": [
+        "today is a great day to type fast",
+        "water flows gently down the quiet river",
+        "we work with pure power and passion",
+        "your speed will grow with every word"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 20,
+      "unitId": 2,
+      "unitTitle": "Unit 2: 2. Hàng phím trên (Top Row)",
+      "unitSubtitle": "R, U, E, I, W, O, Q, P, T, Y",
+      "title": "Bài 20: Quét phím toàn diện hai hàng phím trên và cơ sở",
+      "type": "test",
+      "description": "2. Hàng phím trên (Top Row) · Quét phím toàn diện hai hàng phím trên và cơ sở",
+      "targetKeys": [
+        "q",
+        "w",
+        "e",
+        "r",
+        "t",
+        "y",
+        "u",
+        "i"
+      ],
+      "content": [
+        "qwerty uiop asdfgh jkl;",
+        "the quick power of your ten fingers",
+        "write every true word with pure joy",
+        "practice every single day to stay sharp"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 21,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 21: Hạ ngón trỏ xuống phím V và M",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Hạ ngón trỏ xuống phím V và M",
+      "targetKeys": [
+        "v",
+        "m"
+      ],
+      "content": [
+        "v m v m vv mm fv jm",
+        "vm mv fvm jmv van men",
+        "vim vim move view vim man",
+        "wave move camp farm name vim"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 22,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 22: Hạ ngón giữa xuống phím C và dấu phẩy (,)",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Hạ ngón giữa xuống phím C và dấu phẩy (,)",
+      "targetKeys": [
+        "c",
+        ","
+      ],
+      "content": [
+        "c , c , cc ,, dc k,",
+        "c, ,c car can cow cup",
+        "cat, cold, call, clean, cook",
+        "calm, care, come, city, cake"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 23,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 23: Hạ ngón áp út xuống phím X và dấu chấm (.)",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Hạ ngón áp út xuống phím X và dấu chấm (.)",
+      "targetKeys": [
+        "x",
+        "."
+      ],
+      "content": [
+        "x . x . xx .. sx l.",
+        "x. .x box fix six mix",
+        "tax. fox. exit. next. text.",
+        "relax. exact. extra. index. exam."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 24,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 24: Hạ ngón út xuống phím Z và dấu gạch chéo (/)",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Hạ ngón út xuống phím Z và dấu gạch chéo (/)",
+      "targetKeys": [
+        "z",
+        "/"
+      ],
+      "content": [
+        "z / z / zz // az ;/",
+        "z/ /z zip zap zoo zone",
+        "zero zinc zoom quiz size",
+        "lazy prize amaze buzz zeal"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 25,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 25: Mở rộng ngón trỏ xuống phím B và N",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Mở rộng ngón trỏ xuống phím B và N",
+      "targetKeys": [
+        "b",
+        "n"
+      ],
+      "content": [
+        "b n b n bb nn fb jn",
+        "bn nb ban bin bun sun",
+        "bone book bank born bean",
+        "brown blank brain begin build"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 26,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 26: Tổng hợp các bước hạ ngón hàng phím dưới",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Tổng hợp các bước hạ ngón hàng phím dưới",
+      "targetKeys": [
+        "v",
+        "m",
+        "c",
+        ",",
+        "x",
+        ".",
+        "z",
+        "/"
+      ],
+      "content": [
+        "can, box, zip, bank, move, next.",
+        "come, view, zoom, best, note, back.",
+        "clean, extra, size, build, mask, calm.",
+        "brave, mix, zero, vine, name, text."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 27,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 27: Ghép từ ngắn kết hợp cả ba hàng phím chữ",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Ghép từ ngắn kết hợp cả ba hàng phím chữ",
+      "targetKeys": [
+        "c",
+        "a",
+        "n",
+        "m",
+        "v",
+        "b",
+        "o",
+        "x"
+      ],
+      "content": [
+        "come back, view more, next step, new plan.",
+        "clean water, zero bug, blue box, best choice.",
+        "calm mind, move fast, brave man, big dream.",
+        "open door, exact size, warm welcome, good job."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 28,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 28: Từ vựng mở rộng ngón tay linh hoạt",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Từ vựng mở rộng ngón tay linh hoạt",
+      "targetKeys": [
+        "b",
+        "a",
+        "c",
+        "k",
+        "n",
+        "e",
+        "x",
+        "t"
+      ],
+      "content": [
+        "can you come back to the blue cabin?",
+        "we move fast, but we always stay calm.",
+        "the brave fox jump over the lazy box.",
+        "bring your best book and enjoy the view."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 29,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 29: Quét toàn bộ hàng phím dưới theo thứ tự",
+      "type": "lesson",
+      "description": "3. Hàng phím dưới (Bottom Row) · Quét toàn bộ hàng phím dưới theo thứ tự",
+      "targetKeys": [
+        "z",
+        "x",
+        "c",
+        "v",
+        "b",
+        "n",
+        "m",
+        ","
+      ],
+      "content": [
+        "every new day brings a fresh chance.",
+        "make your move with confidence and joy.",
+        "the quick brown fox jumps over lazy dogs.",
+        "build good habits, step by step, day by day."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20
+    },
+    {
+      "id": 30,
+      "unitId": 3,
+      "unitTitle": "Unit 3: 3. Hàng phím dưới (Bottom Row)",
+      "unitSubtitle": "V, M, C, ,, X, ., Z, /, B, N",
+      "title": "Bài 30: Câu kinh điển chứa đầy đủ bảng chữ cái tiếng Anh",
+      "type": "game",
+      "description": "3. Hàng phím dưới (Bottom Row) · Câu kinh điển chứa đầy đủ bảng chữ cái tiếng Anh",
+      "targetKeys": [
+        "t",
+        "h",
+        "e",
+        "q",
+        "u",
+        "i",
+        "c",
+        "k"
+      ],
+      "content": [
+        "zxcvbnm,./ asdfghjkl; qwertyuiop",
+        "all three rows are now completely under your control.",
+        "smooth rhythm and steady pace bring true mastery.",
+        "relax your shoulders and keep typing with ease."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 20,
+      "gameType": "falling_words"
+    },
+    {
+      "id": 31,
+      "unitId": 4,
+      "unitTitle": "Unit 4: 4. Luyện tổ hợp phím chữ không dấu",
+      "unitSubtitle": "Cụm từ âm tiết mở & chuyển dòng",
+      "title": "Bài 31: Cụm từ âm tiết mở không dấu",
+      "type": "lesson",
+      "description": "4. Luyện tổ hợp phím chữ không dấu · Cụm từ âm tiết mở không dấu",
+      "targetKeys": [
+        "b",
+        "a",
+        "n",
+        "m",
+        "i",
+        "s",
+        "g",
+        "o"
+      ],
+      "content": [
+        "lan can, ban mai, hoa sen, chim hot",
+        "nang vang, gio mat, rung xanh, bien rong",
+        "song xo, bo cat, may trang, troi xanh",
+        "cay cao, bong mat, suoi trong, canh dong"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 25
+    },
+    {
+      "id": 32,
+      "unitId": 4,
+      "unitTitle": "Unit 4: 4. Luyện tổ hợp phím chữ không dấu",
+      "unitSubtitle": "Cụm từ âm tiết mở & chuyển dòng",
+      "title": "Bài 32: Luyện nhịp điệu gõ ngón đều đặn",
+      "type": "lesson",
+      "description": "4. Luyện tổ hợp phím chữ không dấu · Luyện nhịp điệu gõ ngón đều đặn",
+      "targetKeys": [
+        "c",
+        "o",
+        "n",
+        "m",
+        "e",
+        "h",
+        "u",
+        "t"
+      ],
+      "content": [
+        "con meo, chu cho, dan chim, dan ca",
+        "tieng hat, loi ca, niem vui, tieng cuoi",
+        "mua xuan, mua ha, mua thu, mua dong",
+        "que huong, dat nuoc, gia dinh, ban be"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 25
+    },
+    {
+      "id": 33,
+      "unitId": 4,
+      "unitTitle": "Unit 4: 4. Luyện tổ hợp phím chữ không dấu",
+      "unitSubtitle": "Cụm từ âm tiết mở & chuyển dòng",
+      "title": "Bài 33: Luyện chuyển ngón hai bàn tay nhịp nhàng",
+      "type": "lesson",
+      "description": "4. Luyện tổ hợp phím chữ không dấu · Luyện chuyển ngón hai bàn tay nhịp nhàng",
+      "targetKeys": [
+        "h",
+        "o",
+        "c",
+        "t",
+        "a",
+        "p",
+        "m",
+        "i"
+      ],
+      "content": [
+        "hoc tap, ren luyen, kien tri, thanh cong",
+        "uoc mo, hy vong, tuong lai, hanh phuc",
+        "sang tao, kien thuc, tu duy, phat trien",
+        "nang dong, nhiet huyet, dam me, vuon xa"
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 25
+    },
+    {
+      "id": 34,
+      "unitId": 4,
+      "unitTitle": "Unit 4: 4. Luyện tổ hợp phím chữ không dấu",
+      "unitSubtitle": "Cụm từ âm tiết mở & chuyển dòng",
+      "title": "Bài 34: Cụm từ rèn độ chính xác chuyển dòng",
+      "type": "lesson",
+      "description": "4. Luyện tổ hợp phím chữ không dấu · Cụm từ rèn độ chính xác chuyển dòng",
+      "targetKeys": [
+        "q",
+        "u",
+        "e",
+        "h",
+        "o",
+        "n",
+        "g",
+        "t"
+      ],
+      "content": [
+        "con duong phia truoc luon rong mo cho nguoi kien tri.",
+        "moi buoc di deu dem lai nhung bai hoc quy gia.",
+        "tu tin vao ban than la chia khoa cua thanh cong.",
+        "hay lam viec het minh de tao nen nhung gia tri moi."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 25
+    },
+    {
+      "id": 35,
+      "unitId": 4,
+      "unitTitle": "Unit 4: 4. Luyện tổ hợp phím chữ không dấu",
+      "unitSubtitle": "Cụm từ âm tiết mở & chuyển dòng",
+      "title": "Bài 35: Luyện phản xạ từ đa âm tiết không dấu",
+      "type": "test",
+      "description": "4. Luyện tổ hợp phím chữ không dấu · Luyện phản xạ từ đa âm tiết không dấu",
+      "targetKeys": [
+        "s",
+        "o",
+        "n",
+        "g",
+        "u",
+        "i",
+        "r",
+        "b"
+      ],
+      "content": [
+        "ban hay luon giu vung niem tin va su lac quan.",
+        "cuoc song tuoi dep khi chung ta biet se chia.",
+        "hoc hoi moi ngay de mo rong tam nhin va tri thuc.",
+        "thanh cong den tu nhung no luc nho be nhat moi ngay."
+      ],
+      "minAccuracy": 85,
+      "targetWpm": 25
+    },
+    {
+      "id": 36,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 36: Quy tắc Telex căn bản cho các nguyên âm có dấu mũ/móc và chữ đ",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Quy tắc Telex căn bản cho các nguyên âm có dấu mũ/móc và chữ đ",
+      "targetKeys": [
+        "a",
+        "w",
+        "e",
+        "o",
+        "u",
+        "d"
+      ],
+      "content": [
+        "ăn mặc, tăm tắp, thắm tươi, may mắn",
+        "bắt gặp, chăm chỉ, vắng vẻ, rắn rỏi",
+        "mặt trăng, đằm thắm, dũng cảm, sắc bén",
+        "học tập chăm chỉ, gặt hái thành công"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 37,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 37: Luyện nguyên âm Ă (aw)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện nguyên âm Ă (aw)",
+      "targetKeys": [
+        "ă",
+        "n",
+        "m",
+        "ặ",
+        "c",
+        "g",
+        "a",
+        "y"
+      ],
+      "content": [
+        "cây cầu, mây ngàn, chân thật, ấm áp",
+        "cần mẫn, lấp lánh, ngập tràn, thấu hiểu",
+        "tấm lòng, mầm xanh, phấn khởi, tận tâm",
+        "mùa xuân ấm áp, ngàn hoa đua nở"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 38,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 38: Luyện nguyên âm Â (aa)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện nguyên âm Â (aa)",
+      "targetKeys": [
+        "c",
+        "â",
+        "y",
+        "ầ",
+        "u",
+        "m",
+        "ù",
+        "a"
+      ],
+      "content": [
+        "bến bờ, mênh mông, êm đềm, dệt lụa",
+        "bếp lửa, dế mèn, kết quả, thể thao",
+        "nền tảng, tiến bộ, kiên trì, bền bỉ",
+        "ngọn đèn thắp sáng, soi bước tương lai"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 39,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 39: Luyện nguyên âm Ê (ee)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện nguyên âm Ê (ee)",
+      "targetKeys": [
+        "b",
+        "ế",
+        "p",
+        "l",
+        "ử",
+        "a",
+        "ê",
+        "m"
+      ],
+      "content": [
+        "cô giáo, đồng hồ, cổng làng, bông lúa",
+        "tốt bụng, rực rỡ, lộng lẫy, thông minh",
+        "bồ nông, phố phường, khổng lồ, trống đồng",
+        "cây cối tốt tươi, mùa màng bội thu"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 40,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 40: Luyện nguyên âm Ô (oo)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện nguyên âm Ô (oo)",
+      "targetKeys": [
+        "c",
+        "ô",
+        "g",
+        "i",
+        "á",
+        "o",
+        "n",
+        "h"
+      ],
+      "content": [
+        "hoa mơ, lá cờ, bờ ao, thợ mỏ",
+        "rực rỡ, mộng mơ, niềm tin, hy vọng",
+        "cởi mở, nở rộ, chở che, nâng đỡ",
+        "mở rộng tầm mắt, khám phá thế giới"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 41,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 41: Luyện nguyên âm Ơ (ow)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện nguyên âm Ơ (ow)",
+      "targetKeys": [
+        "c",
+        "ơ",
+        "n",
+        "m",
+        "ư",
+        "a",
+        "b",
+        "ờ"
+      ],
+      "content": [
+        "bức tranh, mực thước, mức độ, tương lai",
+        "sức khỏe, rực rỡ, tích cực, thức tỉnh",
+        "tưng bừng, dũng cảm, vững bước, tự tin",
+        "vững vàng tay lái, vượt mọi khó khăn"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 42,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 42: Luyện nguyên âm Ư (uw)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện nguyên âm Ư (uw)",
+      "targetKeys": [
+        "b",
+        "ứ",
+        "c",
+        "t",
+        "r",
+        "a",
+        "n",
+        "h"
+      ],
+      "content": [
+        "đất nước, đường đời, đồng đội, đoàn kết",
+        "đầy đủ, đón nhận, đích đến, đỉnh cao",
+        "độc lập, tự do, đùm bọc, đỗ đạt",
+        "đoàn kết tạo nên sức mạnh vô địch"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 43,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 43: Luyện chữ Đ (dd)",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Luyện chữ Đ (dd)",
+      "targetKeys": [
+        "đ",
+        "ư",
+        "ờ",
+        "n",
+        "g",
+        "i",
+        "ấ",
+        "t"
+      ],
+      "content": [
+        "đất nước ngàn năm, đồng lúa xanh rờn",
+        "ước mơ vươn cao, tấm lòng nhân ái",
+        "bền gan vững chí, gặt hái thành công",
+        "thầy cô kính mến, bạn bè thân thương"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 44,
+      "unitId": 5,
+      "unitTitle": "Unit 5: 5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ)",
+      "unitSubtitle": "aa, aw, ee, oo, ow, uw, dd",
+      "title": "Bài 44: Tổng hợp các nguyên âm đặc trưng tiếng Việt",
+      "type": "lesson",
+      "description": "5. Quy tắc gõ Tiếng Việt - Nguyên âm (ă, â, ê, ô, ơ, ư, đ) · Tổng hợp các nguyên âm đặc trưng tiếng Việt",
+      "targetKeys": [
+        "ư",
+        "ớ",
+        "c",
+        "m",
+        "ơ",
+        "b",
+        "ờ",
+        "t"
+      ],
+      "content": [
+        "những bước chân kiên định trên con đường học tập.",
+        "mùa màng tươi tốt, đồng lúa vàng óng ả.",
+        "tinh thần đoàn kết giúp vượt qua mọi gian khó.",
+        "tương lai rạng rỡ đón chào những con người cần mẫn."
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 45,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 45: Vị trí 5 phím dấu thanh trong kiểu gõ Telex",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Vị trí 5 phím dấu thanh trong kiểu gõ Telex",
+      "targetKeys": [
+        "s",
+        "f",
+        "r",
+        "x",
+        "j"
+      ],
+      "content": [
+        "sắc bén, sớm mai, sáng lạn, sức sống",
+        "nắng sớm, sóng sánh, xóm làng, lá xanh",
+        "sách vở, lớp học, ánh sáng, niềm vui",
+        "ánh nắng ban mai sưởi ấm khắp đất trời"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 46,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 46: Luyện dấu Sắc (phím S)",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Luyện dấu Sắc (phím S)",
+      "targetKeys": [
+        "c",
+        "á",
+        "m",
+        "l",
+        "b",
+        "ú",
+        "p",
+        "s"
+      ],
+      "content": [
+        "huyền ảo, hòa bình, mùa hè, bình minh",
+        "dòng sông, cánh đồng, hiền hòa, trầm lắng",
+        "rừng xanh, nguồn cội, giàu lòng, nhân ái",
+        "tiếng đàn trầm bổng ngân vang giữa chiều hè"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 47,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 47: Luyện dấu Huyền (phím F)",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Luyện dấu Huyền (phím F)",
+      "targetKeys": [
+        "n",
+        "h",
+        "à",
+        "b",
+        "l",
+        "g",
+        "c",
+        "m"
+      ],
+      "content": [
+        "hỏi han, mở cửa, bảo ban, nhỏ nhắn",
+        "thảo nguyên, bổng trầm, cởi mở, trẻ thơ",
+        "thổi gió, rửa mặt, rạng rỡ, dẻo dai",
+        "trẻ em học hỏi với niềm say mê lớn"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 48,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 48: Luyện dấu Hỏi (phím R)",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Luyện dấu Hỏi (phím R)",
+      "targetKeys": [
+        "c",
+        "ỏ",
+        "q",
+        "u",
+        "ả",
+        "n",
+        "h",
+        "b"
+      ],
+      "content": [
+        "bão bùng, ngỡ ngàng, vội vã, vững chắc",
+        "suy nghĩ, dũng cảm, lộng lẫy, ngã ba",
+        "bỡ ngỡ, vĩ đại, nghĩa tình, mẫu mực",
+        "giữ vững niềm tin, vượt qua mọi bão táp"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 49,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 49: Luyện dấu Ngã (phím X)",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Luyện dấu Ngã (phím X)",
+      "targetKeys": [
+        "s",
+        "ữ",
+        "a",
+        "b",
+        "ã",
+        "o",
+        "v",
+        "ẽ"
+      ],
+      "content": [
+        "nặng nhọc, lặng lẽ, mặt trời, bạn bè",
+        "vận động, hội tụ, rèn luyện, tận tâm",
+        "thực hiện, trọn vẹn, trật tự, kỷ luật",
+        "lao động tạo nên giá trị và hạnh phúc"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 50,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 50: Luyện dấu Nặng (phím J)",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Luyện dấu Nặng (phím J)",
+      "targetKeys": [
+        "m",
+        "ẹ",
+        "b",
+        "ạ",
+        "n",
+        "v",
+        "t",
+        "l"
+      ],
+      "content": [
+        "sắc sảo, trầm ngâm, vui vẻ, dũng cảm, tận tụy",
+        "nhanh nhẹn, linh hoạt, cởi mở, trung thực",
+        "học tập nghiêm túc, rèn luyện chăm chỉ",
+        "bền bỉ từng ngày, tự tin tỏa sáng"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 51,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 51: Kết hợp chuỗi cả 5 dấu thanh liên tiếp",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Kết hợp chuỗi cả 5 dấu thanh liên tiếp",
+      "targetKeys": [
+        "l",
+        "á",
+        "c",
+        "à",
+        "n",
+        "h",
+        "ỏ",
+        "v"
+      ],
+      "content": [
+        "bảo ban chu đáo, suy nghĩ chín chắn, cẩn thận",
+        "hỏi thăm sức khỏe, giữ gìn truyền thống tốt đẹp",
+        "vượt qua bão táp, vươn tới bến bờ thành công",
+        "lòng dũng cảm giúp ta đối diện mọi thử thách"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 52,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 52: Câu luyện dấu thanh nhịp nhàng",
+      "type": "lesson",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Câu luyện dấu thanh nhịp nhàng",
+      "targetKeys": [
+        "h",
+        "ọ",
+        "c",
+        "đ",
+        "i",
+        "ô",
+        "v",
+        "ớ"
+      ],
+      "content": [
+        "rộn rã, dịu dàng, giòn giã, dòng sông, rực rỡ",
+        "gìn giữ, giúp đỡ, dung dị, rực sáng, dạt dào",
+        "gió mát rười rượi thổi qua rặng dừa xanh",
+        "gia đình luôn là điểm tựa bình yên nhất"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 53,
+      "unitId": 6,
+      "unitTitle": "Unit 6: 6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng)",
+      "unitSubtitle": "S, F, R, X, J",
+      "title": "Bài 53: Đoạn ngắn kết hợp nguyên âm và dấu thanh",
+      "type": "test",
+      "description": "6. Quy tắc gõ Tiếng Việt - Dấu thanh (sắc, huyền, hỏi, ngã, nặng) · Đoạn ngắn kết hợp nguyên âm và dấu thanh",
+      "targetKeys": [
+        "t",
+        "i",
+        "ế",
+        "n",
+        "g",
+        "v",
+        "ệ",
+        "à"
+      ],
+      "content": [
+        "Đất nước Việt Nam mến yêu luôn tràn đầy sức sống và hy vọng.",
+        "Tiếng Việt trong sáng, phong phú là niềm tự hào của dân tộc ta.",
+        "Học hỏi không ngừng giúp chúng ta mở rộng tri thức và nhân cách.",
+        "Mỗi ngày một tiến bộ, bước đi vững chắc trên con đường tương lai."
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 54,
+      "unitId": 7,
+      "unitTitle": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "unitSubtitle": "Shift trái & phải, địa danh, tên riêng",
+      "title": "Bài 54: Luyện phím Shift bên phải gõ tay trái in hoa",
+      "type": "lesson",
+      "description": "7. Phím Shift & Chữ in hoa · Luyện phím Shift bên phải gõ tay trái in hoa",
+      "targetKeys": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H"
+      ],
+      "content": [
+        "Hà Nội, Sài Gòn, Đà Nẵng, Hải Phòng",
+        "Cần Thơ, Huế, Nha Trang, Vũng Tàu",
+        "Quảng Ninh, Lâm Đồng, An Giang, Nghệ An",
+        "Việt Nam đất nước ngàn năm văn hiến"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 55,
+      "unitId": 7,
+      "unitTitle": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "unitSubtitle": "Shift trái & phải, địa danh, tên riêng",
+      "title": "Bài 55: Luyện phím Shift bên trái gõ tay phải in hoa",
+      "type": "lesson",
+      "description": "7. Phím Shift & Chữ in hoa · Luyện phím Shift bên trái gõ tay phải in hoa",
+      "targetKeys": [
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U"
+      ],
+      "content": [
+        "Châu Á, Châu Âu, Châu Mỹ, Châu Phi",
+        "Thái Bình Dương, Đại Tây Dương, Ấn Độ Dương",
+        "Mặt Trời, Mặt Trăng, Sao Kim, Sao Hỏa",
+        "Trái Đất là ngôi nhà chung của toàn nhân loại"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 56,
+      "unitId": 7,
+      "unitTitle": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "unitSubtitle": "Shift trái & phải, địa danh, tên riêng",
+      "title": "Bài 56: Viết hoa tên địa danh Việt Nam",
+      "type": "lesson",
+      "description": "7. Phím Shift & Chữ in hoa · Viết hoa tên địa danh Việt Nam",
+      "targetKeys": [
+        "H",
+        "à",
+        "N",
+        "ộ",
+        "i",
+        ",",
+        "T",
+        "P"
+      ],
+      "content": [
+        "Toán Học, Vật Lý, Hóa Học, Sinh Học",
+        "Ngữ Văn, Lịch Sử, Địa Lý, Ngoại Ngữ",
+        "Tin Học, Âm Nhạc, Mỹ Thuật, Giáo Dục",
+        "Kiến thức là kho báu vô tận của con người"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 57,
+      "unitId": 7,
+      "unitTitle": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "unitSubtitle": "Shift trái & phải, địa danh, tên riêng",
+      "title": "Bài 57: Viết hoa họ và tên riêng",
+      "type": "lesson",
+      "description": "7. Phím Shift & Chữ in hoa · Viết hoa họ và tên riêng",
+      "targetKeys": [
+        "N",
+        "g",
+        "u",
+        "y",
+        "ễ",
+        "n",
+        "V",
+        "ă"
+      ],
+      "content": [
+        "Bác Hồ kính yêu, Đại tướng Võ Nguyên Giáp",
+        "Nguyễn Trãi, Chu Văn An, Lê Quý Đôn",
+        "Trần Hưng Đạo, Quang Trung, Hai Bà Trưng",
+        "Lịch sử dân tộc ghi danh những anh hùng bất tử"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 58,
+      "unitId": 7,
+      "unitTitle": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "unitSubtitle": "Shift trái & phải, địa danh, tên riêng",
+      "title": "Bài 58: Viết hoa đầu câu và dấu câu kết thúc",
+      "type": "lesson",
+      "description": "7. Phím Shift & Chữ in hoa · Viết hoa đầu câu và dấu câu kết thúc",
+      "targetKeys": [
+        "V",
+        "i",
+        "ệ",
+        "t",
+        "N",
+        "a",
+        "m",
+        "q"
+      ],
+      "content": [
+        "Giữ gìn sự trong sáng của tiếng Việt là trách nhiệm của mỗi chúng ta.",
+        "Hãy học cách lắng nghe trước khi đưa ra những quyết định quan trọng.",
+        "Tương lai thuộc về những ai dám ước mơ và kiên trì theo đuổi ước mơ.",
+        "Sức mạnh của tri thức sẽ mở ra những cánh cửa mới cho cuộc đời bạn."
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 59,
+      "unitId": 7,
+      "unitTitle": "Unit 7: 7. Phím Shift & Chữ in hoa",
+      "unitSubtitle": "Shift trái & phải, địa danh, tên riêng",
+      "title": "Bài 59: Luyện chuyển ngón Shift xen kẽ chữ thường liên tục",
+      "type": "test",
+      "description": "7. Phím Shift & Chữ in hoa · Luyện chuyển ngón Shift xen kẽ chữ thường liên tục",
+      "targetKeys": [
+        "S",
+        "ô",
+        "n",
+        "g",
+        "H",
+        "ồ",
+        ",",
+        "C"
+      ],
+      "content": [
+        "Chào mừng bạn đến với Không Gian Học Tập Hi Space!",
+        "Hi Space đồng hành cùng bạn trên con đường rèn luyện kỹ năng số.",
+        "Hãy duy trì thói quen luyện gõ 15 phút mỗi ngày để đạt hiệu quả cao.",
+        "Chúc bạn luôn tự tin, đạt tốc độ cao và độ chính xác hoàn hảo!"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 25
+    },
+    {
+      "id": 60,
+      "unitId": 8,
+      "unitTitle": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "unitSubtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "title": "Bài 60: Dãy số theo thứ tự ngón tay từ trái sang phải",
+      "type": "lesson",
+      "description": "8. Hàng phím số (Numbers 0 - 9) · Dãy số theo thứ tự ngón tay từ trái sang phải",
+      "targetKeys": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "content": [
+        "1 2 3 4 5 12 34 45",
+        "54 32 15 24 35 12 43",
+        "11 22 33 44 55 123 45",
+        "15 23 41 52 34 51 24"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 61,
+      "unitId": 8,
+      "unitTitle": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "unitSubtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "title": "Bài 61: Luyện vươn ngón trỏ lên các số trung tâm (4, 5, 6, 7)",
+      "type": "lesson",
+      "description": "8. Hàng phím số (Numbers 0 - 9) · Luyện vươn ngón trỏ lên các số trung tâm (4, 5, 6, 7)",
+      "targetKeys": [
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "content": [
+        "6 7 8 9 0 67 89 90",
+        "09 87 76 68 79 90 86",
+        "66 77 88 99 00 678 90",
+        "69 78 90 87 60 79 80"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 62,
+      "unitId": 8,
+      "unitTitle": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "unitSubtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "title": "Bài 62: Luyện ngón giữa, áp út và út lên hàng số",
+      "type": "lesson",
+      "description": "8. Hàng phím số (Numbers 0 - 9) · Luyện ngón giữa, áp út và út lên hàng số",
+      "targetKeys": [
+        "3",
+        "8",
+        "2",
+        "9",
+        "1",
+        "0"
+      ],
+      "content": [
+        "123 456 789 012 345",
+        "987 654 321 098 765",
+        "1020 3040 5060 7080 90",
+        "2024 2025 2026 2030 2050"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 63,
+      "unitId": 8,
+      "unitTitle": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "unitSubtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "title": "Bài 63: Gõ các mốc năm 4 chữ số thường gặp",
+      "type": "lesson",
+      "description": "8. Hàng phím số (Numbers 0 - 9) · Gõ các mốc năm 4 chữ số thường gặp",
+      "targetKeys": [
+        "1",
+        "9",
+        "4",
+        "5",
+        "7",
+        "2",
+        "0",
+        "6"
+      ],
+      "content": [
+        "0912 345 678, 0988 765 432",
+        "0903 123 999, 0977 888 666",
+        "1900 1560, 1800 6600, 115 113",
+        "Số điện thoại liên hệ: 0988 123 456"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 64,
+      "unitId": 8,
+      "unitTitle": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "unitSubtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "title": "Bài 64: Luyện định dạng số điện thoại",
+      "type": "lesson",
+      "description": "8. Hàng phím số (Numbers 0 - 9) · Luyện định dạng số điện thoại",
+      "targetKeys": [
+        "0",
+        "9",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "content": [
+        "Hà Nội ngày 10 tháng 10 năm 1954.",
+        "Ngày Quốc khánh Việt Nam: 02/09/1945.",
+        "Diện tích: 331.212 km2, dân số hơn 100 triệu người.",
+        "Năm 2026 đánh dấu bước chuyển mình mạnh mẽ của công nghệ số."
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 65,
+      "unitId": 8,
+      "unitTitle": "Unit 8: 8. Hàng phím số (Numbers 0 - 9)",
+      "unitSubtitle": "Hàng phím số 0 - 9, năm, số điện thoại",
+      "title": "Bài 65: Kết hợp văn bản chữ tiếng Việt và chữ số",
+      "type": "test",
+      "description": "8. Hàng phím số (Numbers 0 - 9) · Kết hợp văn bản chữ tiếng Việt và chữ số",
+      "targetKeys": [
+        "N",
+        "g",
+        "à",
+        "y",
+        "0",
+        "2",
+        "t",
+        "h"
+      ],
+      "content": [
+        "Tốc độ mục tiêu: 45 WPM, độ chính xác đạt 98%.",
+        "Tổng cộng có 94 bài học trong lộ trình 13 Unit chuẩn.",
+        "Doanh thu tăng trưởng 25% trong Quý 3 năm 2025.",
+        "Hãy gõ chính xác cả chữ và số với sự tập trung tối đa!"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 66,
+      "unitId": 9,
+      "unitTitle": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "unitSubtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "title": "Bài 66: Các dấu câu cơ bản trong văn bản tiếng Việt",
+      "type": "lesson",
+      "description": "9. Ký hiệu cơ bản & Dấu câu · Các dấu câu cơ bản trong văn bản tiếng Việt",
+      "targetKeys": [
+        ",",
+        ".",
+        ";",
+        ":",
+        "'",
+        "\"",
+        "-",
+        "?"
+      ],
+      "content": [
+        "! @ # $ % ^ & * ( )",
+        "!@ #$ %^ &* () !# $%",
+        "100%, $500, #1, 24/7, @home",
+        "Giảm giá 50%, mã ưu đãi: #SALE2026!"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 67,
+      "unitId": 9,
+      "unitTitle": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "unitSubtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "title": "Bài 67: Luyện dấu cảm thán (!) và dấu chấm hỏi (?)",
+      "type": "lesson",
+      "description": "9. Ký hiệu cơ bản & Dấu câu · Luyện dấu cảm thán (!) và dấu chấm hỏi (?)",
+      "targetKeys": [
+        "C",
+        "h",
+        "à",
+        "o",
+        "b",
+        "ạ",
+        "n",
+        "!"
+      ],
+      "content": [
+        "- _ = + [ ] { } \\ |",
+        "user_name = admin, count += 1",
+        "total = price * quantity - discount",
+        "{ status: 'success', code: 200 }"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 68,
+      "unitId": 9,
+      "unitTitle": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "unitSubtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "title": "Bài 68: Luyện dấu phẩy (,) và dấu chấm phẩy (;)",
+      "type": "lesson",
+      "description": "9. Ký hiệu cơ bản & Dấu câu · Luyện dấu phẩy (,) và dấu chấm phẩy (;)",
+      "targetKeys": [
+        "H",
+        "ọ",
+        "c",
+        ",",
+        "h",
+        "n",
+        "ữ",
+        "a"
+      ],
+      "content": [
+        "; : ' \" < > ? /",
+        "\"Hi Space\" - Nền tảng học kỹ năng số.",
+        "Email: support@hispace.edu.vn, Website: hispace.vn",
+        "Hỏi: Bạn đã sẵn sàng chưa? Đáp: Tôi đã sẵn sàng!"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 69,
+      "unitId": 9,
+      "unitTitle": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "unitSubtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "title": "Bài 69: Luyện dấu hai chấm (:) và dấu ngoặc kép (\"\")",
+      "type": "lesson",
+      "description": "9. Ký hiệu cơ bản & Dấu câu · Luyện dấu hai chấm (:) và dấu ngoặc kép (\"\")",
+      "targetKeys": [
+        "B",
+        "á",
+        "c",
+        "H",
+        "ồ",
+        "n",
+        "ó",
+        "i"
+      ],
+      "content": [
+        "Báo cáo: Doanh thu tháng 08/2026 đạt $150,000 (tăng 18.5%).",
+        "Khách hàng: Nguyen Van An (ID: #US-8899).",
+        "Tỷ lệ hoàn thành: 99.5% | Điểm đánh giá: 5/5 sao.",
+        "Vui lòng gửi tài liệu về địa chỉ: info@hispace.vn trước 17:00."
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 70,
+      "unitId": 9,
+      "unitTitle": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "unitSubtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "title": "Bài 70: Luyện dấu ngoặc đơn ( )",
+      "type": "lesson",
+      "description": "9. Ký hiệu cơ bản & Dấu câu · Luyện dấu ngoặc đơn ( )",
+      "targetKeys": [
+        "T",
+        "o",
+        "á",
+        "n",
+        "h",
+        "ọ",
+        "c",
+        "("
+      ],
+      "content": [
+        "Công thức Excel: =SUM(A1:A20), =AVERAGE(B2:B50)",
+        "Hàm điều kiện: =IF(C2>=85, \"Đạt\", \"Cần cố gắng\")",
+        "Hàm dò tìm: =VLOOKUP(D2, Data!A:F, 3, FALSE)",
+        "Hàm đếm: =COUNTIF(E2:E100, \">100\"), =XLOOKUP(A2, B:B, C:C)"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 71,
+      "unitId": 9,
+      "unitTitle": "Unit 9: 9. Ký hiệu cơ bản & Dấu câu",
+      "unitSubtitle": "Dấu câu, ngoặc kép, ngoặc đơn, gạch ngang",
+      "title": "Bài 71: Luyện dấu gạch ngang (-) và dấu chấm phân cách số",
+      "type": "test",
+      "description": "9. Ký hiệu cơ bản & Dấu câu · Luyện dấu gạch ngang (-) và dấu chấm phân cách số",
+      "targetKeys": [
+        "C",
+        "ô",
+        "n",
+        "g",
+        "h",
+        "ệ",
+        "4",
+        "."
+      ],
+      "content": [
+        "Ctrl + C (Sao chép), Ctrl + V (Dán), Ctrl + Z (Hoàn tác)",
+        "Ctrl + S (Lưu tài liệu), Ctrl + F (Tìm kiếm), Ctrl + P (In)",
+        "Alt + Tab (Chuyển cửa sổ), Win + D (Hiển thị Desktop)",
+        "F2 (Sửa ô Excel), F4 (Cố định tham chiếu $A$1), Esc (Hủy lệnh)"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 72,
+      "unitId": 10,
+      "unitTitle": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "unitSubtitle": "Shift số, email, URL, mã nguồn code",
+      "title": "Bài 72: Dãy ký hiệu Shift hàng số",
+      "type": "lesson",
+      "description": "10. Ký hiệu nâng cao & Lập trình · Dãy ký hiệu Shift hàng số",
+      "targetKeys": [
+        "!",
+        "@",
+        "#",
+        "$",
+        "%",
+        "^",
+        "&",
+        "*"
+      ],
+      "content": [
+        "const result = calculateTotal(price, tax);",
+        "let count = 0; while (count < 10) { count++; }",
+        "function greet(name: string): string { return `Xin chào ${name}!`; }",
+        "export const config = { port: 3000, host: '0.0.0.0' };"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 73,
+      "unitId": 10,
+      "unitTitle": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "unitSubtitle": "Shift số, email, URL, mã nguồn code",
+      "title": "Bài 73: Ký hiệu lập trình và khối lệnh",
+      "type": "lesson",
+      "description": "10. Ký hiệu nâng cao & Lập trình · Ký hiệu lập trình và khối lệnh",
+      "targetKeys": [
+        "[",
+        "]",
+        "{",
+        "}",
+        "<",
+        ">",
+        "/",
+        "\\"
+      ],
+      "content": [
+        "<div className=\"container mx-auto p-4\">",
+        "<button onClick={handleClick} className=\"btn-primary\">",
+        "<input type=\"text\" placeholder=\"Nhập tên của bạn...\" />",
+        "<p className=\"text-sm text-slate-600\">Bản quyền thuộc về Hi Space</p>"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 74,
+      "unitId": 10,
+      "unitTitle": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "unitSubtitle": "Shift số, email, URL, mã nguồn code",
+      "title": "Bài 74: Ký hiệu email, URL (@, :, //, .)",
+      "type": "lesson",
+      "description": "10. Ký hiệu nâng cao & Lập trình · Ký hiệu email, URL (@, :, //, .)",
+      "targetKeys": [
+        "e",
+        "m",
+        "a",
+        "i",
+        "l",
+        ":",
+        "s",
+        "u"
+      ],
+      "content": [
+        "SELECT id, name, email, score FROM users WHERE active = true;",
+        "UPDATE products SET price = price * 1.1 WHERE category = 'book';",
+        "INSERT INTO lessons (title, wpm) VALUES ('Bài 74', 40);",
+        "CREATE TABLE students (id SERIAL PRIMARY KEY, name VARCHAR(100));"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 75,
+      "unitId": 10,
+      "unitTitle": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "unitSubtitle": "Shift số, email, URL, mã nguồn code",
+      "title": "Bài 75: Ký hiệu toán học và tiền tệ (%, $, +, =)",
+      "type": "lesson",
+      "description": "10. Ký hiệu nâng cao & Lập trình · Ký hiệu toán học và tiền tệ (%, $, +, =)",
+      "targetKeys": [
+        "1",
+        "0",
+        "%",
+        "+",
+        "5",
+        "$",
+        "=",
+        ","
+      ],
+      "content": [
+        "git status, git add ., git commit -m 'feat: update curriculum'",
+        "git checkout -b feature/typing-engine, git push origin main",
+        "npm install, npm run dev, npm run build, npm run lint",
+        "docker build -t hispace-app . && docker run -p 3000:3000 hispace-app"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 76,
+      "unitId": 10,
+      "unitTitle": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "unitSubtitle": "Shift số, email, URL, mã nguồn code",
+      "title": "Bài 76: Luyện gõ cú pháp code cơ bản (camelCase, ngoặc nhọn, chấm phẩy)",
+      "type": "lesson",
+      "description": "10. Ký hiệu nâng cao & Lập trình · Luyện gõ cú pháp code cơ bản (camelCase, ngoặc nhọn, chấm phẩy)",
+      "targetKeys": [
+        "c",
+        "o",
+        "n",
+        "s",
+        "t",
+        "a",
+        "l",
+        "="
+      ],
+      "content": [
+        "// Đây là ghi chú mã nguồn: Kiểm tra điều kiện biên",
+        "if (!user || user.age < 18) { throw new Error('Không hợp lệ'); }",
+        "const items = [1, 2, 3].map((x) => x * 2).filter((x) => x > 2);",
+        "return { success: true, timestamp: Date.now(), data: items };"
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 77,
+      "unitId": 10,
+      "unitTitle": "Unit 10: 10. Ký hiệu nâng cao & Lập trình",
+      "unitSubtitle": "Shift số, email, URL, mã nguồn code",
+      "title": "Bài 77: Luyện tổ hợp dấu so sánh, logic và khối mã nguồn",
+      "type": "test",
+      "description": "10. Ký hiệu nâng cao & Lập trình · Luyện tổ hợp dấu so sánh, logic và khối mã nguồn",
+      "targetKeys": [
+        "i",
+        "f",
+        "(",
+        "s",
+        "c",
+        "o",
+        "r",
+        "e"
+      ],
+      "content": [
+        "Lập trình viên thành thạo bàn phím có thể code nhanh hơn gấp đôi.",
+        "Việc gõ phím chuẩn giúp bạn tập trung 100% vào tư duy thuật toán.",
+        "Hãy làm quen với tất cả dấu ngoặc, chấm phẩy và ký tự đặc biệt.",
+        "Thực hành đều đặn sẽ biến các tổ hợp phím phức tạp thành phản xạ tự nhiên."
+      ],
+      "minAccuracy": 90,
+      "targetWpm": 28
+    },
+    {
+      "id": 78,
+      "unitId": 11,
+      "unitTitle": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "unitSubtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "title": "Bài 78: Phân biệt phụ âm đầu L và N",
+      "type": "lesson",
+      "description": "11. Luyện phân biệt từ dễ nhầm lẫn · Phân biệt phụ âm đầu L và N",
+      "targetKeys": [
+        "l",
+        "ú",
+        "a",
+        "n",
+        "ế",
+        "p",
+        ",",
+        "à"
+      ],
+      "content": [
+        "trung thực, chân thành, tre trúc, chong chóng, trao đổi, chở che",
+        "chăm chỉ, trang nghiêm, tròn trịa, trong sáng, chững chạc, trân trọng",
+        "chú chim nhỏ chuyền cành trên rặng tre xanh trước nhà",
+        "người trung thực luôn nhận được sự tôn trọng từ mọi người"
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 28
+    },
+    {
+      "id": 79,
+      "unitId": 11,
+      "unitTitle": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "unitSubtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "title": "Bài 79: Phân biệt phụ âm đầu S và X",
+      "type": "lesson",
+      "description": "11. Luyện phân biệt từ dễ nhầm lẫn · Phân biệt phụ âm đầu S và X",
+      "targetKeys": [
+        "s",
+        "ư",
+        "ơ",
+        "n",
+        "g",
+        "ớ",
+        "m",
+        ","
+      ],
+      "content": [
+        "san sẻ, xum xuê, sâu sắc, xuất sắc, sáng suốt, xao xuyến",
+        "xinh xắn, sum vầy, sương sớm, xóm làng, sừng sững, xao động",
+        "học sinh xuất sắc được khen thưởng trong buổi lễ tổng kết",
+        "ánh sao sáng soi rọi con đường về xóm nhỏ thân yêu"
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 28
+    },
+    {
+      "id": 80,
+      "unitId": 11,
+      "unitTitle": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "unitSubtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "title": "Bài 80: Phân biệt phụ âm đầu TR và CH",
+      "type": "lesson",
+      "description": "11. Luyện phân biệt từ dễ nhầm lẫn · Phân biệt phụ âm đầu TR và CH",
+      "targetKeys": [
+        "t",
+        "r",
+        "u",
+        "n",
+        "g",
+        "h",
+        "ự",
+        "c"
+      ],
+      "content": [
+        "nỗ lực, lặng lẽ, lo lắng, nô nức, long lanh, non nước",
+        "lạc quan, năng động, nền nếp, lưu luyến, kiên nghị, linh hoạt",
+        "nỗ lực không ngừng nghỉ mang lại thành quả xứng đáng",
+        "non sông nước biếc ngàn năm gấm vóc rạng rỡ anh hào"
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 28
+    },
+    {
+      "id": 81,
+      "unitId": 11,
+      "unitTitle": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "unitSubtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "title": "Bài 81: Phân biệt phụ âm R, D và GI",
+      "type": "lesson",
+      "description": "11. Luyện phân biệt từ dễ nhầm lẫn · Phân biệt phụ âm R, D và GI",
+      "targetKeys": [
+        "r",
+        "ộ",
+        "n",
+        "ã",
+        ",",
+        "d",
+        "ị",
+        "u"
+      ],
+      "content": [
+        "rộn rã, dịu dàng, giòn giã, dòng sông, rực rỡ, giúp đỡ",
+        "giữ gìn, rèn luyện, dũng cảm, rực sáng, dạt dào, giao lưu",
+        "tiếng cười rộn rã vang lên trong ngày hội ngộ gia đình",
+        "sự dịu dàng và chân thành luôn làm ấm lòng người đối diện"
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 28
+    },
+    {
+      "id": 82,
+      "unitId": 11,
+      "unitTitle": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "unitSubtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "title": "Bài 82: Phân biệt thanh Hỏi (?) và thanh Ngã (~)",
+      "type": "lesson",
+      "description": "11. Luyện phân biệt từ dễ nhầm lẫn · Phân biệt thanh Hỏi (?) và thanh Ngã (~)",
+      "targetKeys": [
+        "b",
+        "ã",
+        "o",
+        "ù",
+        "n",
+        "g",
+        ",",
+        "ả"
+      ],
+      "content": [
+        "bão bùng, bảo ban, suy nghĩ, nghỉ ngơi, vội vã, vất vả",
+        "mẫu mực, mở cửa, dũng cảm, dẻo dai, lộng lẫy, lung linh",
+        "hãy suy nghĩ thật thấu đáo trước khi đưa ra quyết định",
+        "sau những ngày làm việc vất vả, hãy dành thời gian nghỉ ngơi"
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 28
+    },
+    {
+      "id": 83,
+      "unitId": 11,
+      "unitTitle": "Unit 11: 11. Luyện phân biệt từ dễ nhầm lẫn",
+      "unitSubtitle": "L/N, S/X, TR/CH, R/D/GI, Hỏi/Ngã",
+      "title": "Bài 83: Câu tổng hợp kiểm tra lỗi chính tả",
+      "type": "test",
+      "description": "11. Luyện phân biệt từ dễ nhầm lẫn · Câu tổng hợp kiểm tra lỗi chính tả",
+      "targetKeys": [
+        "L",
+        "u",
+        "y",
+        "ệ",
+        "n",
+        "g",
+        "õ",
+        "đ"
+      ],
+      "content": [
+        "Luyện gõ đúng phụ âm đầu và dấu thanh là nền tảng của văn bản chuẩn.",
+        "Chính tả chính xác thể hiện sự chỉn chu và tôn trọng người đọc.",
+        "Hãy đọc kỹ văn bản trước khi gửi để tránh những sai sót không đáng có.",
+        "Viết đúng, gõ nhanh là bộ đôi kỹ năng vàng của thời đại số."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 28
+    },
+    {
+      "id": 84,
+      "unitId": 12,
+      "unitTitle": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "unitSubtitle": "Ca dao, tục ngữ & danh ngôn",
+      "title": "Bài 84: Luyện thành ngữ tiếng Việt 1",
+      "type": "lesson",
+      "description": "12. Cụm từ & Thành ngữ phổ biến · Luyện thành ngữ tiếng Việt 1",
+      "targetKeys": [
+        "Ă",
+        "n",
+        "q",
+        "u",
+        "ả",
+        "h",
+        "ớ",
+        "k"
+      ],
+      "content": [
+        "Ăn quả nhớ kẻ trồng cây, uống nước nhớ nguồn.",
+        "Công cha như núi Thái Sơn, nghĩa mẹ như nước trong nguồn chảy ra.",
+        "Một con ngựa đau, cả tàu bỏ cỏ.",
+        "Lá lành đùm lá rách, thương người như thể thương thân."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 85,
+      "unitId": 12,
+      "unitTitle": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "unitSubtitle": "Ca dao, tục ngữ & danh ngôn",
+      "title": "Bài 85: Luyện thành ngữ tiếng Việt 2",
+      "type": "lesson",
+      "description": "12. Cụm từ & Thành ngữ phổ biến · Luyện thành ngữ tiếng Việt 2",
+      "targetKeys": [
+        "C",
+        "ó",
+        "c",
+        "ô",
+        "n",
+        "g",
+        "m",
+        "à"
+      ],
+      "content": [
+        "Có công mài sắt, có ngày nên kim.",
+        "Thất bại là mẹ thành công, kiên trì ắt gặt quả ngọt.",
+        "Muốn biết phải hỏi, muốn giỏi phải học.",
+        "Vạn sự khởi đầu nan, gian nan không lùi bước."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 86,
+      "unitId": 12,
+      "unitTitle": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "unitSubtitle": "Ca dao, tục ngữ & danh ngôn",
+      "title": "Bài 86: Luyện thành ngữ tiếng Việt 3",
+      "type": "lesson",
+      "description": "12. Cụm từ & Thành ngữ phổ biến · Luyện thành ngữ tiếng Việt 3",
+      "targetKeys": [
+        "G",
+        "ầ",
+        "n",
+        "m",
+        "ự",
+        "c",
+        "t",
+        "h"
+      ],
+      "content": [
+        "Gần mực thì đen, gần đèn thì rạng.",
+        "Học ăn, học nói, học gói, học mở.",
+        "Tấc đất tấc vàng, chăm làm thì có.",
+        "Chim khôn kêu tiếng rảnh rang, người khôn nói tiếng dịu dàng dễ nghe."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 87,
+      "unitId": 12,
+      "unitTitle": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "unitSubtitle": "Ca dao, tục ngữ & danh ngôn",
+      "title": "Bài 87: Luyện thành ngữ tiếng Việt 4",
+      "type": "lesson",
+      "description": "12. Cụm từ & Thành ngữ phổ biến · Luyện thành ngữ tiếng Việt 4",
+      "targetKeys": [
+        "H",
+        "ọ",
+        "c",
+        "t",
+        "h",
+        "ầ",
+        "y",
+        "k"
+      ],
+      "content": [
+        "Học thầy không tày học bạn, đi một ngày đàng học một sàng khôn.",
+        "Học đi đôi với hành, lý thuyết gắn liền với thực tiễn.",
+        "Sách là ngọn đèn soi sáng tri thức nhân loại.",
+        "Biển học vô bờ, chuyên cần là bến đỗ."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 88,
+      "unitId": 12,
+      "unitTitle": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "unitSubtitle": "Ca dao, tục ngữ & danh ngôn",
+      "title": "Bài 88: Luyện thành ngữ tiếng Việt 5",
+      "type": "lesson",
+      "description": "12. Cụm từ & Thành ngữ phổ biến · Luyện thành ngữ tiếng Việt 5",
+      "targetKeys": [
+        "Đ",
+        "o",
+        "à",
+        "n",
+        "k",
+        "ế",
+        "t",
+        "l"
+      ],
+      "content": [
+        "Đoàn kết là sức mạnh, tương thân tương ái, đồng lòng vượt khó.",
+        "Một cây làm chẳng nên non, ba cây chụm lại nên hòn núi cao.",
+        "Bầu ơi thương lấy bí cùng, tuy rằng khác giống nhưng chung một giàn.",
+        "Nhiễu điều phủ lấy giá gương, người trong một nước phải thương nhau cùng."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 89,
+      "unitId": 12,
+      "unitTitle": "Unit 12: 12. Cụm từ & Thành ngữ phổ biến",
+      "unitSubtitle": "Ca dao, tục ngữ & danh ngôn",
+      "title": "Bài 89: Luyện thành ngữ tiếng Việt 6",
+      "type": "test",
+      "description": "12. Cụm từ & Thành ngữ phổ biến · Luyện thành ngữ tiếng Việt 6",
+      "targetKeys": [
+        "L",
+        "ờ",
+        "i",
+        "n",
+        "ó",
+        "c",
+        "h",
+        "ẳ"
+      ],
+      "content": [
+        "Lời nói chẳng mất tiền mua, lựa lời mà nói cho vừa lòng nhau.",
+        "Kim vàng ai nỡ uốn câu, người khôn ai nỡ nói nhau nặng lời.",
+        "Uốn lưỡi bảy lần trước khi nói, suy nghĩ cẩn trọng trước khi làm.",
+        "Một lời bất cẩn có thể gây tổn thương, lời hay ý đẹp mang lại niềm vui."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 90,
+      "unitId": 13,
+      "unitTitle": "Unit 13: 13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế",
+      "unitSubtitle": "Đoạn văn hoàn chỉnh, bứt phá tốc độ",
+      "title": "Bài 90: Ứng dụng 1: Lợi ích của gõ 10 ngón",
+      "type": "story",
+      "description": "13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế · Ứng dụng 1: Lợi ích của gõ 10 ngón",
+      "targetKeys": [
+        "K",
+        "ỹ",
+        "n",
+        "ă",
+        "g",
+        "õ",
+        "1",
+        "0"
+      ],
+      "content": [
+        "Kỹ năng gõ 10 ngón giúp bạn gia tăng tốc độ làm việc vượt bậc.",
+        "Việc không cần nhìn bàn phím giúp giảm thiểu căng thẳng cho cổ tay và mắt.",
+        "Khi đôi tay gõ phím theo phản xạ, tâm trí bạn hoàn toàn tập trung vào ý tưởng sáng tạo.",
+        "Hãy duy trì thói quen luyện tập hàng ngày để đôi tay luôn linh hoạt và chính xác."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 91,
+      "unitId": 13,
+      "unitTitle": "Unit 13: 13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế",
+      "unitSubtitle": "Đoạn văn hoàn chỉnh, bứt phá tốc độ",
+      "title": "Bài 91: Ứng dụng 2: Công nghệ & Thời đại số",
+      "type": "story",
+      "description": "13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế · Ứng dụng 2: Công nghệ & Thời đại số",
+      "targetKeys": [
+        "T",
+        "r",
+        "í",
+        "t",
+        "u",
+        "ệ",
+        "n",
+        "h"
+      ],
+      "content": [
+        "Trí tuệ nhân tạo và công nghệ đám mây đang định hình lại phương thức làm việc hiện đại.",
+        "Khả năng nhập liệu nhanh và chính xác là lợi thế cạnh tranh lớn trong môi trường số.",
+        "Mỗi văn bản soạn thảo chỉn chu phản ánh tác phong chuyên nghiệp của người thực hiện.",
+        "Không ngừng học hỏi và nâng cấp bản thân để bắt kịp nhịp độ phát triển của thời đại."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 92,
+      "unitId": 13,
+      "unitTitle": "Unit 13: 13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế",
+      "unitSubtitle": "Đoạn văn hoàn chỉnh, bứt phá tốc độ",
+      "title": "Bài 92: Ứng dụng 3: Văn hóa & Đất nước",
+      "type": "story",
+      "description": "13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế · Ứng dụng 3: Văn hóa & Đất nước",
+      "targetKeys": [
+        "V",
+        "i",
+        "ệ",
+        "t",
+        "N",
+        "a",
+        "m",
+        "l"
+      ],
+      "content": [
+        "Việt Nam là một đất nước có bề dày lịch sử và truyền thống văn hóa ngàn năm.",
+        "Từ vùng núi cao hùng vĩ đến đồng bằng phì nhiêu, non sông gấm vóc ngập tràn sắc xuân.",
+        "Tình yêu quê hương đất nước luôn là nguồn động lực mạnh mẽ cho mỗi thế hệ vươn lên.",
+        "Chúng ta tự hào gìn giữ và phát huy những giá trị văn hóa tốt đẹp của dân tộc."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 93,
+      "unitId": 13,
+      "unitTitle": "Unit 13: 13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế",
+      "unitSubtitle": "Đoạn văn hoàn chỉnh, bứt phá tốc độ",
+      "title": "Bài 93: Ứng dụng 4: Phương pháp rèn luyện hiệu quả",
+      "type": "story",
+      "description": "13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế · Ứng dụng 4: Phương pháp rèn luyện hiệu quả",
+      "targetKeys": [
+        "M",
+        "ỗ",
+        "i",
+        "n",
+        "g",
+        "à",
+        "y",
+        "d"
+      ],
+      "content": [
+        "Mỗi ngày dành ra 15 đến 20 phút luyện tập với độ chính xác cao sẽ mang lại kết quả bất ngờ.",
+        "Đừng quá nôn nóng về tốc độ, hãy ưu tiên gõ đúng từng ký tự ngay từ đầu.",
+        "Khi độ chính xác đạt trên 95%, tốc độ WPM tự nhiên sẽ tăng trưởng vượt bậc.",
+        "Sự kiên trì và kỷ luật bản thân là chìa khóa mở ra cánh cửa của mọi thành công."
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32
+    },
+    {
+      "id": 94,
+      "unitId": 13,
+      "unitTitle": "Unit 13: 13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế",
+      "unitSubtitle": "Đoạn văn hoàn chỉnh, bứt phá tốc độ",
+      "title": "Bài 94: Ứng dụng 5: Tinh thần bền bỉ và bứt phá",
+      "type": "game",
+      "description": "13. Đoạn văn thực hành nâng cao & Ứng dụng thực tế · Ứng dụng 5: Tinh thần bền bỉ và bứt phá",
+      "targetKeys": [
+        "H",
+        "à",
+        "n",
+        "h",
+        "t",
+        "r",
+        "ì",
+        "v"
+      ],
+      "content": [
+        "Hành trình vạn dặm bắt đầu từ một bước chân, đỉnh cao thành công bắt đầu từ sự bền bỉ.",
+        "Chúc mừng bạn đã hoàn thành xuất sắc toàn bộ lộ trình luyện gõ 10 ngón tiếng Việt chuẩn!",
+        "Bây giờ bạn đã sở hữu đôi bàn tay vàng, sẵn sàng chinh phục mọi đỉnh cao học tập và sự nghiệp.",
+        "Không Gian Học Tập Hi Space tự hào đồng hành cùng sự trưởng thành và bứt phá của bạn!"
+      ],
+      "minAccuracy": 94,
+      "targetWpm": 32,
+      "gameType": "monster_battle"
+    }
+  ]
+}
