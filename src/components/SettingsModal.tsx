@@ -52,8 +52,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xl p-5 sm:p-7 max-w-lg w-full text-slate-800 flex flex-col relative animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/50 backdrop-blur-sm animate-in fade-in font-sans antialiased">
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xl p-5 sm:p-7 max-w-2xl w-full text-slate-800 flex flex-col relative animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer border border-slate-200/60"
@@ -213,38 +213,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <span className="flex items-center gap-1.5">
                   <Swords className="w-4 h-4 text-rose-600" /> {t.settings.heroAvatar}
                 </span>
-                <span className="text-[11px] text-sky-600 font-semibold lowercase">
-                  {activeHero.name} ({activeHero.vietnameseTitle})
+                <span className="text-[11px] text-sky-600 font-bold">
+                  {activeHero.name} ({activeHero.role})
                 </span>
               </label>
 
-              {/* Character Avatars Selection Grid */}
-              <div className="grid grid-cols-3 gap-2">
+              {/* Character Avatars Selection Grid (Clean 6 Columns & Bounded Sprites) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                 {HERO_CHARACTERS.map((hero) => {
                   const isSelected = settings.characterId === hero.id || (!settings.characterId && hero.id === 'warrior');
                   return (
                     <button
                       key={hero.id}
                       onClick={() => onUpdateSettings({ characterId: hero.id })}
-                      className={`p-2 rounded-xl border text-center transition-all cursor-pointer relative flex flex-col items-center group ${
+                      className={`p-2 rounded-2xl border text-center transition-all cursor-pointer relative flex flex-col items-center group overflow-hidden ${
                         isSelected
-                          ? 'bg-sky-50/80 border-sky-400 ring-2 ring-sky-200/50'
-                          : 'bg-white border-slate-200/80 hover:bg-slate-50'
+                          ? 'bg-sky-50/90 border-sky-500 ring-2 ring-sky-300/50 shadow-sm'
+                          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100 hover:border-slate-300'
                       }`}
                     >
                       {isSelected && (
-                        <span className="absolute top-1.5 right-1.5 p-0.5 bg-sky-600 text-white rounded-full">
+                        <span className="absolute top-1.5 right-1.5 p-0.5 bg-sky-600 text-white rounded-full z-10">
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </span>
                       )}
-                      <div className="w-12 h-14 flex items-center justify-center scale-85 group-hover:scale-90 transition-transform">
-                        <CombatSpriteHero hero={hero} action="idle" className="scale-55" />
+
+                      {/* Bounded Mini Sprite */}
+                      <div className="w-full h-20 flex items-center justify-center overflow-hidden relative pointer-events-none my-0.5">
+                        <div className="transform scale-55 transition-transform group-hover:scale-65">
+                          <CombatSpriteHero hero={hero} action="idle" />
+                        </div>
                       </div>
-                      <div className="text-[11px] font-bold text-slate-800 truncate w-full mt-1">
-                        {hero.name}
+
+                      <div className="text-[11px] font-extrabold text-slate-900 truncate w-full mt-1 pt-1 border-t border-slate-200/60">
+                        {hero.name.split(' ')[0]}
                       </div>
-                      <div className="text-[9px] text-sky-700 font-medium truncate w-full">
-                        {hero.vietnameseTitle}
+                      <div className="text-[9px] text-sky-600 font-semibold truncate w-full">
+                        {hero.role}
                       </div>
                     </button>
                   );

@@ -70,8 +70,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in overflow-y-auto">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full text-slate-800 p-6 sm:p-8 my-8 relative overflow-hidden animate-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in overflow-y-auto font-sans antialiased">
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-4xl w-full text-slate-800 p-5 sm:p-8 my-4 relative overflow-hidden animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
         
         {/* Top Header with Language selector */}
         <div className="flex items-start justify-between gap-3 mb-6 border-b border-slate-100 pb-4">
@@ -88,7 +88,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                   {t.onboarding.beginnerBadge}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                 {t.onboarding.subtitle}
               </p>
             </div>
@@ -166,7 +166,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             ))}
           </div>
 
-          {/* 2. HERO AVATAR SELECTOR */}
+          {/* 2. HERO AVATAR SELECTOR (Wider 6-Column Layout & Bounded Sprites) */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
@@ -178,8 +178,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
               </span>
             </div>
 
-            {/* Hero Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto p-1">
+            {/* Hero Cards Grid (Bounded sprite containers with no text overlap) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 p-1">
               {HEROES.map((h) => {
                 const isSelected = h.id === selectedHeroId;
                 return (
@@ -189,32 +189,48 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       setSelectedHeroId(h.id);
                       soundEngine.playKeyClick();
                     }}
-                    className={`relative p-2.5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center text-center ${
+                    className={`relative p-3 rounded-2xl border-2 transition-all cursor-pointer flex flex-col items-center text-center select-none overflow-hidden group ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-50/70 shadow-md shadow-blue-500/20 scale-[1.02]'
-                        : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-50'
+                        ? 'border-blue-600 bg-blue-50/80 shadow-md shadow-blue-500/20 ring-2 ring-blue-400/30'
+                        : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-slate-100/80'
                     }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-xs">
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-xs z-10">
                         <Check className="w-3 h-3 stroke-[3]" />
                       </div>
                     )}
 
-                    {/* Animated Sprite Thumbnail */}
-                    <div className="w-14 h-16 flex items-center justify-center my-1">
-                      <CombatSpriteHero hero={h} action={isSelected ? 'attack' : 'idle'} />
-                    </div>
-
-                    <span className="font-extrabold text-xs text-slate-900 truncate w-full">
-                      {h.name}
-                    </span>
-                    <span className="text-[10px] uppercase font-bold text-slate-500">
+                    {/* Role Tag */}
+                    <span
+                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1 border ${
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-slate-200/70 text-slate-600 border-slate-300'
+                      }`}
+                    >
                       {h.role}
                     </span>
-                    <span className="text-[9px] text-amber-600 font-semibold mt-0.5 truncate w-full">
-                      🗡️ {h.weaponName}
-                    </span>
+
+                    {/* Bounded Animated Sprite Box */}
+                    <div className="w-full h-24 flex items-center justify-center overflow-hidden relative my-0.5 pointer-events-none">
+                      <div className="transform scale-65 transition-transform group-hover:scale-75">
+                        <CombatSpriteHero hero={h} action="idle" />
+                      </div>
+                    </div>
+
+                    {/* Hero Text Details (Separated cleanly below sprite) */}
+                    <div className="w-full mt-1 pt-1.5 border-t border-slate-200/60">
+                      <span className="font-extrabold text-xs text-slate-900 truncate block">
+                        {h.name.split(' ')[0]}
+                      </span>
+                      <span className="text-[10px] text-blue-600 font-semibold truncate block mt-0.5">
+                        {language === 'vi' ? h.vietnameseTitle : h.role}
+                      </span>
+                      <span className="text-[9px] text-amber-600 font-semibold mt-0.5 truncate block">
+                        🗡️ {h.weaponName}
+                      </span>
+                    </div>
                   </div>
                 );
               })}
@@ -282,4 +298,3 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     </div>
   );
 };
-
