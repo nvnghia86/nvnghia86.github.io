@@ -469,7 +469,7 @@ export const en: TranslationSchema = {
       fullNameLabel: 'Your Full Name',
       fullNamePlaceholder: 'E.g., Alex Johnson',
       phoneLabel: 'Phone / Zalo Number',
-      phonePlaceholder: 'E.g., +84 987 654 321',
+      phonePlaceholder: 'E.g., +84 384 241 913',
       emailLabel: 'Email Address (optional)',
       emailPlaceholder: 'E.g., alex.johnson@example.com',
       serviceLabel: 'Service / Course of Interest',

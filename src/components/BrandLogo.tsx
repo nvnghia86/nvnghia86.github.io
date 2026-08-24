@@ -31,7 +31,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {/* Visual Emblem */}
       <div className={`relative shrink-0 rounded-2xl overflow-hidden shadow-xs hover:scale-105 transition-transform ${iconSizes[size]}`}>
         <img
-          src="/logo-ico.svg"
+          src="./logo-ico.svg"
           alt="Hi Space Icon"
           className="w-full h-full object-contain"
           referrerPolicy="no-referrer"

@@ -469,7 +469,7 @@ export const vi: TranslationSchema = {
       fullNameLabel: 'Họ và tên của bạn',
       fullNamePlaceholder: 'Ví dụ: Nguyễn Văn An',
       phoneLabel: 'Số điện thoại / Zalo',
-      phonePlaceholder: 'Ví dụ: 0987 654 321',
+      phonePlaceholder: 'Ví dụ: 0384 241 913',
       emailLabel: 'Địa chỉ Email (tùy chọn)',
       emailPlaceholder: 'Ví dụ: an.nguyen@gmail.com',
       serviceLabel: 'Dịch vụ / Khóa học bạn quan tâm',

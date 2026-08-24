@@ -10,6 +10,17 @@ import {
   loadCustomLessons,
   saveCustomLesson,
 } from './utils/storage';
+import {
+  initGA,
+  trackPageView,
+  trackLessonStart,
+  trackLessonFinish,
+  trackBadgeUnlocked,
+  trackLanguageChange,
+  trackOfficeHubInteraction,
+  trackCustomPractice,
+  sendEngagementHeartbeat,
+} from './utils/analytics';
 import { CourseMap } from './components/CourseMap';
 import { HomeScreen } from './components/HomeScreen';
 import { TypingEngine } from './components/TypingEngine';
@@ -48,6 +59,28 @@ export default function App() {
   const [showServicesPromo, setShowServicesPromo] = useState(false);
   const [servicesPromoTab, setServicesPromoTab] = useState<string>('all');
 
+  // Initialize Google Analytics on mount & start engagement heartbeat timer
+  useEffect(() => {
+    initGA();
+
+    const heartbeatTimer = setInterval(() => {
+      sendEngagementHeartbeat();
+    }, 60000);
+
+    return () => clearInterval(heartbeatTimer);
+  }, []);
+
+  // Track SPA View & Page navigation changes
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      home: 'Hi Space - Trang Chủ & Lộ Trình Gõ 10 Ngón',
+      course_map: 'Hi Space - Bản Đồ Bài Học Luyện Gõ',
+      lesson: activeLesson ? `Hi Space - ${activeLesson.title}` : 'Hi Space - Luyện Gõ',
+      badges: 'Hi Space - Phòng Truyền Thống & Huy Hiệu',
+    };
+    trackPageView(view, titles[view] || `Hi Space - ${view}`);
+  }, [view, activeLesson]);
+
   const handleOpenServices = useCallback((tab: string = 'all') => {
     setServicesPromoTab(tab);
     setShowServicesPromo(true);
@@ -59,6 +92,9 @@ export default function App() {
   // Save settings when modified
   const handleUpdateSettings = useCallback((updated: Partial<UserSettings>) => {
     setSettings((prev) => {
+      if (updated.language && updated.language !== prev.language) {
+        trackLanguageChange(updated.language);
+      }
       const next = { ...prev, ...updated };
       saveSettings(next);
       return next;
@@ -70,6 +106,7 @@ export default function App() {
     setActiveLesson(lesson);
     setActiveResult(null);
     setView('lesson');
+    trackLessonStart(lesson);
   }, []);
 
   // Complete a lesson or game
@@ -79,7 +116,14 @@ export default function App() {
     setActiveResult(result);
     setNewBadges(earnedBadges);
     setIsNewBest(best);
-  }, []);
+
+    trackLessonFinish(result, activeLesson);
+    if (earnedBadges && earnedBadges.length > 0) {
+      earnedBadges.forEach((badgeId) => {
+        trackBadgeUnlocked(badgeId, updatedStats.unlockedBadges.length);
+      });
+    }
+  }, [activeLesson]);
 
   // Next lesson trigger
   const handleNextLesson = useCallback(() => {
@@ -90,6 +134,7 @@ export default function App() {
       const next = all[currentIndex + 1];
       setActiveLesson(next);
       setActiveResult(null);
+      trackLessonStart(next);
     } else {
       setView('course_map');
       setActiveLesson(null);
@@ -99,7 +144,10 @@ export default function App() {
 
   const handleRetryLesson = useCallback(() => {
     setActiveResult(null);
-  }, []);
+    if (activeLesson) {
+      trackLessonStart(activeLesson);
+    }
+  }, [activeLesson]);
 
   const handleBackToCourse = useCallback(() => {
     setView('course_map');
@@ -116,8 +164,14 @@ export default function App() {
     const updated = saveCustomLesson(lesson);
     setCustomLessons(updated);
     setShowCustomPractice(false);
+    trackCustomPractice('create_custom_lesson', {
+      charCount: lesson.content?.join(' ').length || 0,
+      title: lesson.title,
+    });
     handleSelectLesson(lesson);
   }, [handleSelectLesson]);
+
+
 
   // Determine if next lesson exists
   const allLessons = [...LESSONS, ...customLessons];

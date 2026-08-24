@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../i18n';
 import { SERVICES_DATA, PROMO_CONTACT_INFO, ServiceItem } from '../../data/servicesData';
 import { ConsultationInquiry } from '../../types';
 import { saveConsultationInquiry } from '../../utils/storage';
+import { trackContactClick, trackEvent } from '../../utils/analytics';
 import {
   Code2,
   FileSpreadsheet,
@@ -65,14 +66,22 @@ export const ServicesPromoModal: React.FC<ServicesPromoModalProps> = ({
   const [copiedHotline, setCopiedHotline] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
+  useEffect(() => {
+    trackEvent('services_modal_open', {
+      initial_tab: initialTab,
+    });
+  }, [initialTab]);
+
   const handleCopyHotline = () => {
     navigator.clipboard.writeText(PROMO_CONTACT_INFO.hotline);
+    trackContactClick('copy_phone', 'services_promo_modal');
     setCopiedHotline(true);
     setTimeout(() => setCopiedHotline(false), 2000);
   };
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(PROMO_CONTACT_INFO.email);
+    trackContactClick('email', 'services_promo_modal');
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2000);
   };
@@ -97,11 +106,18 @@ export const ServicesPromoModal: React.FC<ServicesPromoModalProps> = ({
     };
 
     saveConsultationInquiry(newInquiry);
+    trackContactClick('form_submit', 'services_promo_form');
+    trackEvent('lead_generation', {
+      service_category: selectedServiceForConsult,
+      has_email: Boolean(email.trim()),
+      has_organization: Boolean(organization.trim()),
+    });
     setFormSubmitted(true);
   };
 
   const handleSelectServiceTab = (serviceId: string) => {
     setActiveTab(serviceId);
+    trackEvent('service_tab_select', { service_id: serviceId });
     if (
       serviceId === 'coding' ||
       serviceId === 'office' ||
@@ -117,7 +133,9 @@ export const ServicesPromoModal: React.FC<ServicesPromoModalProps> = ({
   ) => {
     setSelectedServiceForConsult(serviceId);
     setActiveTab('consultation');
+    trackContactClick('form_open', `service_card_${serviceId}`);
   };
+
 
   const getServiceIcon = (iconName: string) => {
     switch (iconName) {

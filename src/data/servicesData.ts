@@ -374,8 +374,8 @@ export const SERVICES_DATA: ServiceItem[] = [
 ];
 
 export const PROMO_CONTACT_INFO = {
-  hotline: '0987.654.321',
-  zalo: '0987.654.321',
+  hotline: '0384.241.913',
+  zalo: '0384.241.913',
   email: 'hispace.education@gmail.com',
   addressVi: 'Hà Nội & TP. Hồ Chí Minh (Hỗ trợ Đào tạo & Triển khai Dự án Toàn Quốc)',
   addressEn: 'Hanoi & Ho Chi Minh City (Serving Clients & Students Nationwide / Remote)',

@@ -15,6 +15,7 @@ import {
 import { Lesson } from '../../types';
 import { useTranslation } from '../../i18n';
 import { LanguageSelector } from '../LanguageSelector';
+import { trackOfficeHubInteraction } from '../../utils/analytics';
 import {
   Search,
   BookOpen,
@@ -113,6 +114,7 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
   // Copy helper
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
+    trackOfficeHubInteraction('copy_shortcut', activeTab, text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
@@ -120,6 +122,8 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
   // Launch Typing Drill with topic practice drills
   const handleLaunchPracticeDrill = (topic: OfficeTopic) => {
     if (!onStartDrill) return;
+
+    trackOfficeHubInteraction('practice_formula', activeTab, topic.title);
 
     const drillLesson: Lesson = {
       id: Date.now(),
@@ -141,10 +145,12 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
 
   // Send topic formula to Sandbox
   const handleSendToSandbox = (formula: string) => {
+    trackOfficeHubInteraction('practice_formula', 'sandbox', formula);
     setSandboxFormula(formula);
     setActiveTab('sandbox');
     setSelectedTopic(null);
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md animate-fadeIn overflow-hidden">

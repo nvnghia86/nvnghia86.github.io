@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '../i18n';
 import { PROMO_CONTACT_INFO } from '../data/servicesData';
+import { trackContactClick } from '../utils/analytics';
 
 interface FloatingContactWidgetProps {
   onOpenServices?: (tab?: string) => void;
@@ -36,16 +37,19 @@ export const FloatingContactWidget: React.FC<FloatingContactWidgetProps> = ({
   const handleCopyPhone = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(PROMO_CONTACT_INFO.hotline);
+    trackContactClick('copy_phone', 'floating_widget');
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2200);
   }, []);
 
   const handleOpenConsultation = useCallback(() => {
     setIsOpen(false);
+    trackContactClick('form_open', 'floating_widget_consultation_button');
     if (onOpenServices) {
       onOpenServices('all');
     }
   }, [onOpenServices]);
+
 
   if (isMinimized) {
     return (
@@ -121,6 +125,7 @@ export const FloatingContactWidget: React.FC<FloatingContactWidgetProps> = ({
               href={zaloUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => trackContactClick('zalo', 'floating_widget_card')}
               className="group flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-sky-50 to-blue-50/80 hover:from-sky-100 hover:to-blue-100/90 border border-sky-200/80 hover:border-sky-300 text-slate-800 transition-all duration-200 shadow-sm hover:shadow"
             >
               <div className="flex items-center gap-3">
@@ -145,6 +150,7 @@ export const FloatingContactWidget: React.FC<FloatingContactWidgetProps> = ({
             {/* Primary Action 2: Call Hotline Button */}
             <a
               href={phoneUrl}
+              onClick={() => trackContactClick('hotline', 'floating_widget_card')}
               className="group flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50/80 hover:from-emerald-100 hover:to-teal-100/90 border border-emerald-200/80 hover:border-emerald-300 text-slate-800 transition-all duration-200 shadow-sm hover:shadow"
             >
               <div className="flex items-center gap-3">
@@ -230,8 +236,9 @@ export const FloatingContactWidget: React.FC<FloatingContactWidgetProps> = ({
           href={zaloUrl}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackContactClick('zalo', 'floating_circle_button')}
           className="group relative flex items-center justify-center w-12 h-12 rounded-full bg-[#0068FF] text-white shadow-lg hover:shadow-blue-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white"
-          title="Chat Zalo ngay (0987.654.321)"
+          title={`Chat Zalo ngay (${PROMO_CONTACT_INFO.zalo})`}
         >
           <span className="font-extrabold text-[13px] tracking-tighter">Zalo</span>
           {/* Ping animation indicator */}
@@ -248,8 +255,9 @@ export const FloatingContactWidget: React.FC<FloatingContactWidgetProps> = ({
         {/* Quick Hotline Call Floating Circle Button */}
         <a
           href={phoneUrl}
+          onClick={() => trackContactClick('hotline', 'floating_circle_button')}
           className="group relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-lg hover:shadow-emerald-500/40 hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-white"
-          title="Gọi Hotline ngay (0987.654.321)"
+          title={`Gọi Hotline ngay (${PROMO_CONTACT_INFO.hotline})`}
         >
           <Phone className="w-5 h-5 animate-pulse" />
           {/* Hover Tooltip */}
