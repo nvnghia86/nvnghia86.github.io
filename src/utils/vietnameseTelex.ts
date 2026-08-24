@@ -319,7 +319,45 @@ export function telexWordToVietnamese(keys: string[]): string {
       const prevIdx = chars.length - 1;
       const prevChar = chars[prevIdx];
 
-      // dd / DD -> đ / Đ
+      // 1. Reverse Telex Toggle/Undo rules when typing a modifier key on an already transformed character
+      // (e.g. đ + d -> dd, Â + a -> Aa, ê + e -> ee, ô + o -> oo, ă + w -> aw, ơ + w -> ow, ư + w -> uw)
+      if ((prevChar === 'đ' || prevChar === 'Đ') && kLower === 'd') {
+        chars[prevIdx] = prevChar === 'Đ' ? 'D' : 'd';
+        chars.push(prevChar === 'Đ' ? 'd' : 'd');
+        continue;
+      }
+      if ((prevChar === 'â' || prevChar === 'Â') && kLower === 'a') {
+        chars[prevIdx] = prevChar === 'Â' ? 'A' : 'a';
+        chars.push(k);
+        continue;
+      }
+      if ((prevChar === 'ê' || prevChar === 'Ê') && kLower === 'e') {
+        chars[prevIdx] = prevChar === 'Ê' ? 'E' : 'e';
+        chars.push(k);
+        continue;
+      }
+      if ((prevChar === 'ô' || prevChar === 'Ô') && kLower === 'o') {
+        chars[prevIdx] = prevChar === 'Ô' ? 'O' : 'o';
+        chars.push(k);
+        continue;
+      }
+      if ((prevChar === 'ă' || prevChar === 'Ă') && kLower === 'w') {
+        chars[prevIdx] = prevChar === 'Ă' ? 'A' : 'a';
+        chars.push(k);
+        continue;
+      }
+      if ((prevChar === 'ơ' || prevChar === 'Ơ') && kLower === 'w') {
+        chars[prevIdx] = prevChar === 'Ơ' ? 'O' : 'o';
+        chars.push(k);
+        continue;
+      }
+      if ((prevChar === 'ư' || prevChar === 'Ư') && kLower === 'w') {
+        chars[prevIdx] = prevChar === 'Ư' ? 'U' : 'u';
+        chars.push(k);
+        continue;
+      }
+
+      // 2. Transformation rule (dd / DD -> đ / Đ)
       if ((prevChar === 'd' || prevChar === 'D') && kLower === 'd') {
         chars[prevIdx] = prevChar === 'D' ? 'Đ' : 'đ';
         continue;
