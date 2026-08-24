@@ -272,6 +272,10 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       // Handle Backspace
       if (e.key === 'Backspace') {
         e.preventDefault();
+        // Ignore synthetic Backspace generated under-the-hood by OS IMEs (Unikey / EVKey) during composition
+        if (e.nativeEvent.isComposing || isComposingRef.current) {
+          return;
+        }
         if (typedPhysicalKeys.length > 0) {
           const newKeys = typedPhysicalKeys.slice(0, -1);
           const newErrors = new Set(physicalErrors);
@@ -286,11 +290,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       // Only accept single printable characters or composed Vietnamese characters
       if (e.key.length > 1 && !isVietnameseText(e.key) && e.key !== ' ') {
-        return;
-      }
-
-      // If IME composition is ongoing, let IME handler manage it
-      if (isComposingRef.current) {
         return;
       }
 
