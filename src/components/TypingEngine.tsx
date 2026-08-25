@@ -157,7 +157,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     soundEngine.setVolume(settings.volume);
   }, [settings.soundTheme, settings.volume]);
 
-  // Cleanly reset input state and refocus whenever currentLineIndex changes
+  // Cleanly reset input state and refocus hidden input whenever currentLineIndex changes
   useEffect(() => {
     setRawInputText('');
     setTypedPhysicalKeys([]);
@@ -166,7 +166,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = '';
     }
-    containerRef.current?.focus();
     hiddenInputRef.current?.focus();
   }, [lesson.id, currentLineIndex]);
 
@@ -379,18 +378,16 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
     }
 
-    // Auto advance when line is finished
+    // Auto advance when line is finished (deferred slightly so IME composition finishes cleanly)
     if (
       normVal === normTarget ||
       (typedChars.length >= targetChars.length &&
         typedChars.every((ch, i) => samePhysicalChar(ch, targetChars[i])))
     ) {
       soundEngine.playKeyClick(false);
-      advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
-      setRawInputText('');
-      if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = '';
-      }
+      setTimeout(() => {
+        advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
+      }, 50);
     }
   };
 
