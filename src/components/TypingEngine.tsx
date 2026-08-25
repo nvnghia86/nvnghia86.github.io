@@ -495,16 +495,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     isComposingRef.current = true;
   };
 
-  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+  const handleCompositionEnd = () => {
     isComposingRef.current = false;
-    const composedData = normalizeNFC(e.data);
-    if (!composedData) return;
-
-    setTimeout(() => {
-      if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = '';
-      }
-    }, 0);
   };
 
   const fontSizeClass = {
