@@ -229,9 +229,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Real-time console log after every keypress (Phím đã gõ, Từ mẫu/lỗi, Văn bản đã gõ)
   useEffect(() => {
-    if (!composedText && lineKeysLogRef.current.length === 0) return;
+    if (!typedText && lineKeysLogRef.current.length === 0) return;
 
-    const typedChars = [...normalizeNFC(composedText)];
+    const typedChars = [...normalizeNFC(typedText)];
     const errorWordsOrChars: string[] = [];
 
     targetChars.forEach((char, idx) => {
