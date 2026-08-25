@@ -630,21 +630,31 @@ export function evaluateLineProgress(
     // Check if any sequence of this token was fully and cleanly completed
     let completedSeq: string[] | null = null;
 
-    for (const seq of token.sequences) {
-      if (remainingTypedKeys.length >= seq.length) {
-        let isMatch = true;
-        for (let i = 0; i < seq.length; i++) {
-          if (
-            !samePhysicalChar(remainingTypedKeys[i], seq[i]) ||
-            physicalErrors.has(keyPtr + i)
-          ) {
-            isMatch = false;
+    if (token.type === 'space') {
+      const spaceKeyIdx = remainingTypedKeys.findIndex((k) => samePhysicalChar(k, ' '));
+      if (spaceKeyIdx !== -1) {
+        completedSeq = [' '];
+        keyPtr += spaceKeyIdx;
+      }
+    }
+
+    if (!completedSeq) {
+      for (const seq of token.sequences) {
+        if (remainingTypedKeys.length >= seq.length) {
+          let isMatch = true;
+          for (let i = 0; i < seq.length; i++) {
+            if (
+              !samePhysicalChar(remainingTypedKeys[i], seq[i]) ||
+              physicalErrors.has(keyPtr + i)
+            ) {
+              isMatch = false;
+              break;
+            }
+          }
+          if (isMatch) {
+            completedSeq = seq;
             break;
           }
-        }
-        if (isMatch) {
-          completedSeq = seq;
-          break;
         }
       }
     }
