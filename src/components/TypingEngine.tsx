@@ -142,8 +142,48 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     return words;
   }, [targetChars]);
 
-  // Real-time character status evaluated against native composed text from uncontrolled input
+  const expectedPhysicalKeys = useMemo(
+    () => targetChars.flatMap((char) => telexKeysForChar(char)),
+    [targetChars]
+  );
+
+  // Real-time character status. A Vietnamese glyph can require several Telex
+  // keys, so a matching prefix (for example `a` for `ă`) must remain "current"
+  // rather than being marked as an error until its segment is complete.
   const charStatus = useMemo(() => {
+    if (hasPhysicalInputRef.current) {
+      const statuses: Array<'pending' | 'current' | 'correct' | 'error'> = [];
+      let physicalIndex = 0;
+      let hasCurrentCharacter = false;
+
+      for (const targetChar of targetChars) {
+        const charKeys = telexKeysForChar(targetChar);
+        const enteredKeys = typedPhysicalKeys.slice(
+          physicalIndex,
+          physicalIndex + charKeys.length
+        );
+        const matchesExpectedPrefix = enteredKeys.every((key, index) =>
+          samePhysicalChar(key, charKeys[index])
+        );
+
+        if (enteredKeys.length === 0) {
+          statuses.push(hasCurrentCharacter ? 'pending' : 'current');
+          hasCurrentCharacter = true;
+        } else if (!matchesExpectedPrefix) {
+          statuses.push('error');
+        } else if (enteredKeys.length === charKeys.length) {
+          statuses.push('correct');
+        } else {
+          statuses.push('current');
+          hasCurrentCharacter = true;
+        }
+
+        physicalIndex += charKeys.length;
+      }
+
+      return statuses;
+    }
+
     const typedChars = [...normalizeNFC(typedText)];
 
     return targetChars.map((targetChar, idx) => {
@@ -155,9 +195,16 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
       return 'pending';
     });
-  }, [typedText, targetChars]);
+  }, [typedText, targetChars, typedPhysicalKeys]);
 
-  const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(typedText)].length);
+  const currentCharIndex = useMemo(() => {
+    const activeIndex = charStatus.findIndex(
+      (status) => status === 'current' || status === 'error'
+    );
+    return activeIndex >= 0
+      ? activeIndex
+      : Math.max(0, targetChars.length - 1);
+  }, [charStatus, targetChars.length]);
   const currentTargetChar = targetChars[currentCharIndex] || '';
 
   // Derive activeToken from tokens
@@ -174,9 +221,12 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   // cannot be used to locate the next Telex key ("ba" is still only the beginning
   // of "bắt"). Use the physical key stream captured from keydown instead.
   const nextExpectedPhysicalKey = useMemo(() => {
-    const expectedPhysicalKeys = tokens.flatMap((token) => token.sequences[0] || []);
-    return expectedPhysicalKeys[typedPhysicalKeys.length] ?? currentTargetChar;
-  }, [tokens, typedPhysicalKeys.length, currentTargetChar]);
+    const firstMismatch = typedPhysicalKeys.findIndex(
+      (key, index) => !samePhysicalChar(key, expectedPhysicalKeys[index])
+    );
+    const nextKeyIndex = firstMismatch >= 0 ? firstMismatch : typedPhysicalKeys.length;
+    return expectedPhysicalKeys[nextKeyIndex] ?? currentTargetChar;
+  }, [expectedPhysicalKeys, typedPhysicalKeys, currentTargetChar]);
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
