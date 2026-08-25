@@ -452,44 +452,7 @@ export function getAllTelexSequencesForWord(word: string): string[][] {
       word
     )
   ) {
-    const testKeys = [...word];
-    const composedTest = telexWordToVietnamese(testKeys);
-    if (composedTest === word) {
-      return [testKeys];
-    }
-
-    // If typing [...word] produces a Telex transformation (e.g. "dd" -> "đ"),
-    // expand Telex modifier pairs with an extra toggle key so composed output matches `word`
-    const expandedKeys: string[] = [];
-    for (let i = 0; i < word.length; i++) {
-      const pair2 = word.slice(i, i + 2).toLowerCase();
-      if (pair2 === 'dd') {
-        expandedKeys.push(word[i] === 'D' ? 'D' : 'd', 'd', 'd');
-        i++;
-      } else if (pair2 === 'aa') {
-        expandedKeys.push(word[i] === 'A' ? 'A' : 'a', 'a', 'a');
-        i++;
-      } else if (pair2 === 'ee') {
-        expandedKeys.push(word[i] === 'E' ? 'E' : 'e', 'e', 'e');
-        i++;
-      } else if (pair2 === 'oo') {
-        expandedKeys.push(word[i] === 'O' ? 'O' : 'o', 'o', 'o');
-        i++;
-      } else if (pair2 === 'aw') {
-        expandedKeys.push(word[i] === 'A' ? 'A' : 'a', 'w', 'w');
-        i++;
-      } else if (pair2 === 'ow') {
-        expandedKeys.push(word[i] === 'O' ? 'O' : 'o', 'w', 'w');
-        i++;
-      } else if (pair2 === 'uw') {
-        expandedKeys.push(word[i] === 'U' ? 'U' : 'u', 'w', 'w');
-        i++;
-      } else {
-        expandedKeys.push(word[i]);
-      }
-    }
-
-    return [expandedKeys];
+    return [[...word]];
   }
 
   const chars = [...word.normalize('NFC')];
