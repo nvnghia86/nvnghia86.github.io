@@ -85,6 +85,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const isComposingRef = useRef(false);
+  const lineKeysLogRef = useRef<string[]>([]);
 
   // Normalize current line
   const rawCurrentLine = lesson.content[currentLineIndex] || '';
@@ -190,6 +191,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     setIsPaused(false);
     setLiveWpm(0);
     setLiveAccuracy(100);
+    lineKeysLogRef.current = [];
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = '';
     }
@@ -204,6 +206,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       finalErrors: number,
       finalWrongMap: Record<string, number>
     ) => {
+      console.log(
+        `%c[Dòng ${currentLineIndex + 1}/${lesson.content.length} - Phím đã gõ đầy đủ]:`,
+        'color: #059669; font-weight: bold;',
+        lineKeysLogRef.current.join(' ') || '(không có)'
+      );
+      lineKeysLogRef.current = [];
+
       const now = Date.now();
       const duration = startTime ? Math.max(1, Math.floor((now - startTime) / 1000)) : 1;
       const finalAccuracy =
@@ -232,7 +241,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       onFinish(result);
     },
-    [lesson, startTime, onFinish]
+    [lesson, startTime, onFinish, currentLineIndex]
   );
 
   // Advance to next line or finish lesson
@@ -243,6 +252,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       newErrors: number,
       newWrongMap: Record<string, number>
     ) => {
+      console.log(
+        `%c[Dòng ${currentLineIndex + 1}/${lesson.content.length} - Phím đã gõ đầy đủ]:`,
+        'color: #059669; font-weight: bold;',
+        lineKeysLogRef.current.join(' ') || '(không có)'
+      );
+      lineKeysLogRef.current = [];
+
       if (currentLineIndex + 1 < lesson.content.length) {
         setCurrentLineIndex((prev) => prev + 1);
         setTypedPhysicalKeys([]);
@@ -297,6 +313,15 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         e.preventDefault();
       }
 
+      // Record key event for line log
+      if (e.key === 'Backspace') {
+        if (e.code === 'Backspace' && !e.nativeEvent.isComposing && !isComposingRef.current) {
+          lineKeysLogRef.current.push('Backspace');
+        }
+      } else {
+        lineKeysLogRef.current.push(e.key === ' ' ? 'Space' : e.key);
+      }
+
       // Handle Backspace
       if (e.key === 'Backspace') {
         e.preventDefault();
@@ -342,24 +367,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       const resolvedKeys = resolveActualKeys(actualKey, keysInCurrentToken);
       const candidateKeys = [...keysInCurrentToken, ...resolvedKeys];
 
-      // Console log for debugging detailed keypresses
-      console.log(
-        `%c[TypingEngine] Key: "${e.key}" | Code: "${e.code}" | Composing: ${e.nativeEvent.isComposing}`,
-        'color: #2563eb; font-weight: bold;',
-        {
-          key: e.key,
-          code: e.code,
-          actualKey,
-          resolvedKeys,
-          keysInCurrentToken,
-          candidateKeys,
-          activeToken: activeToken?.text,
-          typedPhysicalKeys: [...typedPhysicalKeys, ...resolvedKeys],
-          composedTypedText: convertPhysicalKeysToComposedText([...typedPhysicalKeys, ...resolvedKeys]),
-          currentLine,
-        }
-      );
-
       // 1. Check if candidateKeys matches any valid sequence for the current active token
       const matchingSequence = activeToken.sequences.find((seq) => {
         if (candidateKeys.length > seq.length) return false;
@@ -368,10 +375,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       if (matchingSequence) {
         // MATCH!
-        console.log(
-          `%c[TypingEngine MATCH] Token: "${activeToken.text}" | Matched Seq: [${matchingSequence.join(', ')}]`,
-          'color: #059669; font-weight: bold;'
-        );
         soundEngine.playKeyClick(actualKey === ' ');
         const newCorrectKeys = correctKeystrokes + resolvedKeys.length;
         setCorrectKeystrokes(newCorrectKeys);
@@ -393,10 +396,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       // 2. Full direct token/character match (e.g. Unikey / IME directly typed 'ăn', 'uống', 'đ')
       if (samePhysicalChar(actualKey, activeToken.text)) {
-        console.log(
-          `%c[TypingEngine DIRECT MATCH] Token: "${activeToken.text}"`,
-          'color: #059669; font-weight: bold;'
-        );
         const fullSeq = activeToken.sequences[0] || [actualKey];
         const remainingKeys = fullSeq.slice(keysInCurrentToken.length);
         const addedCount = Math.max(1, remainingKeys.length);
@@ -418,11 +417,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
 
       // 3. Wrong Keystroke!
-      console.warn(
-        `[TypingEngine WRONG KEY] Key: "${actualKey}" | Token: "${activeToken.text}" | Expected: "${
-          lineState.nextExpectedKey || activeToken.sequences[0]?.[0]
-        }"`
-      );
       soundEngine.playError();
       const newErrorCount = errorCount + 1;
       setErrorCount(newErrorCount);
