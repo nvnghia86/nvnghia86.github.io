@@ -92,6 +92,18 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const lineKeysLogRef = useRef<string[]>([]);
 
+  // Callback ref that auto-focuses the hidden input whenever it is mounted.
+  // Combined with key={currentLineIndex} on the <input>, React will DESTROY the old input
+  // and CREATE a fresh one on each line change. This resets Unikey's composition cache
+  // which it maintains per-element, not per-value — the only reliable reset.
+  const inputCallbackRef = useCallback((el: HTMLInputElement | null) => {
+    hiddenInputRef.current = el;
+    if (el) {
+      // Give the browser one frame to finalize the mount before focusing
+      requestAnimationFrame(() => el.focus());
+    }
+  }, []);
+
   // Normalize current line
   const rawCurrentLine = lesson.content[currentLineIndex] || '';
   const currentLine = normalizeNFC(rawCurrentLine);
@@ -156,26 +168,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   }, [tokens, currentCharIndex]);
 
   // Derive the correct next PHYSICAL Telex key for HandGuide & VirtualKeyboard hints.
-  // activeToken.sequences[0] = full Telex key array for the whole word, e.g. ['b','a','w','s','t'] for "bắt".
+  // The browser/IME input value contains composed Unicode characters, so its length
+  // cannot be used to locate the next Telex key ("ba" is still only the beginning
+  // of "bắt"). Use the physical key stream captured from keydown instead.
   const nextExpectedPhysicalKey = useMemo(() => {
-    if (!activeToken) return currentTargetChar;
-    const seq = activeToken.sequences[0] || [];
-    if (seq.length === 0) return currentTargetChar;
-
-    const tokenChars = [...activeToken.text];
-    let keyOffset = 0;
-    for (let ci = 0; ci < tokenChars.length; ci++) {
-      const charKeys = telexKeysForChar(tokenChars[ci]);
-      const charKeyCount = charKeys.length || 1;
-      const charUnicodeIdx = activeToken.charStartIndex + ci;
-      if (charUnicodeIdx === currentCharIndex) {
-        const nextKey = seq[keyOffset] ?? currentTargetChar;
-        return nextKey;
-      }
-      keyOffset += charKeyCount;
-    }
-    return currentTargetChar;
-  }, [activeToken, currentCharIndex, currentTargetChar]);
+    const expectedPhysicalKeys = tokens.flatMap((token) => token.sequences[0] || []);
+    return expectedPhysicalKeys[typedPhysicalKeys.length] ?? currentTargetChar;
+  }, [tokens, typedPhysicalKeys.length, currentTargetChar]);
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
@@ -194,22 +193,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     setTypedPhysicalKeys([]);
     setPhysicalErrors(new Set());
     lineKeysLogRef.current = [];
-    if (hiddenInputRef.current) {
-      // 1. Clear the value
-      hiddenInputRef.current.value = '';
-      // 2. Blur forces Unikey to release its composition hook for this element
-      hiddenInputRef.current.blur();
-    }
-    // 3. After a brief pause, re-focus so Unikey attaches a fresh composition session.
-    //    Without this delay, Unikey may still be mid-composition from the previous line,
-    //    causing the first keystroke of the new line to be processed incorrectly.
-    const timer = setTimeout(() => {
-      if (hiddenInputRef.current) {
-        hiddenInputRef.current.value = ''; // ensure clear again after any stray events
-        hiddenInputRef.current.focus();
-      }
-    }, 80);
-    return () => clearTimeout(timer);
+    // DOM input is recreated via key={currentLineIndex} — inputCallbackRef handles focusing.
+    // No need to manually clear or blur/refocus here.
   }, [lesson.id, currentLineIndex]);
 
   // Timer interval
@@ -360,7 +345,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         setCurrentLineIndex((prev) => prev + 1);
         setTypedPhysicalKeys([]);
         setPhysicalErrors(new Set());
-        setRawInputText('');
+        setTypedText('');
         if (hiddenInputRef.current) {
           hiddenInputRef.current.value = '';
         }
@@ -447,14 +432,18 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         return;
       }
 
-      // Log only pure ASCII single-char keys and Backspace/Space (ignore Unikey composed-char keydown noise)
+      // Track only physical ASCII keys and Backspace/Space. Vietnamese IMEs may
+      // emit composed characters in input events, but the physical keydown still
+      // gives us the exact Telex progress needed for the keyboard hint.
       if (e.key === 'Backspace') {
         lineKeysLogRef.current.push('Backspace');
+        setTypedPhysicalKeys((previous) => previous.slice(0, -1));
       } else if (e.key === ' ') {
         lineKeysLogRef.current.push('Space');
+        setTypedPhysicalKeys((previous) => [...previous, ' ']);
       } else if (e.key.length === 1 && e.key.charCodeAt(0) < 128) {
-        // Only log ASCII printable chars — skip Vietnamese chars Unikey injects via keydown
         lineKeysLogRef.current.push(e.key);
+        setTypedPhysicalKeys((previous) => [...previous, e.key]);
       }
 
       hiddenInputRef.current?.focus();
