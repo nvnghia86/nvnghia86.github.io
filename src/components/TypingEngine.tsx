@@ -157,8 +157,15 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     soundEngine.setVolume(settings.volume);
   }, [settings.soundTheme, settings.volume]);
 
-  // Focus container or hidden input on mount
+  // Cleanly reset input state and refocus whenever currentLineIndex changes
   useEffect(() => {
+    setRawInputText('');
+    setTypedPhysicalKeys([]);
+    setPhysicalErrors(new Set());
+    lineKeysLogRef.current = [];
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.value = '';
+    }
     containerRef.current?.focus();
     hiddenInputRef.current?.focus();
   }, [lesson.id, currentLineIndex]);
