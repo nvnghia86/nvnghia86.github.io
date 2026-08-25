@@ -1,6 +1,7 @@
 import React from 'react';
 import { Lesson, UserStats, UserSettings } from '../types';
 import { LESSONS, UNITS } from '../data/lessons';
+import { getLocalizedLessonTitle, getLocalizedUnitTitle } from '../utils/curriculum';
 import { getHeroById } from '../data/characters';
 import { useTranslation } from '../i18n';
 import { LanguageSelector } from './LanguageSelector';
@@ -191,11 +192,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <div className="flex items-center justify-between text-xs text-slate-500 font-medium mb-1">
                   <span>{t.home.currentLessonPreview}</span>
                   <span className="px-2 py-0.5 rounded-md bg-sky-100/70 text-sky-800 font-bold text-[10px]">
-                    Unit {currentLesson.unitId}
+                    {getLocalizedUnitTitle(currentUnit, language, t.courseMap.unitBadge).split(':')[0]}
                   </span>
                 </div>
                 <h2 className="text-base font-bold text-slate-900 leading-snug truncate">
-                  {currentLesson.id}. {(language === 'vi' && currentLesson.vietnameseTitle) ? currentLesson.vietnameseTitle : currentLesson.title}
+                  {getLocalizedLessonTitle(currentLesson, language)}
                 </h2>
                 <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-600">
                   <span className="text-slate-400 text-[11px]">{t.home.targetKeys}:</span>

@@ -2,7 +2,33 @@ import { Lesson, Unit, Badge } from '../types';
 import curriculumData from './vietnameseCurriculum.json';
 
 export const UNITS: Unit[] = curriculumData.units as Unit[];
-export const LESSONS: Lesson[] = curriculumData.lessons as Lesson[];
+
+const CONTINUOUS_TEXT_UNITS = new Set([5, 6, 7, 8, 11, 12, 13]);
+const CONTINUOUS_TEXT_LESSON_IDS = new Set([69, 77]);
+const VIETNAMESE_DIACRITIC_PATTERN = /[ăâđêôơưĂÂĐÊÔƠƯàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/u;
+
+function makeContinuousText(lines: string[]): string {
+  return lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .reduce((text, line) => {
+      if (!text) return line;
+      return /[.!?]$/.test(text) ? `${text} ${line}` : `${text}; ${line}`;
+    }, '');
+}
+
+// Sentence-focused Vietnamese lessons are one continuous native-IME exercise.
+// Key, number, punctuation and code drills retain their authored four-line rhythm.
+export const LESSONS: Lesson[] = (curriculumData.lessons as Lesson[]).map((lesson) => {
+  const shouldBeContinuous =
+    (CONTINUOUS_TEXT_UNITS.has(lesson.unitId) || CONTINUOUS_TEXT_LESSON_IDS.has(lesson.id)) &&
+    lesson.content.length > 1 &&
+    VIETNAMESE_DIACRITIC_PATTERN.test(lesson.content.join(' '));
+
+  return shouldBeContinuous
+    ? { ...lesson, content: [makeContinuousText(lesson.content)] }
+    : lesson;
+});
 
 export const BADGES: Badge[] = [
   {

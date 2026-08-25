@@ -1,11 +1,71 @@
 import { UserStats, UserSettings, LessonResult, Lesson, ConsultationInquiry } from '../types';
 import { LESSONS, BADGES } from '../data/lessons';
+import { getCurrentCurriculumLessonId } from './curriculum';
 
 const STATS_KEY = 'edclub_typing_jungle_stats_v1';
+const PROGRESS_COOKIE_KEY = 'edclub_typing_jungle_progress_v2';
 const SETTINGS_KEY = 'edclub_typing_jungle_settings_v1';
 const PROFILE_COOKIE_KEY = 'edclub_player_profile_v1';
 const CUSTOM_LESSONS_KEY = 'edclub_typing_custom_lessons_v1';
 const CONSULTATION_INQUIRIES_KEY = 'hispace_consultation_inquiries_v1';
+const PROGRESS_COOKIE_PREFIX = 'v2.';
+const PROGRESS_COOKIE_KEY_MATERIAL = 'hi-space-typing-progress-2026';
+
+interface CookieProgress {
+  version: 2;
+  completedLessonIds: number[];
+}
+
+function encodeProgressForCookie(progress: CookieProgress): string {
+  try {
+    const bytes = new TextEncoder().encode(JSON.stringify(progress));
+    let binary = '';
+    for (let index = 0; index < bytes.length; index += 1) {
+      binary += String.fromCharCode(
+        bytes[index] ^ PROGRESS_COOKIE_KEY_MATERIAL.charCodeAt(index % PROGRESS_COOKIE_KEY_MATERIAL.length),
+      );
+    }
+    return `${PROGRESS_COOKIE_PREFIX}${btoa(binary)}`;
+  } catch {
+    return JSON.stringify(progress);
+  }
+}
+
+function decodeProgressFromCookie(raw: string | null): CookieProgress | null {
+  if (!raw) return null;
+
+  try {
+    if (!raw.startsWith(PROGRESS_COOKIE_PREFIX)) {
+      const parsed = JSON.parse(raw);
+      return parsed?.version === 2 ? parsed as CookieProgress : null;
+    }
+
+    const binary = atob(raw.slice(PROGRESS_COOKIE_PREFIX.length));
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index) ^
+        PROGRESS_COOKIE_KEY_MATERIAL.charCodeAt(index % PROGRESS_COOKIE_KEY_MATERIAL.length);
+    }
+    const parsed = JSON.parse(new TextDecoder().decode(bytes));
+    return parsed?.version === 2 ? parsed as CookieProgress : null;
+  } catch {
+    return null;
+  }
+}
+
+function getProgressPlaceholder(lessonId: number): LessonResult {
+  return {
+    lessonId,
+    stars: 0,
+    wpm: 0,
+    rawWpm: 0,
+    accuracy: 0,
+    timeSeconds: 0,
+    errorCount: 0,
+    wrongKeys: {},
+    completedAt: '',
+  };
+}
 
 // Cookie Utility Helpers
 export function setCookie(name: string, value: string, days = 365): void {
@@ -59,6 +119,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   fontSize: 'large',
   theme: 'edclub',
   language: 'vi',
+  vietnameseInputMethod: 'telex',
   userName: '',
   userAge: '',
   targetWpmGoal: 35,
@@ -100,6 +161,9 @@ export function loadSettings(): UserSettings {
     }
 
     const merged = { ...DEFAULT_SETTINGS, ...parsed };
+    if (merged.vietnameseInputMethod !== 'telex' && merged.vietnameseInputMethod !== 'vni') {
+      merged.vietnameseInputMethod = DEFAULT_SETTINGS.vietnameseInputMethod;
+    }
 
     // If user has a name already configured previously, mark onboardingCompleted
     if (merged.userName && merged.userName !== '' && merged.onboardingCompleted === undefined) {
@@ -141,16 +205,31 @@ export function saveSettings(settings: UserSettings): void {
 
 export function loadUserStats(): UserStats {
   try {
-    const cookieStats = getCookie(STATS_KEY);
+    const legacyCookieStats = getCookie(STATS_KEY);
+    const cookieProgress = decodeProgressFromCookie(getCookie(PROGRESS_COOKIE_KEY));
     const localRaw = typeof localStorage !== 'undefined' ? localStorage.getItem(STATS_KEY) : null;
 
-    if (cookieStats) {
-      return { ...DEFAULT_STATS, ...JSON.parse(cookieStats) };
-    }
-    if (localRaw) {
-      return { ...DEFAULT_STATS, ...JSON.parse(localRaw) };
-    }
-    return DEFAULT_STATS;
+    const storedStats = localRaw
+      ? JSON.parse(localRaw)
+      : legacyCookieStats
+      ? JSON.parse(legacyCookieStats)
+      : {};
+    const stats = { ...DEFAULT_STATS, ...storedStats };
+    const cookieResults = Object.fromEntries(
+      (cookieProgress?.completedLessonIds ?? []).map((lessonId) => [
+        lessonId,
+        getProgressPlaceholder(lessonId),
+      ]),
+    );
+    const lessonResults = { ...cookieResults, ...stats.lessonResults };
+    const currentLessonId = getCurrentCurriculumLessonId({ lessonResults }, LESSONS);
+
+    return {
+      ...stats,
+      completedLessonCount: Object.keys(lessonResults).length,
+      currentLessonId,
+      lessonResults,
+    };
   } catch {
     return DEFAULT_STATS;
   }
@@ -162,7 +241,13 @@ export function saveUserStats(stats: UserStats): void {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(STATS_KEY, raw);
     }
-    setCookie(STATS_KEY, raw, 365);
+    const progress: CookieProgress = {
+      version: 2,
+      completedLessonIds: Object.keys(stats.lessonResults).map(Number).filter(Number.isFinite),
+    };
+    setCookie(PROGRESS_COOKIE_KEY, encodeProgressForCookie(progress), 365);
+    // Remove the previous unencrypted, potentially oversized stats cookie.
+    deleteCookie(STATS_KEY);
   } catch (err) {
     console.error('Failed to save user stats', err);
   }
@@ -189,9 +274,6 @@ export function recordLessonCompletion(result: LessonResult): {
   const avgWpm = Math.round(Object.values(updatedLessonResults).reduce((sum, r) => sum + r.wpm, 0) / (completedKeys.length || 1));
   const avgAccuracy = Math.round(Object.values(updatedLessonResults).reduce((sum, r) => sum + r.accuracy, 0) / (completedKeys.length || 1));
   const totalTimeSpent = currentStats.totalTimeSpentSeconds + result.timeSeconds;
-
-  // Next unlocked lesson
-  const currentLessonId = Math.max(currentStats.currentLessonId, result.lessonId + 1);
 
   // Check badges
   const newBadges: string[] = [];
@@ -268,7 +350,10 @@ export function recordLessonCompletion(result: LessonResult): {
     averageAccuracy: avgAccuracy,
     totalTimeSpentSeconds: totalTimeSpent,
     unlockedBadges: Array.from(new Set([...currentStats.unlockedBadges, ...newBadges])),
-    currentLessonId,
+    currentLessonId: getCurrentCurriculumLessonId(
+      { lessonResults: updatedLessonResults },
+      LESSONS,
+    ),
     lessonResults: updatedLessonResults,
   };
 
@@ -303,6 +388,7 @@ export function resetAllProgress(): void {
     localStorage.removeItem(SETTINGS_KEY);
   }
   deleteCookie(STATS_KEY);
+  deleteCookie(PROGRESS_COOKIE_KEY);
   deleteCookie(SETTINGS_KEY);
   deleteCookie(PROFILE_COOKIE_KEY);
 }

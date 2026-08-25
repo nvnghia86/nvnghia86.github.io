@@ -174,6 +174,15 @@ export interface TranslationSchema {
     typedLogPlaceholder: string;
     handGuideCompactTitle: string;
     nextKeyLabel: string;
+    inputMethodLabel: string;
+    nativeInputNote: string;
+    telexGuide: string;
+    vniGuide: string;
+    exerciseProgress: string;
+    characterUnit: string;
+    lineComplete: string;
+    pressSpace: string;
+    pressToStartVietnamese: string;
   };
   resultModal: {
     flawlessTitle: string;
@@ -354,6 +363,10 @@ export interface TranslationSchema {
     };
     visualGuides: string;
     visualAids: string;
+    vietnameseInputMethod: string;
+    vietnameseInputMethodDesc: string;
+    telexMethod: string;
+    vniMethod: string;
     virtualKeyboard: string;
     handGuides: string;
     on: string;

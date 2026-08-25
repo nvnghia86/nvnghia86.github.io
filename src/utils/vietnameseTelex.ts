@@ -409,7 +409,7 @@ export function applyBackspaceToKeys(keys: string[]): string[] {
 }
 
 export interface WordToken {
-  type: 'word' | 'space' | 'punct';
+  type: 'word' | 'space' | 'newline' | 'punct';
   text: string;
   charStartIndex: number;
   charEndIndex: number;
@@ -554,7 +554,7 @@ export function tokenizeLine(line: string): WordToken[] {
 
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
-    if (char === ' ') {
+    if (char === ' ' || char === '\n') {
       if (currentWord) {
         tokens.push({
           type: 'word',
@@ -566,11 +566,11 @@ export function tokenizeLine(line: string): WordToken[] {
         currentWord = '';
       }
       tokens.push({
-        type: 'space',
-        text: ' ',
+        type: char === ' ' ? 'space' : 'newline',
+        text: char,
         charStartIndex: i,
         charEndIndex: i + 1,
-        sequences: [[' ']],
+        sequences: [[char === ' ' ? ' ' : 'Enter']],
       });
     } else if (/^[.,/#!$%^&*;:{}=\-_`~()?"']$/.test(char)) {
       if (currentWord) {

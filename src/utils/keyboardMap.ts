@@ -134,6 +134,35 @@ export function analyzeCharacter(char: string | undefined): TargetKeyAnalysis {
     };
   }
 
+  // Control-key labels are multi-character strings, not text to convert via
+  // Telex. Handle them before examining their first letter (`Backspace` must
+  // highlight Backspace, never the B key).
+  const controlKey = KEYBOARD_ROWS.flat().find((key) => key.char === char);
+  if (controlKey && ['Backspace', 'Tab', 'Enter', 'Space', 'Caps'].includes(char)) {
+    const fingerNames = {
+      1: 'Left Pinky',
+      2: 'Left Ring',
+      3: 'Left Middle',
+      4: 'Left Index',
+      5: 'Left Thumb',
+      6: 'Right Thumb',
+      7: 'Right Index',
+      8: 'Right Middle',
+      9: 'Right Ring',
+      10: 'Right Pinky',
+    };
+    return {
+      primaryKey: controlKey.code,
+      needsShift: false,
+      shiftSide: null,
+      hand: controlKey.hand,
+      finger: controlKey.finger,
+      fingerIndex: controlKey.fingerIndex,
+      fingerLabel: fingerNames[controlKey.fingerIndex as keyof typeof fingerNames] || 'Finger',
+      keyLabel: controlKey.char.toUpperCase(),
+    };
+  }
+
   const normalized = normalizeNFC(char);
   let searchChar = normalized;
 

@@ -61,6 +61,7 @@ export interface Badge {
 export type SoundTheme = 'mechanical' | 'typewriter' | 'modern' | 'pop' | 'mute';
 export type AppTheme = 'edclub' | 'dark' | 'jungle' | 'sunset';
 export type Language = 'vi' | 'en';
+export type VietnameseInputMethod = 'telex' | 'vni';
 
 export interface UserSettings {
   soundTheme: SoundTheme;
@@ -70,6 +71,7 @@ export interface UserSettings {
   fontSize: 'small' | 'medium' | 'large' | 'huge';
   theme: AppTheme;
   language: Language;
+  vietnameseInputMethod: VietnameseInputMethod;
   userName: string;
   userAge?: number | string;
   targetWpmGoal: number;

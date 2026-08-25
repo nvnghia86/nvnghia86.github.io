@@ -5,19 +5,19 @@ import { HandGuide } from './HandGuide';
 import { soundEngine } from '../utils/soundEngine';
 import { useTranslation } from '../i18n';
 import { LanguageSelector } from './LanguageSelector';
+import { getLocalizedLessonTitle } from '../utils/curriculum';
 import {
   normalizeNFC,
-  telexKeysForChar,
   isVietnameseText,
   samePhysicalChar,
-  TELEX_VOWEL_RULES,
-  TELEX_TONE_RULES,
   tokenizeLine,
-  evaluateLineProgress,
-  convertPhysicalKeysToComposedText,
-  applyBackspaceToKeys,
-  resolveActualKeys,
 } from '../utils/vietnameseTelex';
+import {
+  evaluateNativeVietnameseText,
+  getNextVietnameseKeySuggestion,
+  getVietnameseWordKeySequences,
+  VIETNAMESE_INPUT_GUIDE_RULES,
+} from '../utils/vietnameseInputSuggestions';
 import {
   RotateCcw,
   Volume2,
@@ -55,10 +55,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Current exercise line index within lesson.content
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
-
-  // Physical keystrokes tracking for current line
-  const [typedPhysicalKeys, setTypedPhysicalKeys] = useState<string[]>([]);
-  const [physicalErrors, setPhysicalErrors] = useState<Set<number>>(new Set());
+  const [inputSession, setInputSession] = useState(0);
 
   // Aggregated performance across all lines in this lesson
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
@@ -81,161 +78,158 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
   // Telex Guide Modal
-  const [showTelexGuide, setShowTelexGuide] = useState(false);
+  const [showInputGuide, setShowInputGuide] = useState(false);
 
-  // typedText: the composed Vietnamese text the user has typed so far on this line.
-  // This is read directly from the uncontrolled <input> DOM value after each native input event.
-  // Using an UNCONTROLLED input lets Unikey/EVKey/OpenKey compose freely without React interference.
+  // typedText is read directly from the uncontrolled native textarea. React
+  // never supplies a value, so Windows Vietnamese and IME software own composition.
   const [typedText, setTypedText] = useState('');
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  const hiddenInputRef = useRef<HTMLTextAreaElement>(null);
   const lineKeysLogRef = useRef<string[]>([]);
-  const physicalKeysRef = useRef<string[]>([]);
-  const hasPhysicalInputRef = useRef(false);
+  const inputSessionRef = useRef(0);
+  const isComposingRef = useRef(false);
+  const pendingAdvanceRef = useRef(false);
+  const advanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const completedMetricsRef = useRef({ total: 0, correct: 0, errors: 0 });
+  const lineMaxNativeLengthRef = useRef(0);
+  const lineMaxErrorsRef = useRef(0);
 
-  // Callback ref that auto-focuses the hidden input whenever it is mounted.
-  // Combined with key={currentLineIndex} on the <input>, React will DESTROY the old input
-  // and CREATE a fresh one on each line change. This resets Unikey's composition cache
-  // which it maintains per-element, not per-value — the only reliable reset.
-  const inputCallbackRef = useCallback((el: HTMLInputElement | null) => {
-    hiddenInputRef.current = el;
-    if (el) {
-      // Give the browser one frame to finalize the mount before focusing
-      requestAnimationFrame(() => el.focus());
+  const cancelPendingAdvance = useCallback(() => {
+    if (advanceTimeoutRef.current !== null) {
+      clearTimeout(advanceTimeoutRef.current);
+      advanceTimeoutRef.current = null;
     }
+    pendingAdvanceRef.current = false;
   }, []);
 
-  // Normalize current line
-  const rawCurrentLine = lesson.content[currentLineIndex] || '';
+  // Sessions are invalidated only for reset/completion, never between lines.
+  // The same native textbox stays mounted throughout the lesson.
+  const startNativeInputSession = useCallback(() => {
+    cancelPendingAdvance();
+    inputSessionRef.current += 1;
+    setInputSession(inputSessionRef.current);
+    isComposingRef.current = false;
+    return inputSessionRef.current;
+  }, [cancelPendingAdvance]);
+
+  const focusNativeInput = useCallback((session = inputSessionRef.current) => {
+    requestAnimationFrame(() => {
+      if (session === inputSessionRef.current) {
+        hiddenInputRef.current?.focus();
+      }
+    });
+  }, []);
+
+  // Keep one native textarea mounted for the entire lesson so the operating
+  // system's IME sees the same ordinary textbox throughout typing.
+  const inputCallbackRef = useCallback((el: HTMLTextAreaElement | null) => {
+    hiddenInputRef.current = el;
+    if (el) {
+      focusNativeInput();
+    }
+  }, [focusNativeInput]);
+
+  // One native textarea holds one continuous lesson text. Original content
+  // lines are joined with spaces so Vietnamese has no IME-breaking transition.
+  const rawCurrentLine = lesson.content.join(' ');
   const currentLine = normalizeNFC(rawCurrentLine);
+  const isLongTextLesson = lesson.content.length === 1 && isVietnameseText(currentLine);
 
   // Tokenize line for flexible multi-sequence Telex parsing
   const tokens = useMemo(() => tokenizeLine(currentLine), [currentLine]);
   const targetChars = useMemo(() => [...currentLine], [currentLine]);
 
-  // Group targetChars into word items for whole-word wrapping without character splitting
-  const targetWords = useMemo(() => {
-    const words: Array<{
-      type: 'word' | 'space';
-      chars: Array<{ char: string; index: number }>;
-    }> = [];
+  type TargetDisplayGroup = {
+    type: 'word' | 'space';
+    chars: Array<{ char: string; index: number }>;
+  };
 
-    let currentWord: Array<{ char: string; index: number }> = [];
+  const targetDisplayLines = useMemo(() => {
+    const sourceLines = isLongTextLesson
+      ? [currentLine]
+      : lesson.content.map((line) => normalizeNFC(line));
 
-    targetChars.forEach((char, index) => {
-      if (char === ' ') {
-        if (currentWord.length > 0) {
-          words.push({ type: 'word', chars: currentWord });
-          currentWord = [];
+    const splitRangeIntoGroups = (start: number, end: number): TargetDisplayGroup[] => {
+      const groups: TargetDisplayGroup[] = [];
+      let word: Array<{ char: string; index: number }> = [];
+
+      targetChars.slice(start, end).forEach((char, offset) => {
+        const index = start + offset;
+        if (char === ' ') {
+          if (word.length > 0) {
+            groups.push({ type: 'word', chars: word });
+            word = [];
+          }
+          groups.push({ type: 'space', chars: [{ char, index }] });
+        } else {
+          word.push({ char, index });
         }
-        words.push({ type: 'space', chars: [{ char, index }] });
-      } else {
-        currentWord.push({ char, index });
-      }
+      });
+
+      if (word.length > 0) groups.push({ type: 'word', chars: word });
+      return groups;
+    };
+
+    let start = 0;
+    return sourceLines.map((line) => {
+      const end = start + [...line].length;
+      const groups = splitRangeIntoGroups(start, end);
+      start = end + 1;
+      return groups;
     });
+  }, [currentLine, isLongTextLesson, lesson.content, targetChars]);
 
-    if (currentWord.length > 0) {
-      words.push({ type: 'word', chars: currentWord });
-    }
+  const suggestionMethod = settings.vietnameseInputMethod ?? 'telex';
 
-    return words;
-  }, [targetChars]);
-
-  const expectedPhysicalKeys = useMemo(
-    () => targetChars.flatMap((char) => telexKeysForChar(char)),
-    [targetChars]
+  // Native browser/OS text is the only source for visible progress and correctness.
+  const nativeEvaluation = useMemo(
+    () => evaluateNativeVietnameseText(currentLine, typedText),
+    [currentLine, typedText]
   );
 
-  // Real-time character status. A Vietnamese glyph can require several Telex
-  // keys, so a matching prefix (for example `a` for `ă`) must remain "current"
-  // rather than being marked as an error until its segment is complete.
   const charStatus = useMemo(() => {
-    if (hasPhysicalInputRef.current) {
-      const statuses: Array<'pending' | 'current' | 'correct' | 'error'> = [];
-      let physicalIndex = 0;
-      let hasCurrentCharacter = false;
-
-      for (const targetChar of targetChars) {
-        const charKeys = telexKeysForChar(targetChar);
-        const enteredKeys = typedPhysicalKeys.slice(
-          physicalIndex,
-          physicalIndex + charKeys.length
-        );
-        const matchesExpectedPrefix = enteredKeys.every((key, index) =>
-          samePhysicalChar(key, charKeys[index])
-        );
-
-        if (enteredKeys.length === 0) {
-          statuses.push(hasCurrentCharacter ? 'pending' : 'current');
-          hasCurrentCharacter = true;
-        } else if (!matchesExpectedPrefix) {
-          statuses.push('error');
-        } else if (enteredKeys.length === charKeys.length) {
-          statuses.push('correct');
-        } else {
-          statuses.push('current');
-          hasCurrentCharacter = true;
-        }
-
-        physicalIndex += charKeys.length;
-      }
-
-      return statuses;
-    }
-
     const typedChars = [...normalizeNFC(typedText)];
-
-    return targetChars.map((targetChar, idx) => {
-      if (idx < typedChars.length) {
-        return samePhysicalChar(typedChars[idx], targetChar) ? 'correct' : 'error';
+    return targetChars.map((targetChar, index) => {
+      if (nativeEvaluation.mismatchIndex === index) return 'error';
+      if (nativeEvaluation.partialTargetIndices.includes(index)) return 'current';
+      if (index < typedChars.length) {
+        return samePhysicalChar(typedChars[index], targetChar) ? 'correct' : 'error';
       }
-      if (idx === typedChars.length) {
-        return 'current';
-      }
+      if (index === nativeEvaluation.nextTargetIndex) return 'current';
       return 'pending';
     });
-  }, [typedText, targetChars, typedPhysicalKeys]);
+  }, [nativeEvaluation, targetChars, typedText]);
 
-  const currentCharIndex = useMemo(() => {
-    const activeIndex = charStatus.findIndex(
-      (status) => status === 'current' || status === 'error'
-    );
-    return activeIndex >= 0
-      ? activeIndex
-      : Math.max(0, targetChars.length - 1);
-  }, [charStatus, targetChars.length]);
+  const currentCharIndex = Math.min(
+    Math.max(0, nativeEvaluation.nextTargetIndex),
+    Math.max(0, targetChars.length - 1)
+  );
   const currentTargetChar = targetChars[currentCharIndex] || '';
 
-  // Derive activeToken from tokens
   const activeToken = useMemo(() => {
     return (
-      tokens.find(t => currentCharIndex >= t.charStartIndex && currentCharIndex < t.charEndIndex) ||
-      tokens[0] ||
-      null
+      tokens.find((token) =>
+        currentCharIndex >= token.charStartIndex && currentCharIndex < token.charEndIndex
+      ) || tokens[0] || null
     );
   }, [tokens, currentCharIndex]);
 
-  // Derive the correct next PHYSICAL Telex key for HandGuide & VirtualKeyboard hints.
-  // The browser/IME input value contains composed Unicode characters, so its length
-  // cannot be used to locate the next Telex key ("ba" is still only the beginning
-  // of "bắt"). Use the physical key stream captured from keydown instead.
-  const nextExpectedPhysicalIndex = useMemo(() => {
-    const firstMismatch = typedPhysicalKeys.findIndex(
-      (key, index) => !samePhysicalChar(key, expectedPhysicalKeys[index])
-    );
-    return firstMismatch >= 0 ? firstMismatch : typedPhysicalKeys.length;
-  }, [expectedPhysicalKeys, typedPhysicalKeys]);
+  const activeTokenSequences = useMemo(
+    () => activeToken?.type === 'word'
+      ? getVietnameseWordKeySequences(activeToken.text, suggestionMethod)
+      : activeToken?.sequences ?? [],
+    [activeToken, suggestionMethod]
+  );
 
-  const nextExpectedPhysicalKey =
-    expectedPhysicalKeys[nextExpectedPhysicalIndex] ?? currentTargetChar;
+  const nextExpectedPhysicalKey = getNextVietnameseKeySuggestion({
+    target: currentLine,
+    nativeText: typedText,
+    method: suggestionMethod,
+  });
 
-  const activeTokenPhysicalStartIndex = useMemo(() => {
-    if (!activeToken) return 0;
-    return targetChars
-      .slice(0, activeToken.charStartIndex)
-      .reduce((count, char) => count + telexKeysForChar(char).length, 0);
-  }, [activeToken, targetChars]);
+  const activeSequence = activeTokenSequences[0] ?? [];
+  const nextExpectedPhysicalIndex = 0;
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
@@ -248,17 +242,24 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     soundEngine.setVolume(settings.volume);
   }, [settings.soundTheme, settings.volume]);
 
-  // Cleanly reset typedText and uncontrolled input DOM value on line change
+  // A different lesson deliberately starts a new native text buffer.
   useEffect(() => {
+    if (hiddenInputRef.current) {
+      hiddenInputRef.current.value = '';
+    }
+  }, [lesson.id]);
+
+  // Reset display and metrics for the single continuous lesson input.
+  useEffect(() => {
+    cancelPendingAdvance();
     setTypedText('');
-    setTypedPhysicalKeys([]);
-    physicalKeysRef.current = [];
-    hasPhysicalInputRef.current = false;
-    setPhysicalErrors(new Set());
+    isComposingRef.current = false;
+    lineMaxNativeLengthRef.current = 0;
+    lineMaxErrorsRef.current = 0;
     lineKeysLogRef.current = [];
-    // DOM input is recreated via key={currentLineIndex} — inputCallbackRef handles focusing.
-    // No need to manually clear or blur/refocus here.
-  }, [lesson.id, currentLineIndex]);
+    // The native input remains mounted so its IME connection is preserved.
+    return cancelPendingAdvance;
+  }, [lesson.id, currentLineIndex, cancelPendingAdvance]);
 
   // Timer interval
   useEffect(() => {
@@ -322,16 +323,16 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   }, [typedText, currentLineIndex, currentLine, charStatus, targetChars, activeToken]);
 
   const handleReset = useCallback(() => {
+    const session = startNativeInputSession();
     setCurrentLineIndex(0);
     setTypedText('');
-    setTypedPhysicalKeys([]);
-    physicalKeysRef.current = [];
-    hasPhysicalInputRef.current = false;
-    setPhysicalErrors(new Set());
+    lineMaxNativeLengthRef.current = 0;
+    lineMaxErrorsRef.current = 0;
     setTotalKeystrokes(0);
     setCorrectKeystrokes(0);
     setErrorCount(0);
     setWrongKeysMap({});
+    completedMetricsRef.current = { total: 0, correct: 0, errors: 0 };
     setStartTime(null);
     setElapsedSeconds(0);
     setIsStarted(false);
@@ -343,7 +344,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       hiddenInputRef.current.value = '';
     }
     containerRef.current?.focus();
-  }, []);
+    focusNativeInput(session);
+  }, [focusNativeInput, startNativeInputSession]);
 
   // Complete the entire lesson
   const completeLesson = useCallback(
@@ -353,6 +355,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       finalErrors: number,
       finalWrongMap: Record<string, number>
     ) => {
+      cancelPendingAdvance();
+      startNativeInputSession();
       console.log(
         `%c[Dòng ${currentLineIndex + 1}/${lesson.content.length} - Phím đã gõ đầy đủ]:`,
         'color: #059669; font-weight: bold;',
@@ -388,7 +392,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       onFinish(result);
     },
-    [lesson, startTime, onFinish, currentLineIndex]
+    [lesson, startTime, onFinish, currentLineIndex, cancelPendingAdvance, startNativeInputSession]
   );
 
   // Advance to next line or finish lesson
@@ -399,6 +403,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       newErrors: number,
       newWrongMap: Record<string, number>
     ) => {
+      cancelPendingAdvance();
       console.log(
         `%c[Dòng ${currentLineIndex + 1}/${lesson.content.length} - Phím đã gõ đầy đủ]:`,
         'color: #059669; font-weight: bold;',
@@ -406,182 +411,165 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       );
       lineKeysLogRef.current = [];
 
-      if (currentLineIndex + 1 < lesson.content.length) {
-        setCurrentLineIndex((prev) => prev + 1);
-        setTypedPhysicalKeys([]);
-        physicalKeysRef.current = [];
-        hasPhysicalInputRef.current = false;
-        setPhysicalErrors(new Set());
-        setTypedText('');
-        if (hiddenInputRef.current) {
-          hiddenInputRef.current.value = '';
-        }
-      } else {
-        // All lines finished!
-        completeLesson(newTotalKeys, newCorrectKeys, newErrors, newWrongMap);
-      }
+      // The combined target has only one completion point.
+      completeLesson(newTotalKeys, newCorrectKeys, newErrors, newWrongMap);
     },
-    [currentLineIndex, lesson.content.length, completeLesson]
+    [
+      currentLineIndex,
+      lesson.content.length,
+      cancelPendingAdvance,
+      completeLesson,
+    ]
   );
 
-  // Main typing engine: read composed Vietnamese text from uncontrolled input.
-  // Unikey composes freely into the DOM input without React interference.
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (isPaused) return;
+  // Native browser/OS input is canonical. React reads the input value and
+  // never writes a typing value back.
+  const processNativeInput = useCallback(
+    (input: HTMLTextAreaElement, session: number, allowCompletion: boolean) => {
+      // A composition event from the previous line can arrive after React has
+      // mounted a fresh input. Old input events must never update or advance the
+      // current line.
+      if (
+        isPaused ||
+        session !== inputSessionRef.current ||
+        input !== hiddenInputRef.current
+      ) {
+        return;
+      }
 
-      // The native input value is an intermediate IME composition value. For
-      // physical Telex typing, rebuild the committed Vietnamese text from the
-      // actual key stream so `a w n` is evaluated as `ăn`, not as `a`/`ă`/`n`.
-      const nativeValue = normalizeNFC(e.target.value);
-      const val = hasPhysicalInputRef.current
-        ? normalizeNFC(convertPhysicalKeysToComposedText(physicalKeysRef.current))
-        : nativeValue;
-      setTypedText(val);
+      const nativeValue = input.value;
+      setTypedText(nativeValue);
 
-      if (!isStarted && val.length > 0) {
+      if (!isStarted && nativeValue.length > 0) {
         setIsStarted(true);
         setStartTime(Date.now());
       }
 
-      const normTarget = normalizeNFC(currentLine);
-      const typedChars = [...val];
-      const tgtChars = [...normTarget];
+      // Composition updates may be transient; count and validate only after commit.
+      if (!allowCompletion) return;
 
-      const newTotalKeys = Math.max(totalKeystrokes, typedChars.length);
-      setTotalKeystrokes(newTotalKeys);
+      const typedChars = [...normalizeNFC(nativeValue)];
+      const target = normalizeNFC(currentLine);
+      const targetCharacters = [...target];
+      const evaluation = evaluateNativeVietnameseText(target, nativeValue);
+      const previousLength = lineMaxNativeLengthRef.current;
 
       let correctCount = 0;
-      let errCount = 0;
-      typedChars.forEach((ch, idx) => {
-        if (idx < tgtChars.length) {
-          if (samePhysicalChar(ch, tgtChars[idx])) correctCount++;
-          else errCount++;
-        } else {
-          errCount++;
+      let currentErrors = 0;
+      const currentWrongMap: Record<string, number> = {};
+      typedChars.forEach((character, index) => {
+        if (index < targetCharacters.length && samePhysicalChar(character, targetCharacters[index])) {
+          correctCount += 1;
+        } else if (!evaluation.partialTargetIndices.includes(index)) {
+          currentErrors += 1;
+          currentWrongMap[character || 'Unknown'] =
+            (currentWrongMap[character || 'Unknown'] || 0) + 1;
         }
       });
-      setCorrectKeystrokes(correctCount);
-      setErrorCount(errCount);
 
-      // Audio feedback
-      if (val.length > typedText.length) {
-        const lastTyped = typedChars[typedChars.length - 1] || '';
-        const tgtChar = tgtChars[typedChars.length - 1];
-        if (tgtChar && samePhysicalChar(lastTyped, tgtChar)) {
-          soundEngine.playKeyClick(lastTyped === ' ');
-        } else {
-          soundEngine.playError();
-        }
+      lineMaxNativeLengthRef.current = Math.max(previousLength, typedChars.length);
+      lineMaxErrorsRef.current = Math.max(lineMaxErrorsRef.current, currentErrors);
+      const completedMetrics = completedMetricsRef.current;
+      const liveTotal = completedMetrics.total + lineMaxNativeLengthRef.current;
+      const liveCorrect = completedMetrics.correct + correctCount;
+      const liveErrors = completedMetrics.errors + lineMaxErrorsRef.current;
+      setTotalKeystrokes(liveTotal);
+      setCorrectKeystrokes(liveCorrect);
+      setErrorCount(liveErrors);
+
+      if (typedChars.length > previousLength) {
+        if (evaluation.status === 'mismatch') soundEngine.playError();
+        else soundEngine.playKeyClick(typedChars.at(-1) === ' ');
+      }
+      if (currentErrors > 0) {
+        setWrongKeysMap((value) => {
+          const merged = { ...value };
+          Object.entries(currentWrongMap).forEach(([key, count]) => {
+            merged[key] = Math.max(merged[key] || 0, count);
+          });
+          return merged;
+        });
       }
 
-      // Auto-advance when line is complete
-      if (
-        val === normTarget ||
-        (typedChars.length >= tgtChars.length &&
-          typedChars.every((ch, i) => samePhysicalChar(ch, tgtChars[i])))
-      ) {
+      if (evaluation.isComplete && allowCompletion && !pendingAdvanceRef.current) {
+        pendingAdvanceRef.current = true;
         soundEngine.playKeyClick(false);
-        setTimeout(() => {
-          advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
+        advanceTimeoutRef.current = setTimeout(() => {
+          advanceTimeoutRef.current = null;
+          if (
+            session !== inputSessionRef.current ||
+            input !== hiddenInputRef.current
+          ) {
+            pendingAdvanceRef.current = false;
+            return;
+          }
+          const finalMetrics = {
+            total: liveTotal,
+            correct: completedMetrics.correct + targetCharacters.length,
+            errors: liveErrors,
+          };
+          completedMetricsRef.current = finalMetrics;
+          advanceLine(
+            finalMetrics.total,
+            finalMetrics.correct,
+            finalMetrics.errors,
+            { ...wrongKeysMap, ...currentWrongMap }
+          );
         }, 50);
       }
     },
-    [isPaused, isStarted, typedText, totalKeystrokes, currentLine, wrongKeysMap, advanceLine]
+    [advanceLine, currentLine, isPaused, isStarted, wrongKeysMap]
   );
 
-  // handleKeyDown: visual keyboard highlight + debug key logging only.
-  // Does NOT drive typing evaluation — that is handleInputChange above.
+  const handleInputChange = useCallback(
+    (event: React.FormEvent<HTMLTextAreaElement>) => {
+      processNativeInput(event.currentTarget, inputSession, !isComposingRef.current);
+    },
+    [inputSession, processNativeInput]
+  );
+
+  const handleCompositionStart = useCallback(() => {
+    if (inputSession !== inputSessionRef.current) return;
+    isComposingRef.current = true;
+  }, [inputSession]);
+
+  const handleCompositionEnd = useCallback(
+    (event: React.CompositionEvent<HTMLTextAreaElement>) => {
+      if (inputSession !== inputSessionRef.current) return;
+      isComposingRef.current = false;
+      const input = event.currentTarget;
+      queueMicrotask(() => processNativeInput(input, inputSession, true));
+    },
+    [inputSession, processNativeInput]
+  );
+
+  // Keep ordinary typing entirely browser/IME-owned. Keyboard shortcuts are
+  // limited to explicit reset controls and never alter normal text input.
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (isPaused) return;
 
-      setIsCapsLockOn(e.getModifierState('CapsLock'));
-      setActivePressedKeyCode(e.code);
-
-      if (e.key === 'Tab' || e.key === 'Escape') {
-        e.preventDefault();
+      if (event.key === 'Tab' || event.key === 'Escape') {
+        event.preventDefault();
         handleReset();
         return;
       }
 
-      // Track only physical ASCII keys and Backspace/Space. Vietnamese IMEs may
-      // emit composed characters in input events, but the physical keydown still
-      // gives us the exact Telex progress needed for the keyboard hint.
-      if (e.key === 'Backspace') {
-        lineKeysLogRef.current.push('Backspace');
-        physicalKeysRef.current = physicalKeysRef.current.slice(0, -1);
-        hasPhysicalInputRef.current = true;
-        setTypedPhysicalKeys(physicalKeysRef.current);
-      } else if (e.key === ' ') {
-        lineKeysLogRef.current.push('Space');
-        physicalKeysRef.current = [...physicalKeysRef.current, ' '];
-        hasPhysicalInputRef.current = true;
-        setTypedPhysicalKeys(physicalKeysRef.current);
-      } else if (e.key.length === 1 && e.key.charCodeAt(0) < 128) {
-        lineKeysLogRef.current.push(e.key);
-        physicalKeysRef.current = [...physicalKeysRef.current, e.key];
-        hasPhysicalInputRef.current = true;
-        setTypedPhysicalKeys(physicalKeysRef.current);
-      }
-
-      hiddenInputRef.current?.focus();
     },
-    [isPaused, handleReset]
+    [handleReset, isPaused]
   );
 
-  const handleKeyUp = useCallback(() => {
+  const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     setActivePressedKeyCode('');
+    setIsCapsLockOn(event.getModifierState('CapsLock'));
   }, []);
 
-  const fontSizeClass = {
+  const drillFontSizeClass = {
     small: 'text-xl sm:text-2xl',
     medium: 'text-2xl sm:text-3xl',
     large: 'text-3xl sm:text-4xl',
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
-
-  // Render physical Telex progress by target segment. This avoids presenting a
-  // valid in-progress prefix such as `a` for `ă` as an error in the typed log.
-  const composedTypedText = typedText;
-
-  const composedTypedSegments = useMemo(() => {
-    if (hasPhysicalInputRef.current) {
-      const segments: Array<{ text: string; isError: boolean; isPartial: boolean }> = [];
-      let physicalIndex = 0;
-
-      targetChars.forEach((targetChar, charIndex) => {
-        const charKeys = telexKeysForChar(targetChar);
-        const enteredKeys = typedPhysicalKeys.slice(
-          physicalIndex,
-          physicalIndex + charKeys.length
-        );
-
-        if (enteredKeys.length > 0) {
-          segments.push({
-            text: convertPhysicalKeysToComposedText(enteredKeys),
-            isError: charStatus[charIndex] === 'error',
-            isPartial: charStatus[charIndex] === 'current',
-          });
-        }
-
-        physicalIndex += charKeys.length;
-      });
-
-      return segments;
-    }
-
-    if (!composedTypedText) return [];
-    const targetArray = [...currentLine];
-    const typedArray = [...composedTypedText];
-
-    return typedArray.map((char, idx) => {
-      const isError =
-        idx >= targetArray.length || !samePhysicalChar(char, targetArray[idx]);
-      return { text: char, isError, isPartial: false };
-    });
-  }, [composedTypedText, currentLine, targetChars, typedPhysicalKeys, charStatus]);
-
 
   return (
     <div
@@ -595,19 +583,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }}
       className="outline-none min-h-screen bg-[#f0f4f8] text-slate-800 flex flex-col justify-between selection:bg-blue-500/20 selection:text-blue-900 select-none pb-4 font-sans"
     >
-      {/* Hidden input: uncontrolled so Unikey/EVKey can compose freely without React interference */}
-      <input
-        ref={hiddenInputRef}
-        type="text"
-        onChange={handleInputChange}
-        className="opacity-0 absolute -top-9999 left-0 w-1 h-1 pointer-events-none"
-        tabIndex={-1}
-        autoCapitalize="off"
-        autoComplete="off"
-        autoCorrect="off"
-        spellCheck={false}
-      />
-
       {/* Top Header Bar */}
       <header className="w-full bg-white border-b border-slate-200 px-4 sm:px-8 py-2.5 h-[64px] flex items-center justify-between shadow-xs">
         {/* Left: Back & Lesson Info */}
@@ -627,7 +602,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                 {language === 'vi' ? `Bài ${lesson.id}` : `Lesson ${lesson.id}`}
               </span>
               <h1 className="text-sm sm:text-base font-bold text-slate-800 truncate max-w-[200px] sm:max-w-xs md:max-w-md">
-                {lesson.title}
+                {getLocalizedLessonTitle(lesson, language)}
               </h1>
             </div>
             <p className="text-[11px] sm:text-xs text-slate-400 truncate max-w-sm hidden md:block">
@@ -682,13 +657,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Telex Reference Guide Toggle */}
           <button
-            id="telex-guide-toggle-btn"
-            onClick={() => setShowTelexGuide(true)}
-            title={language === 'vi' ? 'Bảng quy tắc gõ Telex' : 'Telex Typing Rules'}
+            id="input-method-guide-toggle-btn"
+            onClick={() => setShowInputGuide(true)}
+            title={suggestionMethod === 'telex' ? t.typingEngine.telexGuide : t.typingEngine.vniGuide}
             className="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-all flex items-center gap-1 text-xs font-bold shadow-xs cursor-pointer"
           >
             <BookOpen className="w-4 h-4 text-amber-600" />
-            <span className="hidden lg:inline">{language === 'vi' ? 'Quy tắc Telex' : 'Telex Guide'}</span>
+            <span className="hidden lg:inline">{suggestionMethod === 'telex' ? t.typingEngine.telexGuide : t.typingEngine.vniGuide}</span>
           </button>
 
           {/* Language Selector */}
@@ -766,30 +741,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         </div>
       </header>
 
-      {/* Progress Dots / Lines Indicator */}
-      <div className="w-full max-w-4xl mx-auto px-4 pt-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            {language === 'vi'
-              ? `Dòng ${currentLineIndex + 1} / ${lesson.content.length}`
-              : `Exercise ${currentLineIndex + 1} of ${lesson.content.length}`}
-          </span>
-          <div className="flex items-center gap-1.5">
-            {lesson.content.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  idx < currentLineIndex
-                    ? 'w-6 bg-emerald-500'
-                    : idx === currentLineIndex
-                    ? 'w-8 bg-blue-600 animate-pulse'
-                    : 'w-3 bg-slate-300'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
+      {/* Lesson target */}
+      <div className="w-full max-w-4xl mx-auto px-4 pt-3 flex items-center justify-end">
         <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
           <Target className="w-3.5 h-3.5 text-blue-600" />
           {language === 'vi' ? 'Mục tiêu:' : 'Goal:'}{' '}
@@ -799,7 +752,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       </div>
 
       {/* Main Typing Display Area */}
-      <main className="flex-1 flex flex-col items-center justify-between px-3 sm:px-6 py-2 max-w-5xl mx-auto w-full gap-2.5">
+      <main className="flex-1 flex flex-col items-center justify-between px-3 sm:px-6 xl:px-8 py-2 max-w-[1600px] 2xl:max-w-[1760px] mx-auto w-full gap-2.5">
         {/* Pause Banner */}
         {isPaused ? (
           <div className="text-center py-8 px-6 bg-white rounded-3xl border border-slate-200 shadow-xl max-w-md w-full my-auto animate-in fade-in zoom-in-95">
@@ -824,7 +777,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
               {/* Left Column: Typing Prompt & User Typed Input Log */}
               <div
                 className={`flex flex-col gap-2 ${
-                  settings.showHands ? 'lg:col-span-7 xl:col-span-8' : 'col-span-1'
+                  settings.showHands ? 'lg:col-span-8 xl:col-span-9' : 'col-span-1'
                 }`}
               >
                 {/* 1. Target Typing Prompt Box */}
@@ -836,138 +789,105 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                   }}
                   className="w-full bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200 shadow-xs cursor-text relative overflow-hidden transition-all flex flex-col justify-between min-h-[120px]"
                 >
-                  {/* Persistent Top Helper / Telex Rule Bar (Fixed height, prevents layout jump) */}
-                  <div className="h-7 mb-1.5 flex items-center justify-center gap-2 overflow-hidden select-none">
-                    {activeToken && activeToken.sequences.some(s => s.length > 1) ? (
-                      <div className="flex items-center justify-center gap-2">
+                  {/* Suggestion helper. It never writes to the native input. */}
+                  <div className="min-h-7 mb-1.5 flex flex-wrap items-center justify-center gap-2 select-none">
+                    {activeToken && activeSequence.length > 0 ? (
+                      <>
                         <span className="text-[11px] font-semibold text-slate-500">
-                          {language === 'vi' ? 'Quy tắc gõ từ' : 'Telex keys for'}{' '}
-                          <span className="font-bold text-slate-900 text-xs">
-                            "{activeToken.text}"
-                          </span>
-                          :
+                          {t.typingEngine.inputMethodLabel} ({suggestionMethod.toUpperCase()}) ·
+                          <span className="ml-1 font-bold text-slate-900">"{activeToken.text}"</span>
                         </span>
                         <div className="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-mono text-[11px] shadow-xs">
-                          {(activeToken.sequences[0] || []).map((k, kIdx) => {
-                            const keyIndex = activeTokenPhysicalStartIndex + kIdx;
-                            const isCompleted = keyIndex < nextExpectedPhysicalIndex;
-                            const isNext = keyIndex === nextExpectedPhysicalIndex;
-                            return (
-                              <span
-                                key={kIdx}
-                                className={`px-1.5 py-0.5 rounded font-bold transition-all border ${
-                                  isCompleted
-                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
-                                    : isNext
-                                    ? 'bg-[#42c998] text-slate-950 border-[#2eb986] shadow-xs scale-105'
-                                    : 'bg-white text-slate-500 border-slate-200'
-                                }`}
-                              >
-                                {k}
-                              </span>
-                            );
-                          })}
+                          {activeSequence.map((key, index) => (
+                            <span
+                              key={`${key}-${index}`}
+                              className={`px-1.5 py-0.5 rounded font-bold border transition-all ${
+                                index < nextExpectedPhysicalIndex
+                                  ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                                  : index === nextExpectedPhysicalIndex
+                                  ? 'bg-[#42c998] text-slate-950 border-[#2eb986] shadow-xs scale-105'
+                                  : 'bg-white text-slate-500 border-slate-200'
+                              }`}
+                            >
+                              {key === ' ' ? 'SPACE' : key}
+                            </span>
+                          ))}
                         </div>
-                      </div>
+                      </>
                     ) : (
-                      <div className="flex items-center justify-center gap-2 text-slate-500 text-[11px]">
-                        {currentTargetChar === ' ' ? (
-                          <span className="flex items-center gap-1.5 font-medium">
-                            <span className="text-slate-400">
-                              {language === 'vi' ? 'Phím tiếp theo' : 'Next key'}:
-                            </span>
-                            <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-xs">
-                              {language === 'vi' ? 'Phím cách (Space)' : 'Spacebar'}
-                            </span>
-                          </span>
-                        ) : currentTargetChar ? (
-                          <span className="flex items-center gap-1.5 font-medium">
-                            <span className="text-slate-400">
-                              {language === 'vi' ? 'Phím tiếp theo' : 'Next key'}:
-                            </span>
-                            <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-xs">
-                              {currentTargetChar}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="text-emerald-600 font-semibold text-xs">
-                            {language === 'vi' ? '✓ Hoàn thành dòng này!' : '✓ Line completed!'}
-                          </span>
-                        )}
-                      </div>
+                      <span className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                        {t.typingEngine.nextKeyLabel}:
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-xs">
+                          {nextExpectedPhysicalKey === ' '
+                            ? t.typingEngine.pressSpace
+                            : nextExpectedPhysicalKey || t.typingEngine.lineComplete}
+                        </span>
+                      </span>
                     )}
                   </div>
 
-                  {/* Target key characters stream (Grouped by word so words wrap as whole units without splitting) */}
+                  {/* Long text wraps by whole words; key drills retain four large rows. */}
                   <div
-                    className={`font-mono leading-relaxed text-center select-none ${fontSizeClass} flex flex-wrap items-baseline justify-center my-auto gap-y-2.5`}
+                    id="typing-sample-line"
+                    className={`w-full select-none text-center font-mono leading-relaxed ${
+                      isLongTextLesson
+                        ? 'text-base sm:text-lg'
+                        : drillFontSizeClass
+                    }`}
                   >
-                    {targetWords.map((wordItem, wordIdx) => {
-                      if (wordItem.type === 'space') {
-                        const { index } = wordItem.chars[0];
-                        const status = charStatus[index] || 'pending';
-                        const isCompleted = status === 'correct';
-                        const isCurrent = status === 'current';
-                        const hasError = status === 'error';
-
-                        // Lowered spacebar pill aligned with the bottom baseline of surrounding letters
-                        let spaceClass =
-                          'bg-slate-100/90 text-slate-400 border border-dashed border-slate-300';
-                        if (isCompleted) {
-                          spaceClass =
-                            'bg-emerald-50 text-emerald-600 border border-emerald-300 font-medium';
-                        } else if (hasError) {
-                          spaceClass =
-                            'bg-rose-500 text-white border border-rose-600 font-bold';
-                        } else if (isCurrent) {
-                          spaceClass =
-                            'bg-[#42c998] text-slate-950 border border-[#2eb986] font-black shadow-xs';
-                        }
-
-                        return (
-                          <span
-                            key={`space-${index}`}
-                            className={`inline-flex items-center justify-center min-w-[2em] sm:min-w-[2.4em] h-[1.1em] mx-1 px-1.5 rounded-lg text-xs font-sans align-baseline translate-y-[2px] ${spaceClass}`}
-                            title="Spacebar"
-                          >
-                            ␣
-                          </span>
-                        );
-                      }
-
-                      // Word container: inline-flex whitespace-nowrap guarantees whole-word wrapping
-                      return (
-                        <span
-                          key={`word-${wordIdx}`}
-                          className="inline-flex items-baseline whitespace-nowrap mx-0.5"
-                        >
-                          {wordItem.chars.map(({ char, index }) => {
+                    {targetDisplayLines.map((groups, lineIndex) => (
+                      <div
+                        key={lineIndex}
+                        className={isLongTextLesson ? 'inline' : 'block min-h-[1.45em]'}
+                      >
+                        {groups.map((group) => {
+                          if (group.type === 'space') {
+                            const { char, index } = group.chars[0];
                             const status = charStatus[index] || 'pending';
-                            const isCompleted = status === 'correct';
                             const isCurrent = status === 'current';
                             const hasError = status === 'error';
-
-                            let charStyle = 'text-slate-400 font-normal bg-transparent';
-                            if (isCompleted) {
-                              charStyle = 'text-emerald-600 font-bold bg-transparent';
-                            } else if (hasError) {
-                              charStyle = 'bg-rose-500 text-white font-bold shadow-xs';
-                            } else if (isCurrent) {
-                              charStyle = 'bg-[#42c998] text-slate-950 font-black shadow-xs';
-                            }
+                            const isCompleted = status === 'correct';
+                            const spaceStyle = hasError
+                              ? 'inline-block min-w-[0.55ch] rounded-sm bg-rose-500 text-white'
+                              : isCurrent
+                              ? 'inline-block min-w-[0.55ch] rounded-sm bg-[#42c998] text-slate-950'
+                              : isCompleted
+                              ? 'text-emerald-600'
+                              : 'text-slate-400';
 
                             return (
-                              <span
-                                key={index}
-                                className={`inline-flex items-center justify-center min-w-[1.2ch] h-[1.25em] mx-[1px] px-0.5 py-0.5 rounded-md ${charStyle}`}
-                              >
+                              <span key={index} className={spaceStyle}>
                                 {char}
                               </span>
                             );
-                          })}
-                        </span>
-                      );
-                    })}
+                          }
+
+                          return (
+                            <span key={`word-${group.chars[0].index}`} className="whitespace-nowrap">
+                              {group.chars.map(({ char, index }) => {
+                                const status = charStatus[index] || 'pending';
+                                const isCompleted = status === 'correct';
+                                const isCurrent = status === 'current';
+                                const hasError = status === 'error';
+                                const charStyle = hasError
+                                  ? 'rounded-sm bg-rose-500 px-px font-bold text-white shadow-xs'
+                                  : isCurrent
+                                  ? 'rounded-sm bg-[#42c998] px-px font-black text-slate-950 shadow-xs'
+                                  : isCompleted
+                                  ? 'font-bold text-emerald-600'
+                                  : 'font-normal text-slate-400';
+
+                                return (
+                                  <span key={index} className={charStyle}>
+                                    {char}
+                                  </span>
+                                );
+                              })}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    ))}
                   </div>
 
                   {/* Persistent Bottom Sub-prompt / Control Hint (Fixed height, prevents layout jump) */}
@@ -975,9 +895,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                     {!isStarted ? (
                       <span className="flex items-center gap-1.5 animate-pulse text-blue-600 font-semibold">
                         <HelpCircle className="w-3.5 h-3.5 text-blue-500" />
-                        {isVietnameseContent && language === 'vi'
-                          ? 'Nhấn phím bất kỳ theo quy tắc Telex để bắt đầu gõ'
-                          : t.typingEngine.pressToStart}
+                        {isVietnameseContent ? t.typingEngine.pressToStartVietnamese : t.typingEngine.pressToStart}
                       </span>
                     ) : (
                       <span className="text-[11px] text-slate-400 font-normal">
@@ -993,7 +911,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                 <div
                   id="user-typed-log-box"
                   onClick={() => {
-                    containerRef.current?.focus();
                     hiddenInputRef.current?.focus();
                   }}
                   className="w-full bg-white rounded-xl p-2.5 sm:p-3 border border-slate-200 shadow-xs cursor-text flex flex-col gap-1.5"
@@ -1005,48 +922,38 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400">
                       <span>
-                        {composedTypedSegments.length} / {targetChars.length}{' '}
-                        {language === 'vi' ? 'ký tự' : 'chars'}
+                        {[...normalizeNFC(typedText)].length} / {targetChars.length}{' '}
+                        {t.typingEngine.characterUnit}
                       </span>
-                      {physicalErrors.size > 0 && (
-                        <span className="text-rose-600 font-bold bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
-                          {physicalErrors.size} {language === 'vi' ? 'lỗi' : 'err'}
-                        </span>
-                      )}
+
                     </div>
                   </div>
 
-                  <div className="w-full bg-slate-50/90 rounded-lg px-3 py-2 border border-slate-200/90 min-h-[38px] text-sm sm:text-base font-normal leading-relaxed text-slate-800 shadow-inner flex items-center">
-                    {composedTypedSegments.length === 0 ? (
-                      <span className="text-slate-400 italic text-xs sm:text-sm font-sans select-none">
-                        {t.typingEngine.typedLogPlaceholder}
-                      </span>
-                    ) : (
-                      <div className="font-body text-slate-800 text-sm sm:text-base whitespace-pre-wrap flex items-center flex-wrap">
-                        {composedTypedSegments.map((segment, idx) => (
-                          <span
-                            key={idx}
-                            className={
-                              segment.isError
-                                ? 'text-rose-600 font-medium underline decoration-rose-400'
-                                : segment.isPartial
-                                ? 'text-blue-700 font-medium'
-                                : 'text-slate-800'
-                            }
-                          >
-                            {segment.text}
-                          </span>
-                        ))}
-                        <span className="inline-block w-0.5 h-4 sm:h-5 bg-blue-600 rounded-full animate-pulse ml-0.5 align-middle" />
-                      </div>
-                    )}
-                  </div>
+                  {/* This is the actual native IME control, not a hidden proxy.
+                      A visible focus target lets Windows Vietnamese and Unikey
+                      commit their composition directly into the browser field. */}
+                  <textarea
+                    ref={inputCallbackRef}
+                    lang="vi"
+                    inputMode="text"
+                    rows={3}
+                    onInput={handleInputChange}
+                    onCompositionStart={handleCompositionStart}
+                    onCompositionEnd={handleCompositionEnd}
+                    aria-label={t.typingEngine.typedLogTitle}
+                    placeholder={t.typingEngine.typedLogPlaceholder}
+                    className="w-full resize-y bg-slate-50/90 rounded-lg px-3 py-2 border border-slate-200/90 min-h-[72px] max-h-44 text-sm sm:text-base font-body font-normal leading-relaxed text-slate-800 shadow-inner outline-none select-text placeholder:text-slate-400 placeholder:italic focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    autoCapitalize="off"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
                 </div>
               </div>
 
               {/* Right Column: Hand Posture Guide (Mô phỏng tư thế tay gõ phím nhỏ gọn nằm ngang) */}
               {settings.showHands && (
-                <div className="lg:col-span-5 xl:col-span-4 flex flex-col">
+                <div className="lg:col-span-4 xl:col-span-3 flex flex-col">
                   <HandGuide
                     targetChar={nextExpectedPhysicalKey || currentTargetChar}
                     compact={true}
@@ -1093,17 +1000,21 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         </span>
         <span>•</span>
         <span>
-          {language === 'vi' ? 'Quy tắc Telex:' : 'Telex:'}{' '}
-          <span className="font-semibold text-slate-700">aa=â, aw=ă, ee=ê, oo=ô, ow=ơ, uw=ư, dd=đ</span>
+          {suggestionMethod === 'telex' ? 'Telex:' : 'VNI:'}{' '}
+          <span className="font-semibold text-slate-700">
+            {suggestionMethod === 'telex'
+              ? 'aa=â, aw=ă, ee=ê, oo=ô, ow=ơ, uw=ư, dd=đ'
+              : '6=â/ê/ô, 7=ơ/ư, 8=ă, 9=đ, 1-5=dấu thanh'}
+          </span>
         </span>
       </footer>
 
       {/* Telex Reference Modal */}
-      {showTelexGuide && (
+      {showInputGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 max-w-2xl w-full text-slate-800 flex flex-col relative animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setShowTelexGuide(false)}
+              onClick={() => setShowInputGuide(false)}
               className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -1115,14 +1026,10 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900">
-                  {language === 'vi'
-                    ? 'Bảng Quy Tắc Gõ Tiếng Việt Telex'
-                    : 'Vietnamese Telex Typing Rules'}
+                  {suggestionMethod === 'telex' ? t.typingEngine.telexGuide : t.typingEngine.vniGuide}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  {language === 'vi'
-                    ? 'Chuẩn quy tắc gõ 10 ngón tiếng Việt theo chuẩn bàn phím QWERTY'
-                    : 'Standard Vietnamese touch typing rules on QWERTY keyboard'}
+                  {t.typingEngine.nativeInputNote}
                 </p>
               </div>
             </div>
@@ -1134,20 +1041,20 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                 {language === 'vi' ? '1. Bảng Phím Nguyên Âm & Chữ Đ' : '1. Vowels & Letter Đ'}
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {TELEX_VOWEL_RULES.map((item, idx) => (
+                {VIETNAMESE_INPUT_GUIDE_RULES[suggestionMethod].letters.map((item, idx) => (
                   <div
                     key={idx}
                     className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono font-black text-blue-600 text-base bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-100">
-                        {item.telex}
+                        {item.keys}
                       </span>
                       <span className="font-sans font-bold text-slate-900 text-lg">
                         = {item.result}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-500 font-medium">{item.example}</span>
+                    <span className="text-[11px] text-slate-500 font-medium">{item.name}</span>
                   </div>
                 ))}
               </div>
@@ -1160,20 +1067,20 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                 {language === 'vi' ? '2. Bảng Phím Dấu Thanh' : '2. Tone Marks'}
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                {TELEX_TONE_RULES.map((item, idx) => (
+                {VIETNAMESE_INPUT_GUIDE_RULES[suggestionMethod].tones.map((item, idx) => (
                   <div
                     key={idx}
                     className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-mono font-black text-emerald-600 text-base bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
-                        {item.key}
+                        {item.keys}
                       </span>
                       <span className="font-sans font-bold text-slate-900 text-sm">
-                        {item.tone}
+                        {item.name}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-500 font-medium">{item.example}</span>
+                    <span className="text-[11px] text-slate-500 font-medium">{item.name}</span>
                   </div>
                 ))}
               </div>
@@ -1204,7 +1111,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
             </div>
 
             <button
-              onClick={() => setShowTelexGuide(false)}
+              onClick={() => setShowInputGuide(false)}
               className="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-md shadow-blue-200 cursor-pointer"
             >
               {language === 'vi' ? 'Đã hiểu, Tiếp tục luyện tập' : 'Got it, Continue Practice'}

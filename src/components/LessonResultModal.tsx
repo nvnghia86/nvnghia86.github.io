@@ -3,6 +3,7 @@ import { Lesson, LessonResult } from '../types';
 import { triggerConfetti } from '../utils/confetti';
 import { soundEngine } from '../utils/soundEngine';
 import { useTranslation } from '../i18n';
+import { getLocalizedLessonTitle } from '../utils/curriculum';
 import {
   Star,
   Zap,
@@ -83,7 +84,7 @@ export const LessonResultModal: React.FC<LessonResultModalProps> = ({
     (a, b) => (b[1] as number) - (a[1] as number)
   );
 
-  const lessonDisplayTitle = (language === 'vi' && lesson.vietnameseTitle) ? lesson.vietnameseTitle : lesson.title;
+  const lessonDisplayTitle = getLocalizedLessonTitle(lesson, language);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">

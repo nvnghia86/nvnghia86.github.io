@@ -1,5 +1,6 @@
 import React from 'react';
 import { KEYBOARD_ROWS, analyzeCharacter } from '../utils/keyboardMap';
+import { useTranslation } from '../i18n';
 
 interface VirtualKeyboardProps {
   targetChar?: string;
@@ -14,6 +15,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
   activePressedKey,
   isCapsLock = false,
 }) => {
+  const { t } = useTranslation();
   const analysis = analyzeCharacter(targetChar);
 
   return (
@@ -24,7 +26,7 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
       {/* Target Key Helper Hint */}
       <div className="flex items-center justify-between px-2 mb-2.5 text-xs sm:text-sm font-medium text-slate-600">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400 font-semibold">Next Key:</span>
+          <span className="text-slate-400 font-semibold">{t.typingEngine.nextKeyLabel}:</span>
           <span
             className="px-2.5 py-0.5 rounded-lg text-slate-950 font-mono font-black border border-emerald-600/30 text-xs sm:text-sm shadow-xs"
             style={{ backgroundColor: ACTIVE_COLOR }}

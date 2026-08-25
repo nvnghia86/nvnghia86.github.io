@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { Lesson, Unit, UserStats, UserSettings } from '../types';
 import { UNITS, LESSONS } from '../data/lessons';
+import {
+  getLocalizedLessonTitle,
+  getLocalizedUnitTitle,
+  isCurriculumLessonUnlocked,
+} from '../utils/curriculum';
 import { getHeroById } from '../data/characters';
 import { useTranslation } from '../i18n';
 import { LanguageSelector } from './LanguageSelector';
@@ -386,7 +391,7 @@ export const CourseMap: React.FC<CourseMapProps> = ({
                           className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: unit.color }}
                         />
-                        <span className="truncate">{unit.title}</span>
+                        <span className="truncate">{getLocalizedUnitTitle(unit, language, t.courseMap.unitBadge)}</span>
                       </div>
 
                       {isCurrentUnit ? (
@@ -525,7 +530,7 @@ export const CourseMap: React.FC<CourseMapProps> = ({
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                Unit {u.id}
+                {getLocalizedUnitTitle(u, language, t.courseMap.unitBadge).split(':')[0]}
               </button>
             ))}
           </div>
@@ -597,7 +602,7 @@ export const CourseMap: React.FC<CourseMapProps> = ({
                       </div>
                       <div>
                         <h2 className="text-sm sm:text-base font-bold text-slate-900">
-                          {unit.title}
+                          {getLocalizedUnitTitle(unit, language, t.courseMap.unitBadge)}
                         </h2>
                         <span className="text-xs text-slate-400 hidden sm:inline">
                           {unit.subtitle} • {unit.description}
@@ -616,13 +621,18 @@ export const CourseMap: React.FC<CourseMapProps> = ({
                       const res = getLessonResult(lesson.id);
                       const isCompleted = !!res;
                       const isCurrent = stats.currentLessonId === lesson.id;
+                      const isLocked = !isCurriculumLessonUnlocked(lesson, stats, LESSONS);
 
                       // Gentle, soft colors for nodes
                       let nodeStyle =
                         'bg-slate-50 border-2 border-slate-200 text-slate-600 hover:border-sky-300 hover:bg-sky-50/40';
                       let labelColor = 'text-slate-500';
 
-                      if (isCurrent) {
+                      if (isLocked) {
+                        nodeStyle =
+                          'bg-slate-100 border-2 border-slate-200 text-slate-400 cursor-not-allowed opacity-75';
+                        labelColor = 'text-slate-400';
+                      } else if (isCurrent) {
                         nodeStyle =
                           'bg-sky-50 border-2 border-sky-500 text-sky-700 ring-4 ring-sky-100/90 shadow-2xs font-bold scale-105';
                         labelColor = 'text-sky-700 font-bold';
@@ -648,12 +658,17 @@ export const CourseMap: React.FC<CourseMapProps> = ({
                         >
                           <button
                             id={`lesson-node-${lesson.id}`}
-                            onClick={() => onSelectLesson(lesson)}
+                            onClick={() => !isLocked && onSelectLesson(lesson)}
+                            disabled={isLocked}
                             className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full flex flex-col items-center justify-center font-bold text-base sm:text-lg relative transition-all duration-150 cursor-pointer ${nodeStyle}`}
-                            title={`${lesson.title} - ${lesson.description}`}
+                            title={isLocked
+                              ? t.courseMap.locked
+                              : `${getLocalizedLessonTitle(lesson, language)} - ${lesson.description}`}
                           >
                             {/* Icon or Lesson ID */}
-                            {lesson.type === 'game' ? (
+                            {isLocked ? (
+                              <Lock className="w-5 h-5 sm:w-6 sm:h-6" />
+                            ) : lesson.type === 'game' ? (
                               <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6" />
                             ) : lesson.type === 'test' ? (
                               <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -682,7 +697,11 @@ export const CourseMap: React.FC<CourseMapProps> = ({
 
                           {/* Lesson Title / Status Label */}
                           <div className="max-w-[85px] truncate pt-0.5">
-                            {isCurrent ? (
+                            {isLocked ? (
+                              <span className="text-[10px] font-semibold text-slate-400 block">
+                                {t.courseMap.locked}
+                              </span>
+                            ) : isCurrent ? (
                               <span className="text-[10px] font-bold text-sky-700 uppercase tracking-tight block">
                                 {t.courseMap.inProgress}
                               </span>
@@ -690,7 +709,7 @@ export const CourseMap: React.FC<CourseMapProps> = ({
                               <span
                                 className={`text-[11px] ${labelColor} truncate block group-hover:text-sky-700 transition-colors`}
                               >
-                                {lesson.title}
+                                {getLocalizedLessonTitle(lesson, language)}
                               </span>
                             )}
                           </div>

@@ -108,6 +108,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
 
+          {/* Vietnamese suggestion method. The OS/browser remains responsible for composing text. */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+              <Keyboard className="w-4 h-4 text-sky-600" /> {t.settings.vietnameseInputMethod}
+            </label>
+            <p className="text-[11px] text-slate-500 mb-2">{t.settings.vietnameseInputMethodDesc}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {(['telex', 'vni'] as const).map((method) => (
+                <button
+                  key={method}
+                  onClick={() => onUpdateSettings({ vietnameseInputMethod: method })}
+                  className={`py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    settings.vietnameseInputMethod === method
+                      ? 'bg-sky-600 text-white border-sky-600 shadow-2xs'
+                      : 'bg-white border-slate-200/80 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {method === 'telex' ? t.settings.telexMethod : t.settings.vniMethod}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Visual Aids Toggles */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">

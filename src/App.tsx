@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Lesson, LessonResult, UserStats, UserSettings } from './types';
 import { LESSONS } from './data/lessons';
 import {
+  isCurriculumLessonUnlocked,
+} from './utils/curriculum';
+import {
   loadUserStats,
   loadSettings,
   saveSettings,
@@ -120,11 +123,16 @@ export default function App() {
         const lessonId = cleanHash.replace('lesson/', '');
         const all = [...LESSONS, ...customLessons];
         const found = all.find((l) => String(l.id) === lessonId);
-        if (found) {
+        const isCustomLesson = Boolean(found && customLessons.some((lesson) => lesson.id === found.id));
+        const canOpenLesson = Boolean(found) && (
+          isCustomLesson || isCurriculumLessonUnlocked(found, stats, LESSONS)
+        );
+        if (found && canOpenLesson) {
           setActiveLesson(found);
           setView('lesson');
         } else {
           setView('course_map');
+          window.location.hash = 'course_map';
         }
       } else if (cleanHash === 'office_hub' || cleanHash === 'office-hub') {
         setShowOfficeHub(true);
@@ -140,7 +148,7 @@ export default function App() {
     handleHashChange();
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [customLessons]);
+  }, [customLessons, stats]);
 
   // Navigate helper to sync view state with URL hash
   const navigateTo = useCallback((hashRoute: string) => {
@@ -149,12 +157,20 @@ export default function App() {
 
   // Launch a lesson
   const handleSelectLesson = useCallback((lesson: Lesson) => {
+    const isCustomLesson = customLessons.some((item) => item.id === lesson.id);
+    if (!isCustomLesson && !isCurriculumLessonUnlocked(lesson, stats, LESSONS)) {
+      setActiveLesson(null);
+      setView('course_map');
+      window.location.hash = 'course_map';
+      return;
+    }
+
     setActiveLesson(lesson);
     setActiveResult(null);
     setView('lesson');
     window.location.hash = `lesson/${lesson.id}`;
     trackLessonStart(lesson);
-  }, []);
+  }, [customLessons, stats]);
 
   // Complete a lesson or game
   const handleLessonFinish = useCallback((result: LessonResult) => {
