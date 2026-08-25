@@ -101,11 +101,58 @@ export default function App() {
     });
   }, []);
 
+  // Hash-based URL Router Sync
+  useEffect(() => {
+    const handleHashChange = () => {
+      const rawHash = window.location.hash.replace('#', '') || '/';
+      const cleanHash = rawHash.startsWith('/') ? rawHash.slice(1) : rawHash;
+
+      if (!cleanHash || cleanHash === 'home') {
+        setView('home');
+        setActiveLesson(null);
+      } else if (cleanHash === 'course_map' || cleanHash === 'course-map') {
+        setView('course_map');
+        setActiveLesson(null);
+      } else if (cleanHash === 'badges') {
+        setView('badges');
+        setActiveLesson(null);
+      } else if (cleanHash.startsWith('lesson/')) {
+        const lessonId = cleanHash.replace('lesson/', '');
+        const all = [...LESSONS, ...customLessons];
+        const found = all.find((l) => String(l.id) === lessonId);
+        if (found) {
+          setActiveLesson(found);
+          setView('lesson');
+        } else {
+          setView('course_map');
+        }
+      } else if (cleanHash === 'office_hub' || cleanHash === 'office-hub') {
+        setShowOfficeHub(true);
+      } else if (cleanHash === 'settings') {
+        setShowSettings(true);
+      } else if (cleanHash === 'services') {
+        setShowServicesPromo(true);
+      } else if (cleanHash === 'custom_practice' || cleanHash === 'custom-practice') {
+        setShowCustomPractice(true);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [customLessons]);
+
+  // Navigate helper to sync view state with URL hash
+  const navigateTo = useCallback((hashRoute: string) => {
+    window.location.hash = hashRoute;
+  }, []);
+
   // Launch a lesson
   const handleSelectLesson = useCallback((lesson: Lesson) => {
     setActiveLesson(lesson);
     setActiveResult(null);
     setView('lesson');
+    window.location.hash = `lesson/${lesson.id}`;
     trackLessonStart(lesson);
   }, []);
 
@@ -132,15 +179,11 @@ export default function App() {
     const currentIndex = all.findIndex((l) => l.id === activeLesson.id);
     if (currentIndex !== -1 && currentIndex + 1 < all.length) {
       const next = all[currentIndex + 1];
-      setActiveLesson(next);
-      setActiveResult(null);
-      trackLessonStart(next);
+      handleSelectLesson(next);
     } else {
-      setView('course_map');
-      setActiveLesson(null);
-      setActiveResult(null);
+      navigateTo('course_map');
     }
-  }, [activeLesson, customLessons]);
+  }, [activeLesson, customLessons, handleSelectLesson, navigateTo]);
 
   const handleRetryLesson = useCallback(() => {
     setActiveResult(null);
@@ -150,10 +193,8 @@ export default function App() {
   }, [activeLesson]);
 
   const handleBackToCourse = useCallback(() => {
-    setView('course_map');
-    setActiveLesson(null);
-    setActiveResult(null);
-  }, []);
+    navigateTo('course_map');
+  }, [navigateTo]);
 
   const handleResetProgress = useCallback(() => {
     resetAllProgress();
@@ -190,9 +231,9 @@ export default function App() {
             stats={stats}
             settings={settings}
             customLessons={customLessons}
-            onOpenCourseMap={() => setView('course_map')}
+            onOpenCourseMap={() => navigateTo('course_map')}
             onSelectLesson={handleSelectLesson}
-            onOpenOfficeHub={() => setShowOfficeHub(true)}
+            onOpenOfficeHub={() => navigateTo('office_hub')}
             onOpenSpeedRun={() => {
               const speedRunLesson =
                 allLessons.find((l) => l.gameType === 'data_entry_speed_run') ||
@@ -205,9 +246,9 @@ export default function App() {
                 allLessons[allLessons.length - 1];
               handleSelectLesson(monsterLesson);
             }}
-            onOpenCustomPractice={() => setShowCustomPractice(true)}
-            onOpenBadges={() => setView('badges')}
-            onOpenSettings={() => setShowSettings(true)}
+            onOpenCustomPractice={() => navigateTo('custom_practice')}
+            onOpenBadges={() => navigateTo('badges')}
+            onOpenSettings={() => navigateTo('settings')}
             onOpenServices={handleOpenServices}
           />
         )}
@@ -218,19 +259,19 @@ export default function App() {
             stats={stats}
             settings={settings}
             customLessons={customLessons}
-            onOpenHome={() => setView('home')}
+            onOpenHome={() => navigateTo('home')}
             onSelectLesson={handleSelectLesson}
-            onOpenBadges={() => setView('badges')}
-            onOpenCustomPractice={() => setShowCustomPractice(true)}
-            onOpenSettings={() => setShowSettings(true)}
-            onOpenOfficeHub={() => setShowOfficeHub(true)}
+            onOpenBadges={() => navigateTo('badges')}
+            onOpenCustomPractice={() => navigateTo('custom_practice')}
+            onOpenSettings={() => navigateTo('settings')}
+            onOpenOfficeHub={() => navigateTo('office_hub')}
             onOpenServices={handleOpenServices}
           />
         )}
 
         {/* 3. Badges & Trophy Room View */}
         {view === 'badges' && (
-          <BadgesView stats={stats} onBack={() => setView('home')} />
+          <BadgesView stats={stats} onBack={() => navigateTo('home')} />
         )}
 
         {/* 4. Interactive Lesson / Game View */}
