@@ -608,150 +608,60 @@ export function evaluateLineProgress(
   currentLine: string,
   tokens: WordToken[],
   typedKeys: string[],
-  physicalErrors: Set<number>
+  _physicalErrors: Set<number>
 ): LineProgressState {
   const chars = [...currentLine];
+  const composedText = convertPhysicalKeysToComposedText(typedKeys);
+  const typedChars = [...normalizeNFC(composedText)];
+
   const charStatus: Array<'pending' | 'current' | 'correct' | 'error'> = chars.map(
     () => 'pending'
   );
 
-  let keyPtr = 0;
-  let tokenIdx = 0;
-  let activeSeq: string[] = tokens[0]?.sequences[0] || [];
-  let tokenKeyIdx = 0;
-  let tokenStartPtr = 0;
-  let activeMatchedCharCount = 0;
-
-  while (tokenIdx < tokens.length && keyPtr < typedKeys.length) {
-    const token = tokens[tokenIdx];
-    tokenStartPtr = keyPtr;
-    const remainingTypedKeys = typedKeys.slice(keyPtr);
-
-    // Check if any sequence of this token was fully and cleanly completed
-    let completedSeq: string[] | null = null;
-
-    if (token.type === 'space') {
-      const spaceKeyIdx = remainingTypedKeys.findIndex((k) => samePhysicalChar(k, ' '));
-      if (spaceKeyIdx !== -1) {
-        completedSeq = [' '];
-        keyPtr += spaceKeyIdx;
-      }
-    }
-
-    if (!completedSeq) {
-      for (const seq of token.sequences) {
-        if (remainingTypedKeys.length >= seq.length) {
-          let isMatch = true;
-          for (let i = 0; i < seq.length; i++) {
-            if (
-              !samePhysicalChar(remainingTypedKeys[i], seq[i]) ||
-              physicalErrors.has(keyPtr + i)
-            ) {
-              isMatch = false;
-              break;
-            }
-          }
-          if (isMatch) {
-            completedSeq = seq;
-            break;
-          }
-        }
-      }
-    }
-
-    if (completedSeq) {
-      // Token fully completed without errors
-      for (let ci = token.charStartIndex; ci < token.charEndIndex; ci++) {
-        charStatus[ci] = 'correct';
-      }
-      keyPtr += completedSeq.length;
-      tokenIdx++;
-      tokenKeyIdx = 0;
-      tokenStartPtr = keyPtr;
-      if (tokenIdx < tokens.length) {
-        activeSeq = tokens[tokenIdx].sequences[0] || [];
-      }
-    } else {
-      // This token is the ACTIVE in-progress token (or has error)
-      // Find the best sequence matching the typed prefix
-      let bestSeq = token.sequences[0] || [];
-      let maxMatchLen = 0;
-
-      for (const seq of token.sequences) {
-        let matchLen = 0;
-        while (
-          matchLen < seq.length &&
-          matchLen < remainingTypedKeys.length &&
-          samePhysicalChar(remainingTypedKeys[matchLen], seq[matchLen]) &&
-          !physicalErrors.has(keyPtr + matchLen)
-        ) {
-          matchLen++;
-        }
-        if (matchLen > maxMatchLen) {
-          maxMatchLen = matchLen;
-          bestSeq = seq;
-        }
-      }
-
-      activeSeq = bestSeq;
-      tokenKeyIdx = remainingTypedKeys.length;
-
-      // Check if there is any error in the keys typed for this active token
-      const hasErrorInActiveToken = remainingTypedKeys.some((_, i) =>
-        physicalErrors.has(keyPtr + i)
-      );
-
-      // Determine character progression within this active token
-      const tokenCharLen = token.charEndIndex - token.charStartIndex;
-
-      if (tokenCharLen <= 1) {
-        // Space, punctuation, or 1-character token
-        charStatus[token.charStartIndex] = hasErrorInActiveToken ? 'error' : 'current';
-        activeMatchedCharCount = 0;
+  for (let i = 0; i < chars.length; i++) {
+    if (i < typedChars.length) {
+      if (samePhysicalChar(typedChars[i], chars[i])) {
+        charStatus[i] = 'correct';
       } else {
-        // Multi-character word
-        // Estimate character progress based on maxMatchLen vs bestSeq
-        const progressRatio = bestSeq.length > 0 ? maxMatchLen / bestSeq.length : 0;
-        const matchedCharCount = Math.min(
-          tokenCharLen - 1,
-          Math.floor(progressRatio * tokenCharLen)
-        );
-        activeMatchedCharCount = matchedCharCount;
-
-        for (let i = 0; i < tokenCharLen; i++) {
-          const charGlobalIndex = token.charStartIndex + i;
-          if (i < matchedCharCount) {
-            charStatus[charGlobalIndex] = 'correct';
-          } else if (i === matchedCharCount) {
-            charStatus[charGlobalIndex] = hasErrorInActiveToken ? 'error' : 'current';
-          } else {
-            charStatus[charGlobalIndex] = 'pending';
-          }
-        }
+        charStatus[i] = 'error';
       }
+    } else if (i === typedChars.length) {
+      charStatus[i] = 'current';
+    } else {
+      charStatus[i] = 'pending';
+    }
+  }
 
+  // Find token index and active token corresponding to typedChars length
+  let currentCharIndex = Math.min(chars.length, typedChars.length);
+  let tokenIdx = 0;
+
+  for (let t = 0; t < tokens.length; t++) {
+    const tok = tokens[t];
+    if (currentCharIndex >= tok.charStartIndex && currentCharIndex < tok.charEndIndex) {
+      tokenIdx = t;
       break;
     }
+    if (currentCharIndex >= tok.charEndIndex) {
+      tokenIdx = Math.min(tokens.length - 1, t + 1);
+    }
   }
 
-  const isLineFinished = tokenIdx >= tokens.length;
+  const isLineFinished = typedChars.length >= chars.length &&
+    chars.every((c, idx) => samePhysicalChar(typedChars[idx] || '', c));
+
   const activeToken = tokenIdx < tokens.length ? tokens[tokenIdx] : null;
-  const nextExpectedKey =
-    activeToken && tokenKeyIdx < activeSeq.length ? activeSeq[tokenKeyIdx] : '';
-
-  let currentCharIndex = activeToken
-    ? Math.min(chars.length - 1, activeToken.charStartIndex + activeMatchedCharCount)
-    : chars.length;
-  if (activeToken && charStatus[currentCharIndex] === 'pending') {
-    charStatus[currentCharIndex] = 'current';
-  }
+  const activeSeq = activeToken?.sequences[0] || [];
+  const tokenStartPtr = activeToken ? activeToken.charStartIndex : 0;
+  const tokenKeyIdx = activeToken ? Math.max(0, currentCharIndex - activeToken.charStartIndex) : 0;
+  const nextExpectedKey = activeToken && tokenKeyIdx < activeSeq.length ? activeSeq[tokenKeyIdx] : '';
 
   return {
     currentTokenIndex: tokenIdx,
     tokenStartKeyPtr: tokenStartPtr,
     activeTokenKeyIndex: tokenKeyIdx,
     nextExpectedKey,
-    currentCharIndex,
+    currentCharIndex: Math.min(chars.length - 1, currentCharIndex),
     activeToken,
     activeSequence: activeSeq,
     isLineFinished,
