@@ -330,10 +330,12 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         setTypedPhysicalKeys(newKeys);
 
         // If this token was completed and it was the last token of the line
-        if (
-          candidateKeys.length === matchingSequence.length &&
-          lineState.currentTokenIndex + 1 >= tokens.length
-        ) {
+        const composedCand = convertPhysicalKeysToComposedText(candidateKeys);
+        const isTokenComplete =
+          candidateKeys.length >= matchingSequence.length &&
+          (samePhysicalChar(composedCand, activeToken.text) || candidateKeys.length === matchingSequence.length);
+
+        if (isTokenComplete && lineState.currentTokenIndex + 1 >= tokens.length) {
           advanceLine(newTotalKeys, newCorrectKeys, errorCount, wrongKeysMap);
         }
         return;
