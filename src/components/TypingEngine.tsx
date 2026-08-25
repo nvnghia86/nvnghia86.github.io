@@ -83,17 +83,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   // Telex Guide Modal
   const [showTelexGuide, setShowTelexGuide] = useState(false);
 
-  // physicalKeysRef: raw keystream for current line including Backspace events
-  // This is the source of truth for what the user is typing — avoids Unikey/IME unreliability.
-  const physicalKeysRef = useRef<string[]>([]);
-  // effectiveKeys: physicalKeysRef after applying Backspace reduction (reactive state for re-render)
-  const [effectiveKeys, setEffectiveKeys] = useState<string[]>([]);
+  // typedText: the composed Vietnamese text the user has typed so far on this line.
+  // This is read directly from the uncontrolled <input> DOM value after each native input event.
+  // Using an UNCONTROLLED input lets Unikey/EVKey/OpenKey compose freely without React interference.
+  const [typedText, setTypedText] = useState('');
 
-  // rawInputText kept for focus management only (uncontrolled, not read for value)
-  const [rawInputText, setRawInputText] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
-  const isComposingRef = useRef(false);
   const lineKeysLogRef = useRef<string[]>([]);
 
   // Normalize current line
@@ -132,15 +128,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     return words;
   }, [targetChars]);
 
-  // Compose Vietnamese text from effective physical key stream (Backspace already applied)
-  // This is the reliable source of truth — independent of Unikey/OS IME behavior.
-  const composedText = useMemo(() => {
-    return convertPhysicalKeysToComposedText(effectiveKeys);
-  }, [effectiveKeys]);
-
-  // Real-time character status evaluated against composed text
+  // Real-time character status evaluated against native composed text from uncontrolled input
   const charStatus = useMemo(() => {
-    const typedChars = [...normalizeNFC(composedText)];
+    const typedChars = [...normalizeNFC(typedText)];
 
     return targetChars.map((targetChar, idx) => {
       if (idx < typedChars.length) {
@@ -151,9 +141,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
       return 'pending';
     });
-  }, [composedText, targetChars]);
+  }, [typedText, targetChars]);
 
-  const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(composedText)].length);
+  const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(typedText)].length);
   const currentTargetChar = targetChars[currentCharIndex] || '';
 
   // Derive activeToken from tokens
@@ -198,11 +188,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     soundEngine.setVolume(settings.volume);
   }, [settings.soundTheme, settings.volume]);
 
-  // Cleanly reset all key tracking and refocus on line change
+  // Cleanly reset typedText and uncontrolled input DOM value on line change
   useEffect(() => {
-    physicalKeysRef.current = [];
-    setEffectiveKeys([]);
-    setRawInputText('');
+    setTypedText('');
     setTypedPhysicalKeys([]);
     setPhysicalErrors(new Set());
     lineKeysLogRef.current = [];
@@ -268,18 +256,16 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
             trang_thai: charStatus[idx] || 'pending',
           })),
         },
-        '3_van_ban_da_go': composedText,
+        '3_van_ban_da_go': typedText,
       }
     );
-  }, [composedText, currentLineIndex, currentLine, charStatus, targetChars, activeToken]);
+  }, [typedText, currentLineIndex, currentLine, charStatus, targetChars, activeToken]);
 
   const handleReset = useCallback(() => {
     setCurrentLineIndex(0);
+    setTypedText('');
     setTypedPhysicalKeys([]);
     setPhysicalErrors(new Set());
-    setRawInputText('');
-    physicalKeysRef.current = [];
-    setEffectiveKeys([]);
     setTotalKeystrokes(0);
     setCorrectKeystrokes(0);
     setErrorCount(0);
@@ -374,79 +360,25 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     [currentLineIndex, lesson.content.length, completeLesson]
   );
 
-  // handleInputChange: only used to keep focus on the hidden input; actual typing logic
-  // is driven by handleKeyDown which tracks physical keys reliably.
-  const handleInputChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
-    hiddenInputRef.current?.focus();
-  };
-
-  // Main typing engine via physical key tracking
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
+  // Main typing engine: read composed Vietnamese text from uncontrolled input.
+  // Unikey composes freely into the DOM input without React interference.
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       if (isPaused) return;
 
-      setIsCapsLockOn(e.getModifierState('CapsLock'));
-      setActivePressedKeyCode(e.code);
+      const val = normalizeNFC(e.target.value);
+      setTypedText(val);
 
-      if (e.key === 'Tab' || e.key === 'Escape') {
-        e.preventDefault();
-        handleReset();
-        return;
-      }
-
-      if (
-        [
-          'Shift',
-          'Control',
-          'Alt',
-          'Meta',
-          'CapsLock',
-          'ContextMenu',
-          'ArrowLeft',
-          'ArrowRight',
-          'ArrowUp',
-          'ArrowDown',
-        ].includes(e.key)
-      ) {
-        return;
-      }
-
-      // Determine the raw key to push
-      let rawKey: string | null = null;
-      if (e.key === 'Backspace') {
-        rawKey = 'Backspace';
-        lineKeysLogRef.current.push('Backspace');
-      } else if (e.key === ' ') {
-        rawKey = ' ';
-        lineKeysLogRef.current.push('Space');
-      } else if (e.key.length === 1) {
-        rawKey = e.key;
-        lineKeysLogRef.current.push(e.key);
-      }
-
-      if (rawKey === null) {
-        hiddenInputRef.current?.focus();
-        return;
-      }
-
-      // Update physicalKeysRef and compute new effectiveKeys
-      physicalKeysRef.current = [...physicalKeysRef.current, rawKey];
-      const newEffective = applyBackspaceToKeys(physicalKeysRef.current);
-      setEffectiveKeys(newEffective);
-
-      // Start timer on first keystroke
-      if (!isStarted && newEffective.length > 0) {
+      if (!isStarted && val.length > 0) {
         setIsStarted(true);
         setStartTime(Date.now());
       }
 
-      // Compose text from effective keys and evaluate progress
-      const newComposed = normalizeNFC(convertPhysicalKeysToComposedText(newEffective));
       const normTarget = normalizeNFC(currentLine);
-      const typedChars = [...newComposed];
+      const typedChars = [...val];
       const tgtChars = [...normTarget];
 
-      const newTotalKeys = Math.max(totalKeystrokes, physicalKeysRef.current.filter(k => k !== 'Backspace').length);
+      const newTotalKeys = Math.max(totalKeystrokes, typedChars.length);
       setTotalKeystrokes(newTotalKeys);
 
       let correctCount = 0;
@@ -462,8 +394,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       setCorrectKeystrokes(correctCount);
       setErrorCount(errCount);
 
-      // Audio feedback: play on non-Backspace keys
-      if (rawKey !== 'Backspace') {
+      // Audio feedback
+      if (val.length > typedText.length) {
         const lastTyped = typedChars[typedChars.length - 1] || '';
         const tgtChar = tgtChars[typedChars.length - 1];
         if (tgtChar && samePhysicalChar(lastTyped, tgtChar)) {
@@ -475,7 +407,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       // Auto-advance when line is complete
       if (
-        newComposed === normTarget ||
+        val === normTarget ||
         (typedChars.length >= tgtChars.length &&
           typedChars.every((ch, i) => samePhysicalChar(ch, tgtChars[i])))
       ) {
@@ -484,25 +416,43 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
           advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
         }, 50);
       }
+    },
+    [isPaused, isStarted, typedText, totalKeystrokes, currentLine, wrongKeysMap, advanceLine]
+  );
 
-      // Ensure hidden input stays focused for IME hook continuity
+  // handleKeyDown: visual keyboard highlight + debug key logging only.
+  // Does NOT drive typing evaluation — that is handleInputChange above.
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isPaused) return;
+
+      setIsCapsLockOn(e.getModifierState('CapsLock'));
+      setActivePressedKeyCode(e.code);
+
+      if (e.key === 'Tab' || e.key === 'Escape') {
+        e.preventDefault();
+        handleReset();
+        return;
+      }
+
+      // Log only pure ASCII single-char keys and Backspace/Space (ignore Unikey composed-char keydown noise)
+      if (e.key === 'Backspace') {
+        lineKeysLogRef.current.push('Backspace');
+      } else if (e.key === ' ') {
+        lineKeysLogRef.current.push('Space');
+      } else if (e.key.length === 1 && e.key.charCodeAt(0) < 128) {
+        // Only log ASCII printable chars — skip Vietnamese chars Unikey injects via keydown
+        lineKeysLogRef.current.push(e.key);
+      }
+
       hiddenInputRef.current?.focus();
     },
-    [isPaused, handleReset, isStarted, totalKeystrokes, currentLine, wrongKeysMap, advanceLine]
+    [isPaused, handleReset]
   );
 
   const handleKeyUp = useCallback(() => {
     setActivePressedKeyCode('');
   }, []);
-
-  // IME Composition handling (still needed to suppress Unikey composition events on the input)
-  const handleCompositionStart = () => {
-    isComposingRef.current = true;
-  };
-
-  const handleCompositionEnd = () => {
-    isComposingRef.current = false;
-  };
 
   const fontSizeClass = {
     small: 'text-xl sm:text-2xl',
@@ -511,8 +461,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
 
-  // composedTypedText comes from physical key engine, not OS input
-  const composedTypedText = composedText;
+  // composedTypedText from native uncontrolled input
+  const composedTypedText = typedText;
 
   const composedTypedSegments = useMemo(() => {
     if (!composedTypedText) return [];
@@ -539,15 +489,12 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }}
       className="outline-none min-h-screen bg-[#f0f4f8] text-slate-800 flex flex-col justify-between selection:bg-blue-500/20 selection:text-blue-900 select-none pb-4 font-sans"
     >
-      {/* Hidden input for IME focus hook only — value not used for typing logic */}
+      {/* Hidden input: uncontrolled so Unikey/EVKey can compose freely without React interference */}
       <input
         ref={hiddenInputRef}
         type="text"
-        defaultValue=""
         onChange={handleInputChange}
         className="opacity-0 absolute -top-9999 left-0 w-1 h-1 pointer-events-none"
-        onCompositionStart={handleCompositionStart}
-        onCompositionEnd={handleCompositionEnd}
         tabIndex={-1}
         autoCapitalize="off"
         autoComplete="off"
