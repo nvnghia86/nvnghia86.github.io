@@ -170,12 +170,50 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
           totalKeystrokes > 0
             ? Math.round((correctKeystrokes / totalKeystrokes) * 100)
             : 100;
-        setLiveAccuracy(acc);
       }
     }, 250);
 
     return () => clearInterval(interval);
   }, [isStarted, isPaused, startTime, correctKeystrokes, totalKeystrokes]);
+
+  // Real-time console log after every keypress (Phím đã gõ, Từ mẫu/lỗi, Văn bản đã gõ)
+  useEffect(() => {
+    if (typedPhysicalKeys.length === 0 && lineKeysLogRef.current.length === 0) return;
+
+    const currentComposedText = isVietnameseContent
+      ? convertPhysicalKeysToComposedText(typedPhysicalKeys)
+      : typedPhysicalKeys.join('');
+
+    const errorWordsOrChars: string[] = [];
+    tokens.forEach((tok) => {
+      for (let i = tok.charStartIndex; i < tok.charEndIndex; i++) {
+        if (lineState.charStatus[i] === 'error') {
+          errorWordsOrChars.push(`Từ "${tok.text}" (Vị trí ${i + 1}: '${currentLine[i]}')`);
+          break;
+        }
+      }
+    });
+
+    console.log(
+      `%c[TypingEngine Log Keypress - Dòng ${currentLineIndex + 1}]`,
+      'color: #2563eb; font-weight: bold; font-size: 11px;',
+      {
+        '1_phim_da_go': [...lineKeysLogRef.current],
+        '2_tu_mau': {
+          de_bai_goc: currentLine,
+          go_den_dau: `Vị trí ${lineState.currentCharIndex + 1}/${currentLine.length} (Ký tự: "${currentLine[lineState.currentCharIndex] || ''}")`,
+          tu_hien_tai: lineState.activeToken?.text || '',
+          loi_tu_nao: errorWordsOrChars.length > 0 ? errorWordsOrChars : 'Không có lỗi',
+          trang_thai_chi_tiet: currentLine.split('').map((char, idx) => ({
+            vi_tri: idx + 1,
+            ky_tu: char,
+            trang_thai: lineState.charStatus[idx] || 'pending',
+          })),
+        },
+        '3_van_ban_da_go': currentComposedText,
+      }
+    );
+  }, [typedPhysicalKeys, currentLineIndex, currentLine, lineState, tokens, isVietnameseContent]);
 
   const handleReset = useCallback(() => {
     setCurrentLineIndex(0);
