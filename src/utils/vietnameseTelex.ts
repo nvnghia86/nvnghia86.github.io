@@ -749,16 +749,36 @@ export function evaluateLineProgress(
   };
 }
 
-/**
- * Resolves a typed key event (which may be a raw physical key or a composite IME output like 'ó', 'ă', 'đ', 'Có')
- * into the expected physical keystrokes in the context of keys already typed for the active token.
- */
 export function resolveActualKeys(
   actualKey: string,
-  _keysInCurrentToken: string[]
+  keysInCurrentToken: string[]
 ): string[] {
   if (!actualKey) return [];
-  return [actualKey];
+
+  // Single ASCII keypress (e.g. 'a', 'w', 'n', 'd', 'm', 'j', 'c')
+  if (actualKey.length === 1 && /^[a-zA-Z0-9\s.,/#!$%^&*;:{}=\-_`~()?"']$/.test(actualKey)) {
+    return [actualKey];
+  }
+
+  // Handle composed single Vietnamese character emitted by Unikey / OS IME (e.g. 'ă', 'â', 'ê', 'ô', 'ơ', 'ư', 'đ', 'ắ', 'ặ', etc.)
+  const physicalKeys = textToPhysicalKeys(actualKey);
+  if (physicalKeys.length <= 1 && physicalKeys[0] === actualKey) {
+    return [actualKey];
+  }
+
+  // Strip prefix already present in keysInCurrentToken (e.g. keysInCurrentToken has ['a'], actualKey is 'ă' -> physicalKeys ['a', 'w'] -> returns ['w'])
+  for (let prefixLen = physicalKeys.length - 1; prefixLen >= 1; prefixLen--) {
+    const prefix = physicalKeys.slice(0, prefixLen);
+    const tokenSuffix = keysInCurrentToken.slice(-prefixLen);
+    if (
+      tokenSuffix.length === prefixLen &&
+      tokenSuffix.every((k, i) => samePhysicalChar(k, prefix[i]))
+    ) {
+      return physicalKeys.slice(prefixLen);
+    }
+  }
+
+  return physicalKeys;
 }
 
 
