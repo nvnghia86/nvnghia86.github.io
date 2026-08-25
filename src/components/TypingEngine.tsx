@@ -91,6 +91,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const lineKeysLogRef = useRef<string[]>([]);
+  const physicalKeysRef = useRef<string[]>([]);
+  const hasPhysicalInputRef = useRef(false);
 
   // Callback ref that auto-focuses the hidden input whenever it is mounted.
   // Combined with key={currentLineIndex} on the <input>, React will DESTROY the old input
@@ -191,6 +193,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   useEffect(() => {
     setTypedText('');
     setTypedPhysicalKeys([]);
+    physicalKeysRef.current = [];
+    hasPhysicalInputRef.current = false;
     setPhysicalErrors(new Set());
     lineKeysLogRef.current = [];
     // DOM input is recreated via key={currentLineIndex} — inputCallbackRef handles focusing.
@@ -262,6 +266,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     setCurrentLineIndex(0);
     setTypedText('');
     setTypedPhysicalKeys([]);
+    physicalKeysRef.current = [];
+    hasPhysicalInputRef.current = false;
     setPhysicalErrors(new Set());
     setTotalKeystrokes(0);
     setCorrectKeystrokes(0);
@@ -344,6 +350,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       if (currentLineIndex + 1 < lesson.content.length) {
         setCurrentLineIndex((prev) => prev + 1);
         setTypedPhysicalKeys([]);
+        physicalKeysRef.current = [];
+        hasPhysicalInputRef.current = false;
         setPhysicalErrors(new Set());
         setTypedText('');
         if (hiddenInputRef.current) {
@@ -363,7 +371,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (isPaused) return;
 
-      const val = normalizeNFC(e.target.value);
+      // The native input value is an intermediate IME composition value. For
+      // physical Telex typing, rebuild the committed Vietnamese text from the
+      // actual key stream so `a w n` is evaluated as `ăn`, not as `a`/`ă`/`n`.
+      const nativeValue = normalizeNFC(e.target.value);
+      const val = hasPhysicalInputRef.current
+        ? normalizeNFC(convertPhysicalKeysToComposedText(physicalKeysRef.current))
+        : nativeValue;
       setTypedText(val);
 
       if (!isStarted && val.length > 0) {
@@ -437,13 +451,19 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       // gives us the exact Telex progress needed for the keyboard hint.
       if (e.key === 'Backspace') {
         lineKeysLogRef.current.push('Backspace');
-        setTypedPhysicalKeys((previous) => previous.slice(0, -1));
+        physicalKeysRef.current = physicalKeysRef.current.slice(0, -1);
+        hasPhysicalInputRef.current = true;
+        setTypedPhysicalKeys(physicalKeysRef.current);
       } else if (e.key === ' ') {
         lineKeysLogRef.current.push('Space');
-        setTypedPhysicalKeys((previous) => [...previous, ' ']);
+        physicalKeysRef.current = [...physicalKeysRef.current, ' '];
+        hasPhysicalInputRef.current = true;
+        setTypedPhysicalKeys(physicalKeysRef.current);
       } else if (e.key.length === 1 && e.key.charCodeAt(0) < 128) {
         lineKeysLogRef.current.push(e.key);
-        setTypedPhysicalKeys((previous) => [...previous, e.key]);
+        physicalKeysRef.current = [...physicalKeysRef.current, e.key];
+        hasPhysicalInputRef.current = true;
+        setTypedPhysicalKeys(physicalKeysRef.current);
       }
 
       hiddenInputRef.current?.focus();
