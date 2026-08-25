@@ -725,29 +725,21 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                 >
                   {/* Persistent Top Helper / Telex Rule Bar (Fixed height, prevents layout jump) */}
                   <div className="h-7 mb-1.5 flex items-center justify-center gap-2 overflow-hidden select-none">
-                    {lineState.activeToken && lineState.activeSequence.length > 1 ? (
+                    {activeToken && activeToken.sequences.some(s => s.length > 1) ? (
                       <div className="flex items-center justify-center gap-2">
                         <span className="text-[11px] font-semibold text-slate-500">
                           {language === 'vi' ? 'Quy tắc gõ từ' : 'Telex keys for'}{' '}
                           <span className="font-bold text-slate-900 text-xs">
-                            "{lineState.activeToken.text}"
+                            "{activeToken.text}"
                           </span>
                           :
                         </span>
                         <div className="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-mono text-[11px] shadow-xs">
-                          {lineState.activeSequence.map((k, kIdx) => {
-                            const isSubTyped = kIdx < lineState.activeTokenKeyIndex;
-                            const isSubCurrent = kIdx === lineState.activeTokenKeyIndex;
+                          {(activeToken.sequences[0] || []).map((k, kIdx) => {
                             return (
                               <span
                                 key={kIdx}
-                                className={`px-1.5 py-0.5 rounded font-bold transition-all ${
-                                  isSubTyped
-                                    ? 'bg-emerald-100 text-emerald-700'
-                                    : isSubCurrent
-                                    ? 'bg-[#42c998] text-slate-950 shadow-xs ring-2 ring-emerald-400'
-                                    : 'bg-white text-slate-500 border border-slate-200'
-                                }`}
+                                className="px-1.5 py-0.5 rounded font-bold transition-all bg-white text-slate-500 border border-slate-200"
                               >
                                 {k}
                               </span>
@@ -772,7 +764,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                               {language === 'vi' ? 'Phím tiếp theo' : 'Next key'}:
                             </span>
                             <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-xs">
-                              {nextExpectedPhysicalKey || currentTargetChar}
+                              {currentTargetChar}
                             </span>
                           </span>
                         ) : (
@@ -791,7 +783,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                     {targetWords.map((wordItem, wordIdx) => {
                       if (wordItem.type === 'space') {
                         const { index } = wordItem.chars[0];
-                        const status = lineState.charStatus[index] || 'pending';
+                        const status = charStatus[index] || 'pending';
                         const isCompleted = status === 'correct';
                         const isCurrent = status === 'current';
                         const hasError = status === 'error';
@@ -828,7 +820,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                           className="inline-flex items-baseline whitespace-nowrap mx-0.5"
                         >
                           {wordItem.chars.map(({ char, index }) => {
-                            const status = lineState.charStatus[index] || 'pending';
+                            const status = charStatus[index] || 'pending';
                             const isCompleted = status === 'correct';
                             const isCurrent = status === 'current';
                             const hasError = status === 'error';
