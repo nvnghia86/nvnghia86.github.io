@@ -429,9 +429,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
 
-  // Reconstruct natural composed text (e.g. 'uống' instead of broken 'uốg' or raw keystrokes)
+  // Pure device/system typed text (no custom webpage Telex conversion)
   const composedTypedText = useMemo(() => {
-    return convertPhysicalKeysToComposedText(typedPhysicalKeys);
+    return typedPhysicalKeys.join('');
   }, [typedPhysicalKeys]);
 
   const composedTypedSegments = useMemo(() => {

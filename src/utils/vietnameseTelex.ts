@@ -793,46 +793,10 @@ export function evaluateLineProgress(
  */
 export function resolveActualKeys(
   actualKey: string,
-  keysInCurrentToken: string[]
+  _keysInCurrentToken: string[]
 ): string[] {
   if (!actualKey) return [];
-
-  // Single ASCII letter keypress (e.g. 'd', 'a', 'e', 'o', 'w', etc.)
-  if (actualKey.length === 1 && /^[a-zA-Z]$/.test(actualKey)) {
-    return [actualKey];
-  }
-
-  // At the start of a token (when no previous keys have been typed yet),
-  // a single keypress event (even if OS IME emitted 'đ' or 'â') MUST NOT inject 2 physical keys.
-  if (keysInCurrentToken.length === 0 && actualKey.length === 1) {
-    const kLower = actualKey.toLowerCase();
-    if (kLower === 'đ') return [actualKey === 'Đ' ? 'D' : 'd'];
-    if (kLower === 'â') return [actualKey === 'Â' ? 'A' : 'a'];
-    if (kLower === 'ê') return [actualKey === 'Ê' ? 'E' : 'e'];
-    if (kLower === 'ô') return [actualKey === 'Ô' ? 'O' : 'o'];
-    if (kLower === 'ơ') return [actualKey === 'Ơ' ? 'O' : 'o'];
-    if (kLower === 'ư') return [actualKey === 'Ư' ? 'U' : 'u'];
-    if (kLower === 'ă') return [actualKey === 'Ă' ? 'A' : 'a'];
-  }
-
-  const physicalKeys = textToPhysicalKeys(actualKey);
-  if (physicalKeys.length <= 1 && physicalKeys[0] === actualKey) {
-    return [actualKey];
-  }
-
-  // Check if keysInCurrentToken ends with a prefix of physicalKeys (e.g. ['C', 'o'] with 'ó' -> ['o', 's'] returns ['s'])
-  for (let prefixLen = physicalKeys.length - 1; prefixLen >= 1; prefixLen--) {
-    const prefix = physicalKeys.slice(0, prefixLen);
-    const tokenSuffix = keysInCurrentToken.slice(-prefixLen);
-    if (
-      tokenSuffix.length === prefixLen &&
-      tokenSuffix.every((k, i) => samePhysicalChar(k, prefix[i]))
-    ) {
-      return physicalKeys.slice(prefixLen);
-    }
-  }
-
-  return physicalKeys;
+  return [actualKey];
 }
 
 
