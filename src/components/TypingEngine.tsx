@@ -195,9 +195,21 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     setPhysicalErrors(new Set());
     lineKeysLogRef.current = [];
     if (hiddenInputRef.current) {
+      // 1. Clear the value
       hiddenInputRef.current.value = '';
+      // 2. Blur forces Unikey to release its composition hook for this element
+      hiddenInputRef.current.blur();
     }
-    hiddenInputRef.current?.focus();
+    // 3. After a brief pause, re-focus so Unikey attaches a fresh composition session.
+    //    Without this delay, Unikey may still be mid-composition from the previous line,
+    //    causing the first keystroke of the new line to be processed incorrectly.
+    const timer = setTimeout(() => {
+      if (hiddenInputRef.current) {
+        hiddenInputRef.current.value = ''; // ensure clear again after any stray events
+        hiddenInputRef.current.focus();
+      }
+    }, 80);
+    return () => clearTimeout(timer);
   }, [lesson.id, currentLineIndex]);
 
   // Timer interval
