@@ -342,6 +342,24 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       const resolvedKeys = resolveActualKeys(actualKey, keysInCurrentToken);
       const candidateKeys = [...keysInCurrentToken, ...resolvedKeys];
 
+      // Console log for debugging detailed keypresses
+      console.log(
+        `%c[TypingEngine] Key: "${e.key}" | Code: "${e.code}" | Composing: ${e.nativeEvent.isComposing}`,
+        'color: #2563eb; font-weight: bold;',
+        {
+          key: e.key,
+          code: e.code,
+          actualKey,
+          resolvedKeys,
+          keysInCurrentToken,
+          candidateKeys,
+          activeToken: activeToken?.text,
+          typedPhysicalKeys: [...typedPhysicalKeys, ...resolvedKeys],
+          composedTypedText: convertPhysicalKeysToComposedText([...typedPhysicalKeys, ...resolvedKeys]),
+          currentLine,
+        }
+      );
+
       // 1. Check if candidateKeys matches any valid sequence for the current active token
       const matchingSequence = activeToken.sequences.find((seq) => {
         if (candidateKeys.length > seq.length) return false;
@@ -350,6 +368,10 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       if (matchingSequence) {
         // MATCH!
+        console.log(
+          `%c[TypingEngine MATCH] Token: "${activeToken.text}" | Matched Seq: [${matchingSequence.join(', ')}]`,
+          'color: #059669; font-weight: bold;'
+        );
         soundEngine.playKeyClick(actualKey === ' ');
         const newCorrectKeys = correctKeystrokes + resolvedKeys.length;
         setCorrectKeystrokes(newCorrectKeys);
@@ -371,6 +393,10 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
       // 2. Full direct token/character match (e.g. Unikey / IME directly typed 'ăn', 'uống', 'đ')
       if (samePhysicalChar(actualKey, activeToken.text)) {
+        console.log(
+          `%c[TypingEngine DIRECT MATCH] Token: "${activeToken.text}"`,
+          'color: #059669; font-weight: bold;'
+        );
         const fullSeq = activeToken.sequences[0] || [actualKey];
         const remainingKeys = fullSeq.slice(keysInCurrentToken.length);
         const addedCount = Math.max(1, remainingKeys.length);
@@ -392,6 +418,11 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
 
       // 3. Wrong Keystroke!
+      console.warn(
+        `[TypingEngine WRONG KEY] Key: "${actualKey}" | Token: "${activeToken.text}" | Expected: "${
+          lineState.nextExpectedKey || activeToken.sequences[0]?.[0]
+        }"`
+      );
       soundEngine.playError();
       const newErrorCount = errorCount + 1;
       setErrorCount(newErrorCount);
