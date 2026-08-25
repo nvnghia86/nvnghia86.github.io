@@ -351,23 +351,15 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         e.preventDefault();
       }
 
-      // Record key event for line log
-      if (e.key === 'Backspace') {
-        if (e.code === 'Backspace' && !e.nativeEvent.isComposing && !isComposingRef.current) {
-          lineKeysLogRef.current.push('Backspace');
-        }
-      } else {
-        lineKeysLogRef.current.push(e.key === ' ' ? 'Space' : e.key);
-      }
-
       // Handle Backspace
       if (e.key === 'Backspace') {
         e.preventDefault();
-        // Ignore synthetic Backspace generated under-the-hood by OS IMEs (Unikey / EVKey)
+        // Ignore synthetic Backspace generated under-the-hood by OS IMEs (where e.code !== 'Backspace')
         // Real physical user Backspace keypress always has e.code === 'Backspace'
-        if (e.code !== 'Backspace' || e.nativeEvent.isComposing || isComposingRef.current) {
+        if (e.code !== 'Backspace') {
           return;
         }
+        lineKeysLogRef.current.push('Backspace');
         if (typedPhysicalKeys.length > 0) {
           const newKeys = typedPhysicalKeys.slice(0, -1);
           const newErrors = new Set(physicalErrors);
@@ -384,6 +376,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       if (e.key.length > 1 && !isVietnameseText(e.key) && e.key !== ' ') {
         return;
       }
+
+      lineKeysLogRef.current.push(e.key === ' ' ? 'Space' : e.key);
 
       // Start timer on first valid key
       if (!isStarted) {
