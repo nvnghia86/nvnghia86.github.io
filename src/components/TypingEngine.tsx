@@ -429,10 +429,14 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
 
-  // Pure device/system typed text (no custom webpage Telex conversion)
+  // Composed typed text for current exercise line
   const composedTypedText = useMemo(() => {
-    return typedPhysicalKeys.join('');
-  }, [typedPhysicalKeys]);
+    const raw = typedPhysicalKeys.join('');
+    if (isVietnameseContent) {
+      return convertPhysicalKeysToComposedText(typedPhysicalKeys);
+    }
+    return raw;
+  }, [typedPhysicalKeys, isVietnameseContent]);
 
   const composedTypedSegments = useMemo(() => {
     if (!composedTypedText) return [];
