@@ -141,10 +141,45 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(rawInputText)].length);
   const currentTargetChar = targetChars[currentCharIndex] || '';
-  const nextExpectedPhysicalKey = currentTargetChar;
+
+  // Derive activeToken from tokens
   const activeToken = useMemo(() => {
-    return tokens.find(t => currentCharIndex >= t.charStartIndex && currentCharIndex < t.charEndIndex) || tokens[0] || null;
+    return (
+      tokens.find(t => currentCharIndex >= t.charStartIndex && currentCharIndex < t.charEndIndex) ||
+      tokens[0] ||
+      null
+    );
   }, [tokens, currentCharIndex]);
+
+  // Derive the correct next PHYSICAL Telex key for HandGuide & VirtualKeyboard hints.
+  // activeToken.sequences[0] = full Telex key array for the whole word, e.g. ['b','a','w','s','t'] for "bắt".
+  // We map each Unicode char position within the token to its range in sequences[0] by
+  // computing how many Telex keys each char in the token requires.
+  const nextExpectedPhysicalKey = useMemo(() => {
+    if (!activeToken) return currentTargetChar;
+    const seq = activeToken.sequences[0] || [];
+    if (seq.length === 0) return currentTargetChar;
+
+    // Count how many Telex keys correspond to each char in the token's text
+    const tokenChars = [...activeToken.text];
+    let keyOffset = 0;
+    for (let ci = 0; ci < tokenChars.length; ci++) {
+      const charKeys = telexKeysForChar(tokenChars[ci]);
+      const charKeyCount = charKeys.length || 1;
+      const charUnicodeIdx = activeToken.charStartIndex + ci;
+      if (charUnicodeIdx === currentCharIndex) {
+        // charStatus for this position
+        const typedLen = [...normalizeNFC(rawInputText)].length;
+        // Within this char's Telex keys, how far into the sequence are we?
+        // If we've already typed this char (idx < typedLen), next key is for next char.
+        // If this char is the current cursor position, return the first key of its Telex sequence.
+        const nextKey = seq[keyOffset] ?? currentTargetChar;
+        return nextKey;
+      }
+      keyOffset += charKeyCount;
+    }
+    return currentTargetChar;
+  }, [activeToken, currentCharIndex, currentTargetChar, rawInputText]);
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
