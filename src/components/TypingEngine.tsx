@@ -94,6 +94,34 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   const tokens = useMemo(() => tokenizeLine(currentLine), [currentLine]);
   const targetChars = useMemo(() => [...currentLine], [currentLine]);
 
+  // Group targetChars into word items for whole-word wrapping without character splitting
+  const targetWords = useMemo(() => {
+    const words: Array<{
+      type: 'word' | 'space';
+      chars: Array<{ char: string; index: number }>;
+    }> = [];
+
+    let currentWord: Array<{ char: string; index: number }> = [];
+
+    targetChars.forEach((char, index) => {
+      if (char === ' ') {
+        if (currentWord.length > 0) {
+          words.push({ type: 'word', chars: currentWord });
+          currentWord = [];
+        }
+        words.push({ type: 'space', chars: [{ char, index }] });
+      } else {
+        currentWord.push({ char, index });
+      }
+    });
+
+    if (currentWord.length > 0) {
+      words.push({ type: 'word', chars: currentWord });
+    }
+
+    return words;
+  }, [targetChars]);
+
   // Real-time evaluated typing state
   const lineState = useMemo(() => {
     return evaluateLineProgress(currentLine, tokens, typedPhysicalKeys, physicalErrors);
@@ -766,18 +794,19 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                     )}
                   </div>
 
-                  {/* Target key characters stream */}
+                  {/* Target key characters stream (Grouped by word so words wrap as whole units without splitting) */}
                   <div
-                    className={`font-mono leading-relaxed text-center select-none ${fontSizeClass} flex flex-wrap items-center justify-center my-auto`}
+                    className={`font-mono leading-relaxed text-center select-none ${fontSizeClass} flex flex-wrap items-baseline justify-center my-auto gap-y-2.5`}
                   >
-                    {targetChars.map((char, index) => {
-                      const status = lineState.charStatus[index] || 'pending';
-                      const isCompleted = status === 'correct';
-                      const isCurrent = status === 'current';
-                      const hasError = status === 'error';
+                    {targetWords.map((wordItem, wordIdx) => {
+                      if (wordItem.type === 'space') {
+                        const { index } = wordItem.chars[0];
+                        const status = lineState.charStatus[index] || 'pending';
+                        const isCompleted = status === 'correct';
+                        const isCurrent = status === 'current';
+                        const hasError = status === 'error';
 
-                      if (char === ' ') {
-                        // Expanded, visually clear Space block with consistent fixed width across all states
+                        // Lowered spacebar pill aligned with the bottom baseline of surrounding letters
                         let spaceClass =
                           'bg-slate-100/90 text-slate-400 border border-dashed border-slate-300';
                         if (isCompleted) {
@@ -793,8 +822,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
                         return (
                           <span
-                            key={index}
-                            className={`inline-flex items-center justify-center min-w-[2em] sm:min-w-[2.4em] h-[1.25em] mx-1 px-1.5 py-0.5 rounded-lg text-xs font-sans ${spaceClass}`}
+                            key={`space-${index}`}
+                            className={`inline-flex items-center justify-center min-w-[2em] sm:min-w-[2.4em] h-[1.1em] mx-1 px-1.5 rounded-lg text-xs font-sans align-baseline translate-y-[2px] ${spaceClass}`}
                             title="Spacebar"
                           >
                             ␣
@@ -802,22 +831,36 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                         );
                       }
 
-                      // Regular character: fixed box so there's zero layout shift or sliding motion
-                      let charStyle = 'text-slate-400 font-normal bg-transparent';
-                      if (isCompleted) {
-                        charStyle = 'text-emerald-600 font-bold bg-transparent';
-                      } else if (hasError) {
-                        charStyle = 'bg-rose-500 text-white font-bold shadow-xs';
-                      } else if (isCurrent) {
-                        charStyle = 'bg-[#42c998] text-slate-950 font-black shadow-xs';
-                      }
-
+                      // Word container: inline-flex whitespace-nowrap guarantees whole-word wrapping
                       return (
                         <span
-                          key={index}
-                          className={`inline-flex items-center justify-center min-w-[1.2ch] h-[1.25em] mx-[1px] px-0.5 py-0.5 rounded-md ${charStyle}`}
+                          key={`word-${wordIdx}`}
+                          className="inline-flex items-baseline whitespace-nowrap mx-0.5"
                         >
-                          {char}
+                          {wordItem.chars.map(({ char, index }) => {
+                            const status = lineState.charStatus[index] || 'pending';
+                            const isCompleted = status === 'correct';
+                            const isCurrent = status === 'current';
+                            const hasError = status === 'error';
+
+                            let charStyle = 'text-slate-400 font-normal bg-transparent';
+                            if (isCompleted) {
+                              charStyle = 'text-emerald-600 font-bold bg-transparent';
+                            } else if (hasError) {
+                              charStyle = 'bg-rose-500 text-white font-bold shadow-xs';
+                            } else if (isCurrent) {
+                              charStyle = 'bg-[#42c998] text-slate-950 font-black shadow-xs';
+                            }
+
+                            return (
+                              <span
+                                key={index}
+                                className={`inline-flex items-center justify-center min-w-[1.2ch] h-[1.25em] mx-[1px] px-0.5 py-0.5 rounded-md ${charStyle}`}
+                              >
+                                {char}
+                              </span>
+                            );
+                          })}
                         </span>
                       );
                     })}
