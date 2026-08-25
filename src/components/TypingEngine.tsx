@@ -141,6 +141,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(rawInputText)].length);
   const currentTargetChar = targetChars[currentCharIndex] || '';
+  const nextExpectedPhysicalKey = currentTargetChar;
   const activeToken = useMemo(() => {
     return tokens.find(t => currentCharIndex >= t.charStartIndex && currentCharIndex < t.charEndIndex) || tokens[0] || null;
   }, [tokens, currentCharIndex]);
