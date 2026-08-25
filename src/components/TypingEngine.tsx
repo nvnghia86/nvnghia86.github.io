@@ -220,13 +220,22 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   // The browser/IME input value contains composed Unicode characters, so its length
   // cannot be used to locate the next Telex key ("ba" is still only the beginning
   // of "bắt"). Use the physical key stream captured from keydown instead.
-  const nextExpectedPhysicalKey = useMemo(() => {
+  const nextExpectedPhysicalIndex = useMemo(() => {
     const firstMismatch = typedPhysicalKeys.findIndex(
       (key, index) => !samePhysicalChar(key, expectedPhysicalKeys[index])
     );
-    const nextKeyIndex = firstMismatch >= 0 ? firstMismatch : typedPhysicalKeys.length;
-    return expectedPhysicalKeys[nextKeyIndex] ?? currentTargetChar;
-  }, [expectedPhysicalKeys, typedPhysicalKeys, currentTargetChar]);
+    return firstMismatch >= 0 ? firstMismatch : typedPhysicalKeys.length;
+  }, [expectedPhysicalKeys, typedPhysicalKeys]);
+
+  const nextExpectedPhysicalKey =
+    expectedPhysicalKeys[nextExpectedPhysicalIndex] ?? currentTargetChar;
+
+  const activeTokenPhysicalStartIndex = useMemo(() => {
+    if (!activeToken) return 0;
+    return targetChars
+      .slice(0, activeToken.charStartIndex)
+      .reduce((count, char) => count + telexKeysForChar(char).length, 0);
+  }, [activeToken, targetChars]);
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
@@ -532,10 +541,36 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
 
-  // composedTypedText from native uncontrolled input
+  // Render physical Telex progress by target segment. This avoids presenting a
+  // valid in-progress prefix such as `a` for `ă` as an error in the typed log.
   const composedTypedText = typedText;
 
   const composedTypedSegments = useMemo(() => {
+    if (hasPhysicalInputRef.current) {
+      const segments: Array<{ text: string; isError: boolean; isPartial: boolean }> = [];
+      let physicalIndex = 0;
+
+      targetChars.forEach((targetChar, charIndex) => {
+        const charKeys = telexKeysForChar(targetChar);
+        const enteredKeys = typedPhysicalKeys.slice(
+          physicalIndex,
+          physicalIndex + charKeys.length
+        );
+
+        if (enteredKeys.length > 0) {
+          segments.push({
+            text: convertPhysicalKeysToComposedText(enteredKeys),
+            isError: charStatus[charIndex] === 'error',
+            isPartial: charStatus[charIndex] === 'current',
+          });
+        }
+
+        physicalIndex += charKeys.length;
+      });
+
+      return segments;
+    }
+
     if (!composedTypedText) return [];
     const targetArray = [...currentLine];
     const typedArray = [...composedTypedText];
@@ -543,9 +578,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     return typedArray.map((char, idx) => {
       const isError =
         idx >= targetArray.length || !samePhysicalChar(char, targetArray[idx]);
-      return { text: char, isError };
+      return { text: char, isError, isPartial: false };
     });
-  }, [composedTypedText, currentLine]);
+  }, [composedTypedText, currentLine, targetChars, typedPhysicalKeys, charStatus]);
 
 
   return (
@@ -814,10 +849,19 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                         </span>
                         <div className="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-mono text-[11px] shadow-xs">
                           {(activeToken.sequences[0] || []).map((k, kIdx) => {
+                            const keyIndex = activeTokenPhysicalStartIndex + kIdx;
+                            const isCompleted = keyIndex < nextExpectedPhysicalIndex;
+                            const isNext = keyIndex === nextExpectedPhysicalIndex;
                             return (
                               <span
                                 key={kIdx}
-                                className="px-1.5 py-0.5 rounded font-bold transition-all bg-white text-slate-500 border border-slate-200"
+                                className={`px-1.5 py-0.5 rounded font-bold transition-all border ${
+                                  isCompleted
+                                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300'
+                                    : isNext
+                                    ? 'bg-[#42c998] text-slate-950 border-[#2eb986] shadow-xs scale-105'
+                                    : 'bg-white text-slate-500 border-slate-200'
+                                }`}
                               >
                                 {k}
                               </span>
@@ -985,6 +1029,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                             className={
                               segment.isError
                                 ? 'text-rose-600 font-medium underline decoration-rose-400'
+                                : segment.isPartial
+                                ? 'text-blue-700 font-medium'
                                 : 'text-slate-800'
                             }
                           >
