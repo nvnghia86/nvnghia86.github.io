@@ -388,6 +388,26 @@ export function convertPhysicalKeysToComposedText(keys: string[]): string {
   return result.normalize('NFC');
 }
 
+/**
+ * Applies Backspace keys in a raw physical key stream.
+ * Backspace removes the last non-Backspace key from the effective key list.
+ * Returns the effective key array (no Backspace entries remain).
+ *
+ * Example: ['b','a','w','s','t','Backspace','Backspace'] → ['b','a','w','s']
+ *          ['b','a','t','.','Backspace','Backspace','Backspace'] → ['b']
+ */
+export function applyBackspaceToKeys(keys: string[]): string[] {
+  const result: string[] = [];
+  for (const k of keys) {
+    if (k === 'Backspace') {
+      result.pop();
+    } else {
+      result.push(k);
+    }
+  }
+  return result;
+}
+
 export interface WordToken {
   type: 'word' | 'space' | 'punct';
   text: string;

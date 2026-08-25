@@ -15,6 +15,7 @@ import {
   tokenizeLine,
   evaluateLineProgress,
   convertPhysicalKeysToComposedText,
+  applyBackspaceToKeys,
   resolveActualKeys,
 } from '../utils/vietnameseTelex';
 import {
@@ -82,6 +83,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   // Telex Guide Modal
   const [showTelexGuide, setShowTelexGuide] = useState(false);
 
+  // physicalKeysRef: raw keystream for current line including Backspace events
+  // This is the source of truth for what the user is typing — avoids Unikey/IME unreliability.
+  const physicalKeysRef = useRef<string[]>([]);
+  // effectiveKeys: physicalKeysRef after applying Backspace reduction (reactive state for re-render)
+  const [effectiveKeys, setEffectiveKeys] = useState<string[]>([]);
+
+  // rawInputText kept for focus management only (uncontrolled, not read for value)
   const [rawInputText, setRawInputText] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
@@ -124,9 +132,15 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     return words;
   }, [targetChars]);
 
-  // Real-time character status evaluated directly against native OS input
+  // Compose Vietnamese text from effective physical key stream (Backspace already applied)
+  // This is the reliable source of truth — independent of Unikey/OS IME behavior.
+  const composedText = useMemo(() => {
+    return convertPhysicalKeysToComposedText(effectiveKeys);
+  }, [effectiveKeys]);
+
+  // Real-time character status evaluated against composed text
   const charStatus = useMemo(() => {
-    const typedChars = [...normalizeNFC(rawInputText)];
+    const typedChars = [...normalizeNFC(composedText)];
 
     return targetChars.map((targetChar, idx) => {
       if (idx < typedChars.length) {
@@ -137,9 +151,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }
       return 'pending';
     });
-  }, [rawInputText, targetChars]);
+  }, [composedText, targetChars]);
 
-  const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(rawInputText)].length);
+  const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(composedText)].length);
   const currentTargetChar = targetChars[currentCharIndex] || '';
 
   // Derive activeToken from tokens
@@ -153,14 +167,11 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Derive the correct next PHYSICAL Telex key for HandGuide & VirtualKeyboard hints.
   // activeToken.sequences[0] = full Telex key array for the whole word, e.g. ['b','a','w','s','t'] for "bắt".
-  // We map each Unicode char position within the token to its range in sequences[0] by
-  // computing how many Telex keys each char in the token requires.
   const nextExpectedPhysicalKey = useMemo(() => {
     if (!activeToken) return currentTargetChar;
     const seq = activeToken.sequences[0] || [];
     if (seq.length === 0) return currentTargetChar;
 
-    // Count how many Telex keys correspond to each char in the token's text
     const tokenChars = [...activeToken.text];
     let keyOffset = 0;
     for (let ci = 0; ci < tokenChars.length; ci++) {
@@ -168,18 +179,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       const charKeyCount = charKeys.length || 1;
       const charUnicodeIdx = activeToken.charStartIndex + ci;
       if (charUnicodeIdx === currentCharIndex) {
-        // charStatus for this position
-        const typedLen = [...normalizeNFC(rawInputText)].length;
-        // Within this char's Telex keys, how far into the sequence are we?
-        // If we've already typed this char (idx < typedLen), next key is for next char.
-        // If this char is the current cursor position, return the first key of its Telex sequence.
         const nextKey = seq[keyOffset] ?? currentTargetChar;
         return nextKey;
       }
       keyOffset += charKeyCount;
     }
     return currentTargetChar;
-  }, [activeToken, currentCharIndex, currentTargetChar, rawInputText]);
+  }, [activeToken, currentCharIndex, currentTargetChar]);
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
@@ -192,8 +198,10 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     soundEngine.setVolume(settings.volume);
   }, [settings.soundTheme, settings.volume]);
 
-  // Cleanly reset input state and refocus hidden input whenever currentLineIndex changes
+  // Cleanly reset all key tracking and refocus on line change
   useEffect(() => {
+    physicalKeysRef.current = [];
+    setEffectiveKeys([]);
     setRawInputText('');
     setTypedPhysicalKeys([]);
     setPhysicalErrors(new Set());
@@ -233,9 +241,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Real-time console log after every keypress (Phím đã gõ, Từ mẫu/lỗi, Văn bản đã gõ)
   useEffect(() => {
-    if (!rawInputText && lineKeysLogRef.current.length === 0) return;
+    if (!composedText && lineKeysLogRef.current.length === 0) return;
 
-    const typedChars = [...normalizeNFC(rawInputText)];
+    const typedChars = [...normalizeNFC(composedText)];
     const errorWordsOrChars: string[] = [];
 
     targetChars.forEach((char, idx) => {
@@ -245,7 +253,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     });
 
     console.log(
-      `%c[TypingEngine Log OS Input - Dòng ${currentLineIndex + 1}]`,
+      `%c[TypingEngine Log Physical Keys - Dòng ${currentLineIndex + 1}]`,
       'color: #2563eb; font-weight: bold; font-size: 11px;',
       {
         '1_phim_da_go': [...lineKeysLogRef.current],
@@ -260,16 +268,18 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
             trang_thai: charStatus[idx] || 'pending',
           })),
         },
-        '3_van_ban_da_go': rawInputText,
+        '3_van_ban_da_go': composedText,
       }
     );
-  }, [rawInputText, currentLineIndex, currentLine, charStatus, targetChars, activeToken]);
+  }, [composedText, currentLineIndex, currentLine, charStatus, targetChars, activeToken]);
 
   const handleReset = useCallback(() => {
     setCurrentLineIndex(0);
     setTypedPhysicalKeys([]);
     setPhysicalErrors(new Set());
     setRawInputText('');
+    physicalKeysRef.current = [];
+    setEffectiveKeys([]);
     setTotalKeystrokes(0);
     setCorrectKeystrokes(0);
     setErrorCount(0);
@@ -364,69 +374,13 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     [currentLineIndex, lesson.content.length, completeLesson]
   );
 
-  // Native OS Input change handler
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isPaused) return;
-
-    const val = e.target.value;
-    setRawInputText(val);
-
-    if (!isStarted && val.length > 0) {
-      setIsStarted(true);
-      setStartTime(Date.now());
-    }
-
-    const normVal = normalizeNFC(val);
-    const normTarget = normalizeNFC(currentLine);
-    const typedChars = [...normVal];
-    const targetChars = [...normTarget];
-
-    const newTotalKeys = Math.max(totalKeystrokes, val.length);
-    setTotalKeystrokes(newTotalKeys);
-
-    let correctCount = 0;
-    let errCount = 0;
-
-    typedChars.forEach((ch, idx) => {
-      if (idx < targetChars.length) {
-        if (samePhysicalChar(ch, targetChars[idx])) {
-          correctCount++;
-        } else {
-          errCount++;
-        }
-      } else {
-        errCount++;
-      }
-    });
-
-    setCorrectKeystrokes(correctCount);
-    setErrorCount(errCount);
-
-    // Audio click feedback
-    if (val.length > rawInputText.length) {
-      const lastTyped = typedChars[typedChars.length - 1] || '';
-      const targetChar = targetChars[typedChars.length - 1];
-      if (targetChar && samePhysicalChar(lastTyped, targetChar)) {
-        soundEngine.playKeyClick(lastTyped === ' ');
-      } else {
-        soundEngine.playError();
-      }
-    }
-
-    // Auto advance when line is finished (deferred slightly so IME composition finishes cleanly)
-    if (
-      normVal === normTarget ||
-      (typedChars.length >= targetChars.length &&
-        typedChars.every((ch, i) => samePhysicalChar(ch, targetChars[i])))
-    ) {
-      soundEngine.playKeyClick(false);
-      setTimeout(() => {
-        advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
-      }, 50);
-    }
+  // handleInputChange: only used to keep focus on the hidden input; actual typing logic
+  // is driven by handleKeyDown which tracks physical keys reliably.
+  const handleInputChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    hiddenInputRef.current?.focus();
   };
 
-  // Keyboard Event Listener for virtual keyboard visual keypress highlight
+  // Main typing engine via physical key tracking
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (isPaused) return;
@@ -457,25 +411,91 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         return;
       }
 
+      // Determine the raw key to push
+      let rawKey: string | null = null;
       if (e.key === 'Backspace') {
-        if (e.code === 'Backspace') {
-          lineKeysLogRef.current.push('Backspace');
-        }
-      } else if (e.key.length === 1 || e.key === ' ') {
-        lineKeysLogRef.current.push(e.key === ' ' ? 'Space' : e.key);
+        rawKey = 'Backspace';
+        lineKeysLogRef.current.push('Backspace');
+      } else if (e.key === ' ') {
+        rawKey = ' ';
+        lineKeysLogRef.current.push('Space');
+      } else if (e.key.length === 1) {
+        rawKey = e.key;
+        lineKeysLogRef.current.push(e.key);
       }
 
-      // Ensure hidden input remains focused
+      if (rawKey === null) {
+        hiddenInputRef.current?.focus();
+        return;
+      }
+
+      // Update physicalKeysRef and compute new effectiveKeys
+      physicalKeysRef.current = [...physicalKeysRef.current, rawKey];
+      const newEffective = applyBackspaceToKeys(physicalKeysRef.current);
+      setEffectiveKeys(newEffective);
+
+      // Start timer on first keystroke
+      if (!isStarted && newEffective.length > 0) {
+        setIsStarted(true);
+        setStartTime(Date.now());
+      }
+
+      // Compose text from effective keys and evaluate progress
+      const newComposed = normalizeNFC(convertPhysicalKeysToComposedText(newEffective));
+      const normTarget = normalizeNFC(currentLine);
+      const typedChars = [...newComposed];
+      const tgtChars = [...normTarget];
+
+      const newTotalKeys = Math.max(totalKeystrokes, physicalKeysRef.current.filter(k => k !== 'Backspace').length);
+      setTotalKeystrokes(newTotalKeys);
+
+      let correctCount = 0;
+      let errCount = 0;
+      typedChars.forEach((ch, idx) => {
+        if (idx < tgtChars.length) {
+          if (samePhysicalChar(ch, tgtChars[idx])) correctCount++;
+          else errCount++;
+        } else {
+          errCount++;
+        }
+      });
+      setCorrectKeystrokes(correctCount);
+      setErrorCount(errCount);
+
+      // Audio feedback: play on non-Backspace keys
+      if (rawKey !== 'Backspace') {
+        const lastTyped = typedChars[typedChars.length - 1] || '';
+        const tgtChar = tgtChars[typedChars.length - 1];
+        if (tgtChar && samePhysicalChar(lastTyped, tgtChar)) {
+          soundEngine.playKeyClick(lastTyped === ' ');
+        } else {
+          soundEngine.playError();
+        }
+      }
+
+      // Auto-advance when line is complete
+      if (
+        newComposed === normTarget ||
+        (typedChars.length >= tgtChars.length &&
+          typedChars.every((ch, i) => samePhysicalChar(ch, tgtChars[i])))
+      ) {
+        soundEngine.playKeyClick(false);
+        setTimeout(() => {
+          advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
+        }, 50);
+      }
+
+      // Ensure hidden input stays focused for IME hook continuity
       hiddenInputRef.current?.focus();
     },
-    [isPaused, handleReset]
+    [isPaused, handleReset, isStarted, totalKeystrokes, currentLine, wrongKeysMap, advanceLine]
   );
 
   const handleKeyUp = useCallback(() => {
     setActivePressedKeyCode('');
   }, []);
 
-  // IME Composition handling
+  // IME Composition handling (still needed to suppress Unikey composition events on the input)
   const handleCompositionStart = () => {
     isComposingRef.current = true;
   };
@@ -491,8 +511,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
 
-  // Composed typed text directly from native OS input
-  const composedTypedText = rawInputText;
+  // composedTypedText comes from physical key engine, not OS input
+  const composedTypedText = composedText;
 
   const composedTypedSegments = useMemo(() => {
     if (!composedTypedText) return [];
@@ -519,11 +539,11 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       }}
       className="outline-none min-h-screen bg-[#f0f4f8] text-slate-800 flex flex-col justify-between selection:bg-blue-500/20 selection:text-blue-900 select-none pb-4 font-sans"
     >
-      {/* Hidden input for IME and mobile compatibility */}
+      {/* Hidden input for IME focus hook only — value not used for typing logic */}
       <input
         ref={hiddenInputRef}
         type="text"
-        value={rawInputText}
+        defaultValue=""
         onChange={handleInputChange}
         className="opacity-0 absolute -top-9999 left-0 w-1 h-1 pointer-events-none"
         onCompositionStart={handleCompositionStart}
