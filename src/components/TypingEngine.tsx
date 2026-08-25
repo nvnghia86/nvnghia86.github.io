@@ -272,8 +272,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       // Handle Backspace
       if (e.key === 'Backspace') {
         e.preventDefault();
-        // Ignore synthetic Backspace generated under-the-hood by OS IMEs (Unikey / EVKey) during composition
-        if (e.nativeEvent.isComposing || isComposingRef.current) {
+        // Ignore synthetic Backspace generated under-the-hood by OS IMEs (Unikey / EVKey)
+        // Real physical user Backspace keypress always has e.code === 'Backspace'
+        if (e.code !== 'Backspace' || e.nativeEvent.isComposing || isComposingRef.current) {
           return;
         }
         if (typedPhysicalKeys.length > 0) {
