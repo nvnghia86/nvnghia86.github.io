@@ -82,6 +82,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   // Telex Guide Modal
   const [showTelexGuide, setShowTelexGuide] = useState(false);
 
+  const [rawInputText, setRawInputText] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const hiddenInputRef = useRef<HTMLInputElement>(null);
   const isComposingRef = useRef(false);
@@ -123,15 +124,26 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     return words;
   }, [targetChars]);
 
-  // Real-time evaluated typing state
-  const lineState = useMemo(() => {
-    return evaluateLineProgress(currentLine, tokens, typedPhysicalKeys, physicalErrors);
-  }, [currentLine, tokens, typedPhysicalKeys, physicalErrors]);
+  // Real-time character status evaluated directly against native OS input
+  const charStatus = useMemo(() => {
+    const typedChars = [...normalizeNFC(rawInputText)];
 
-  const currentKeyIndex = typedPhysicalKeys.length;
-  const currentCharIndex = lineState.currentCharIndex;
-  const nextExpectedPhysicalKey = lineState.nextExpectedKey;
+    return targetChars.map((targetChar, idx) => {
+      if (idx < typedChars.length) {
+        return samePhysicalChar(typedChars[idx], targetChar) ? 'correct' : 'error';
+      }
+      if (idx === typedChars.length) {
+        return 'current';
+      }
+      return 'pending';
+    });
+  }, [rawInputText, targetChars]);
+
+  const currentCharIndex = Math.min(targetChars.length - 1, [...normalizeNFC(rawInputText)].length);
   const currentTargetChar = targetChars[currentCharIndex] || '';
+  const activeToken = useMemo(() => {
+    return tokens.find(t => currentCharIndex >= t.charStartIndex && currentCharIndex < t.charEndIndex) || tokens[0] || null;
+  }, [tokens, currentCharIndex]);
 
   // Check if current exercise has Vietnamese characters
   const isVietnameseContent = useMemo(() => {
@@ -170,6 +182,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
           totalKeystrokes > 0
             ? Math.round((correctKeystrokes / totalKeystrokes) * 100)
             : 100;
+        setLiveAccuracy(acc);
       }
     }, 250);
 
@@ -178,47 +191,43 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Real-time console log after every keypress (Phím đã gõ, Từ mẫu/lỗi, Văn bản đã gõ)
   useEffect(() => {
-    if (typedPhysicalKeys.length === 0 && lineKeysLogRef.current.length === 0) return;
+    if (!rawInputText && lineKeysLogRef.current.length === 0) return;
 
-    const currentComposedText = isVietnameseContent
-      ? convertPhysicalKeysToComposedText(typedPhysicalKeys)
-      : typedPhysicalKeys.join('');
-
+    const typedChars = [...normalizeNFC(rawInputText)];
     const errorWordsOrChars: string[] = [];
-    tokens.forEach((tok) => {
-      for (let i = tok.charStartIndex; i < tok.charEndIndex; i++) {
-        if (lineState.charStatus[i] === 'error') {
-          errorWordsOrChars.push(`Từ "${tok.text}" (Vị trí ${i + 1}: '${currentLine[i]}')`);
-          break;
-        }
+
+    targetChars.forEach((char, idx) => {
+      if (charStatus[idx] === 'error') {
+        errorWordsOrChars.push(`Vị trí ${idx + 1}: gõ '${typedChars[idx] || ''}', mẫu '${char}'`);
       }
     });
 
     console.log(
-      `%c[TypingEngine Log Keypress - Dòng ${currentLineIndex + 1}]`,
+      `%c[TypingEngine Log OS Input - Dòng ${currentLineIndex + 1}]`,
       'color: #2563eb; font-weight: bold; font-size: 11px;',
       {
         '1_phim_da_go': [...lineKeysLogRef.current],
         '2_tu_mau': {
           de_bai_goc: currentLine,
-          go_den_dau: `Vị trí ${lineState.currentCharIndex + 1}/${currentLine.length} (Ký tự: "${currentLine[lineState.currentCharIndex] || ''}")`,
-          tu_hien_tai: lineState.activeToken?.text || '',
+          go_den_dau: `Vị trí ${typedChars.length}/${currentLine.length} (Ký tự: "${currentLine[typedChars.length] || ''}")`,
+          tu_hien_tai: activeToken?.text || '',
           loi_tu_nao: errorWordsOrChars.length > 0 ? errorWordsOrChars : 'Không có lỗi',
           trang_thai_chi_tiet: currentLine.split('').map((char, idx) => ({
             vi_tri: idx + 1,
             ky_tu: char,
-            trang_thai: lineState.charStatus[idx] || 'pending',
+            trang_thai: charStatus[idx] || 'pending',
           })),
         },
-        '3_van_ban_da_go': currentComposedText,
+        '3_van_ban_da_go': rawInputText,
       }
     );
-  }, [typedPhysicalKeys, currentLineIndex, currentLine, lineState, tokens, isVietnameseContent]);
+  }, [rawInputText, currentLineIndex, currentLine, charStatus, targetChars, activeToken]);
 
   const handleReset = useCallback(() => {
     setCurrentLineIndex(0);
     setTypedPhysicalKeys([]);
     setPhysicalErrors(new Set());
+    setRawInputText('');
     setTotalKeystrokes(0);
     setCorrectKeystrokes(0);
     setErrorCount(0);
@@ -301,6 +310,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         setCurrentLineIndex((prev) => prev + 1);
         setTypedPhysicalKeys([]);
         setPhysicalErrors(new Set());
+        setRawInputText('');
         if (hiddenInputRef.current) {
           hiddenInputRef.current.value = '';
         }
@@ -312,23 +322,84 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     [currentLineIndex, lesson.content.length, completeLesson]
   );
 
-  // Key Down Listener for physical keyboard typing with flexible Telex sequence validation
+  // Native OS Input change handler
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isPaused) return;
+
+    const val = e.target.value;
+    setRawInputText(val);
+
+    if (!isStarted && val.length > 0) {
+      setIsStarted(true);
+      setStartTime(Date.now());
+    }
+
+    const normVal = normalizeNFC(val);
+    const normTarget = normalizeNFC(currentLine);
+    const typedChars = [...normVal];
+    const targetChars = [...normTarget];
+
+    const newTotalKeys = Math.max(totalKeystrokes, val.length);
+    setTotalKeystrokes(newTotalKeys);
+
+    let correctCount = 0;
+    let errCount = 0;
+
+    typedChars.forEach((ch, idx) => {
+      if (idx < targetChars.length) {
+        if (samePhysicalChar(ch, targetChars[idx])) {
+          correctCount++;
+        } else {
+          errCount++;
+        }
+      } else {
+        errCount++;
+      }
+    });
+
+    setCorrectKeystrokes(correctCount);
+    setErrorCount(errCount);
+
+    // Audio click feedback
+    if (val.length > rawInputText.length) {
+      const lastTyped = typedChars[typedChars.length - 1] || '';
+      const targetChar = targetChars[typedChars.length - 1];
+      if (targetChar && samePhysicalChar(lastTyped, targetChar)) {
+        soundEngine.playKeyClick(lastTyped === ' ');
+      } else {
+        soundEngine.playError();
+      }
+    }
+
+    // Auto advance when line is finished
+    if (
+      normVal === normTarget ||
+      (typedChars.length >= targetChars.length &&
+        typedChars.every((ch, i) => samePhysicalChar(ch, targetChars[i])))
+    ) {
+      soundEngine.playKeyClick(false);
+      advanceLine(newTotalKeys, correctCount, errCount, wrongKeysMap);
+      setRawInputText('');
+      if (hiddenInputRef.current) {
+        hiddenInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Keyboard Event Listener for virtual keyboard visual keypress highlight
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (isPaused) return;
 
-      // Detect Caps Lock state
       setIsCapsLockOn(e.getModifierState('CapsLock'));
       setActivePressedKeyCode(e.code);
 
-      // Handle Tab or Esc to restart
       if (e.key === 'Tab' || e.key === 'Escape') {
         e.preventDefault();
         handleReset();
         return;
       }
 
-      // Ignore modifier keys
       if (
         [
           'Shift',
@@ -346,144 +417,18 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
         return;
       }
 
-      // Prevent space scrolling
-      if (e.key === ' ') {
-        e.preventDefault();
-      }
-
-      // Handle Backspace
       if (e.key === 'Backspace') {
-        e.preventDefault();
-        // Ignore synthetic Backspace generated under-the-hood by OS IMEs (where e.code !== 'Backspace')
-        // Real physical user Backspace keypress always has e.code === 'Backspace'
-        if (e.code !== 'Backspace') {
-          return;
+        if (e.code === 'Backspace') {
+          lineKeysLogRef.current.push('Backspace');
         }
-        lineKeysLogRef.current.push('Backspace');
-        if (typedPhysicalKeys.length > 0) {
-          const newKeys = typedPhysicalKeys.slice(0, -1);
-          const newErrors = new Set(physicalErrors);
-          newErrors.delete(typedPhysicalKeys.length - 1);
-
-          setTypedPhysicalKeys(newKeys);
-          setPhysicalErrors(newErrors);
-          soundEngine.playKeyClick(false);
-        }
-        return;
+      } else if (e.key.length === 1 || e.key === ' ') {
+        lineKeysLogRef.current.push(e.key === ' ' ? 'Space' : e.key);
       }
 
-      // Only accept single printable characters or composed Vietnamese characters
-      if (e.key.length > 1 && !isVietnameseText(e.key) && e.key !== ' ') {
-        return;
-      }
-
-      lineKeysLogRef.current.push(e.key === ' ' ? 'Space' : e.key);
-
-      // Start timer on first valid key
-      if (!isStarted) {
-        setIsStarted(true);
-        setStartTime(Date.now());
-      }
-
-      const activeToken = lineState.activeToken;
-      const actualKey = e.key;
-      const newTotalKeys = totalKeystrokes + 1;
-      setTotalKeystrokes(newTotalKeys);
-
-      if (!activeToken) {
-        // Line already finished
-        return;
-      }
-
-      const keysInCurrentToken = typedPhysicalKeys.slice(lineState.tokenStartKeyPtr);
-      const resolvedKeys = resolveActualKeys(actualKey, keysInCurrentToken);
-      const candidateKeys = [...keysInCurrentToken, ...resolvedKeys];
-
-      // 1. Check if candidateKeys matches any valid sequence for the current active token
-      const matchingSequence = activeToken.sequences.find((seq) => {
-        if (candidateKeys.length > seq.length) return false;
-        return candidateKeys.every((k, i) => samePhysicalChar(k, seq[i]));
-      });
-
-      if (matchingSequence) {
-        // MATCH!
-        soundEngine.playKeyClick(actualKey === ' ');
-        const newCorrectKeys = correctKeystrokes + resolvedKeys.length;
-        setCorrectKeystrokes(newCorrectKeys);
-
-        const newKeys = [...typedPhysicalKeys, ...resolvedKeys];
-        setTypedPhysicalKeys(newKeys);
-
-        // If this token was completed and it was the last token of the line
-        const composedCand = convertPhysicalKeysToComposedText(candidateKeys);
-        const isTokenComplete =
-          candidateKeys.length >= matchingSequence.length &&
-          (samePhysicalChar(composedCand, activeToken.text) || candidateKeys.length === matchingSequence.length);
-
-        if (isTokenComplete && lineState.currentTokenIndex + 1 >= tokens.length) {
-          advanceLine(newTotalKeys, newCorrectKeys, errorCount, wrongKeysMap);
-        }
-        return;
-      }
-
-      // 2. Full direct token/character match (e.g. Unikey / IME directly typed 'ăn', 'uống', 'đ')
-      if (samePhysicalChar(actualKey, activeToken.text)) {
-        const fullSeq = activeToken.sequences[0] || [actualKey];
-        const remainingKeys = fullSeq.slice(keysInCurrentToken.length);
-        const addedCount = Math.max(1, remainingKeys.length);
-
-        soundEngine.playKeyClick(false);
-        const newCorrectKeys = correctKeystrokes + addedCount;
-        setCorrectKeystrokes(newCorrectKeys);
-
-        const newKeys = [
-          ...typedPhysicalKeys,
-          ...(remainingKeys.length > 0 ? remainingKeys : [actualKey]),
-        ];
-        setTypedPhysicalKeys(newKeys);
-
-        if (lineState.currentTokenIndex + 1 >= tokens.length) {
-          advanceLine(newTotalKeys, newCorrectKeys, errorCount, wrongKeysMap);
-        }
-        return;
-      }
-
-      // 3. Wrong Keystroke!
-      soundEngine.playError();
-      const newErrorCount = errorCount + 1;
-      setErrorCount(newErrorCount);
-
-      const newErrors = new Set(physicalErrors);
-      for (let i = 0; i < resolvedKeys.length; i++) {
-        newErrors.add(typedPhysicalKeys.length + i);
-      }
-      setPhysicalErrors(newErrors);
-
-      const expectedKey =
-        lineState.nextExpectedKey || activeToken.sequences[0]?.[0] || actualKey;
-      const newWrongMap = {
-        ...wrongKeysMap,
-        [expectedKey]: (wrongKeysMap[expectedKey] || 0) + 1,
-      };
-      setWrongKeysMap(newWrongMap);
-
-      const newKeys = [...typedPhysicalKeys, ...resolvedKeys];
-      setTypedPhysicalKeys(newKeys);
+      // Ensure hidden input remains focused
+      hiddenInputRef.current?.focus();
     },
-    [
-      isPaused,
-      isStarted,
-      lineState,
-      tokens.length,
-      typedPhysicalKeys,
-      physicalErrors,
-      totalKeystrokes,
-      correctKeystrokes,
-      errorCount,
-      wrongKeysMap,
-      handleReset,
-      advanceLine,
-    ]
+    [isPaused, handleReset]
   );
 
   const handleKeyUp = useCallback(() => {
@@ -506,14 +451,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     huge: 'text-4xl sm:text-5xl',
   }[settings.fontSize || 'large'];
 
-  // Composed typed text for current exercise line
-  const composedTypedText = useMemo(() => {
-    const raw = typedPhysicalKeys.join('');
-    if (isVietnameseContent) {
-      return convertPhysicalKeysToComposedText(typedPhysicalKeys);
-    }
-    return raw;
-  }, [typedPhysicalKeys, isVietnameseContent]);
+  // Composed typed text directly from native OS input
+  const composedTypedText = rawInputText;
 
   const composedTypedSegments = useMemo(() => {
     if (!composedTypedText) return [];
@@ -544,6 +483,8 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       <input
         ref={hiddenInputRef}
         type="text"
+        value={rawInputText}
+        onChange={handleInputChange}
         className="opacity-0 absolute -top-9999 left-0 w-1 h-1 pointer-events-none"
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
