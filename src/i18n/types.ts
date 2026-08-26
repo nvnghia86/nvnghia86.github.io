@@ -183,6 +183,9 @@ export interface TranslationSchema {
     lineComplete: string;
     pressSpace: string;
     pressToStartVietnamese: string;
+    playIntroduction: string;
+    stopIntroduction: string;
+    basicLessonIntroduction: string;
   };
   resultModal: {
     flawlessTitle: string;

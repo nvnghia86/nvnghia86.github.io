@@ -183,6 +183,9 @@ export const vi: TranslationSchema = {
     lineComplete: 'Đã hoàn thành dòng này!',
     pressSpace: 'Phím cách (Space)',
     pressToStartVietnamese: 'Bật bộ gõ tiếng Việt trên thiết bị rồi bắt đầu gõ',
+    playIntroduction: 'Nghe hướng dẫn',
+    stopIntroduction: 'Dừng hướng dẫn',
+    basicLessonIntroduction: 'Bài này giúp bạn làm quen với các phím {keys}. Hãy đặt ngón tay theo hình hướng dẫn, gõ chậm và chính xác. Hoàn thành từng dòng rồi tiếp tục dòng kế tiếp.',
   },
   resultModal: {
     flawlessTitle: 'Xuất Sắc! Hoàn Hảo 100%',

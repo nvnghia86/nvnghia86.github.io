@@ -79,6 +79,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Telex Guide Modal
   const [showInputGuide, setShowInputGuide] = useState(false);
+  const [isIntroductionSpeaking, setIsIntroductionSpeaking] = useState(false);
 
   // typedText is read directly from the uncontrolled native textarea. React
   // never supplies a value, so Windows Vietnamese and IME software own composition.
@@ -130,11 +131,15 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     }
   }, [focusNativeInput]);
 
-  // One native textarea holds one continuous lesson text. Original content
-  // lines are joined with spaces so Vietnamese has no IME-breaking transition.
-  const rawCurrentLine = lesson.content.join(' ');
+  // Foundational drills intentionally remain four short rows. Continuous text
+  // lessons keep one native textbox so Vietnamese IMEs never cross a reset.
+  const isSegmentedDrill = lesson.unitId <= 4 && lesson.content.length === 4;
+  const rawCurrentLine = isSegmentedDrill
+    ? lesson.content[currentLineIndex] || ''
+    : lesson.content.join(' ');
   const currentLine = normalizeNFC(rawCurrentLine);
   const isLongTextLesson = lesson.content.length === 1 && isVietnameseText(currentLine);
+  const isBasicLesson = lesson.unitId <= 3 && isSegmentedDrill;
 
   // Tokenize line for flexible multi-sequence Telex parsing
   const tokens = useMemo(() => tokenizeLine(currentLine), [currentLine]);
@@ -146,7 +151,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
   };
 
   const targetDisplayLines = useMemo(() => {
-    const sourceLines = isLongTextLesson
+    const sourceLines = isLongTextLesson || isSegmentedDrill
       ? [currentLine]
       : lesson.content.map((line) => normalizeNFC(line));
 
@@ -241,6 +246,43 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     soundEngine.setSoundTheme(settings.soundTheme);
     soundEngine.setVolume(settings.volume);
   }, [settings.soundTheme, settings.volume]);
+
+  const stopLessonIntroduction = useCallback(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsIntroductionSpeaking(false);
+  }, []);
+
+  const playLessonIntroduction = useCallback(() => {
+    if (
+      !isBasicLesson ||
+      settings.soundTheme === 'mute' ||
+      typeof window === 'undefined' ||
+      !('speechSynthesis' in window)
+    ) {
+      return;
+    }
+
+    stopLessonIntroduction();
+    const speech = new SpeechSynthesisUtterance(
+      t.typingEngine.basicLessonIntroduction.replace(
+        '{keys}',
+        lesson.targetKeys.join(', '),
+      ),
+    );
+    speech.lang = language === 'vi' ? 'vi-VN' : 'en-US';
+    speech.rate = 0.9;
+    speech.volume = settings.volume;
+    speech.onend = () => setIsIntroductionSpeaking(false);
+    speech.onerror = () => setIsIntroductionSpeaking(false);
+    setIsIntroductionSpeaking(true);
+    window.speechSynthesis.speak(speech);
+  }, [isBasicLesson, language, lesson.targetKeys, settings.soundTheme, settings.volume, stopLessonIntroduction, t.typingEngine.basicLessonIntroduction]);
+
+  useEffect(() => {
+    return stopLessonIntroduction;
+  }, [lesson.id, stopLessonIntroduction]);
 
   // A different lesson deliberately starts a new native text buffer.
   useEffect(() => {
@@ -411,7 +453,24 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       );
       lineKeysLogRef.current = [];
 
-      // The combined target has only one completion point.
+      if (isSegmentedDrill && currentLineIndex < lesson.content.length - 1) {
+        completedMetricsRef.current = {
+          total: newTotalKeys,
+          correct: newCorrectKeys,
+          errors: newErrors,
+        };
+        const nextSession = startNativeInputSession();
+        setCurrentLineIndex((index) => index + 1);
+        setTypedText('');
+        lineMaxNativeLengthRef.current = 0;
+        lineMaxErrorsRef.current = 0;
+        if (hiddenInputRef.current) {
+          hiddenInputRef.current.value = '';
+        }
+        focusNativeInput(nextSession);
+        return;
+      }
+
       completeLesson(newTotalKeys, newCorrectKeys, newErrors, newWrongMap);
     },
     [
@@ -419,6 +478,9 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       lesson.content.length,
       cancelPendingAdvance,
       completeLesson,
+      focusNativeInput,
+      isSegmentedDrill,
+      startNativeInputSession,
     ]
   );
 
@@ -742,7 +804,30 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
       </header>
 
       {/* Lesson target */}
-      <div className="w-full max-w-4xl mx-auto px-4 pt-3 flex items-center justify-end">
+      <div className="w-full max-w-4xl mx-auto px-4 pt-3 flex items-center justify-between">
+        {isSegmentedDrill ? (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              {t.typingEngine.exerciseProgress
+                .replace('{current}', String(currentLineIndex + 1))
+                .replace('{total}', String(lesson.content.length))}
+            </span>
+            <div className="flex items-center gap-1.5" aria-hidden="true">
+              {lesson.content.map((_, index) => (
+                <span
+                  key={index}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index < currentLineIndex
+                      ? 'w-5 bg-emerald-500'
+                      : index === currentLineIndex
+                      ? 'w-7 bg-blue-600 animate-pulse'
+                      : 'w-2.5 bg-slate-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : <span />}
         <div className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
           <Target className="w-3.5 h-3.5 text-blue-600" />
           {language === 'vi' ? 'Mục tiêu:' : 'Goal:'}{' '}
@@ -789,6 +874,35 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
                   }}
                   className="w-full bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200 shadow-xs cursor-text relative overflow-hidden transition-all flex flex-col justify-between min-h-[120px]"
                 >
+                  {isBasicLesson && (
+                    <div className="mb-2 flex flex-col gap-2 rounded-xl border border-sky-100 bg-sky-50/70 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-left text-[11px] leading-relaxed text-sky-900">
+                        {t.typingEngine.basicLessonIntroduction.replace(
+                          '{keys}',
+                          lesson.targetKeys.join(', '),
+                        )}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (isIntroductionSpeaking) stopLessonIntroduction();
+                          else playLessonIntroduction();
+                        }}
+                        className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-sky-200 bg-white px-2.5 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:bg-sky-100"
+                      >
+                        {isIntroductionSpeaking ? (
+                          <VolumeX className="h-3.5 w-3.5" />
+                        ) : (
+                          <Volume2 className="h-3.5 w-3.5" />
+                        )}
+                        {isIntroductionSpeaking
+                          ? t.typingEngine.stopIntroduction
+                          : t.typingEngine.playIntroduction}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Suggestion helper. It never writes to the native input. */}
                   <div className="min-h-7 mb-1.5 flex flex-wrap items-center justify-center gap-2 select-none">
                     {activeToken && activeSequence.length > 0 ? (

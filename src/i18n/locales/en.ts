@@ -183,6 +183,9 @@ export const en: TranslationSchema = {
     lineComplete: 'Line completed!',
     pressSpace: 'Spacebar',
     pressToStartVietnamese: 'Enable Vietnamese input on your device, then start typing',
+    playIntroduction: 'Listen to the guide',
+    stopIntroduction: 'Stop guide',
+    basicLessonIntroduction: 'This lesson introduces the {keys} keys. Follow the hand guide, type slowly and accurately, then complete each row before continuing to the next one.',
   },
   resultModal: {
     flawlessTitle: 'Flawless! 100% Perfect',
