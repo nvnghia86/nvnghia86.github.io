@@ -186,6 +186,7 @@ export const en: TranslationSchema = {
     playIntroduction: 'Listen to the guide',
     stopIntroduction: 'Stop guide',
     basicLessonIntroduction: 'This lesson introduces the {keys} keys. Follow the hand guide, type slowly and accurately, then complete each row before continuing to the next one.',
+    tutorialOverlayHint: '👆 Watch the finger guide → Press a key to begin',
   },
   resultModal: {
     flawlessTitle: 'Flawless! 100% Perfect',

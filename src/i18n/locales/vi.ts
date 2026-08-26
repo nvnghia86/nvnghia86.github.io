@@ -186,6 +186,7 @@ export const vi: TranslationSchema = {
     playIntroduction: 'Nghe hướng dẫn',
     stopIntroduction: 'Dừng hướng dẫn',
     basicLessonIntroduction: 'Bài này giúp bạn làm quen với các phím {keys}. Hãy đặt ngón tay theo hình hướng dẫn, gõ chậm và chính xác. Hoàn thành từng dòng rồi tiếp tục dòng kế tiếp.',
+    tutorialOverlayHint: '👆 Quan sát ngón tay → Nhấn phím để bắt đầu',
   },
   resultModal: {
     flawlessTitle: 'Xuất Sắc! Hoàn Hảo 100%',

@@ -186,6 +186,7 @@ export interface TranslationSchema {
     playIntroduction: string;
     stopIntroduction: string;
     basicLessonIntroduction: string;
+    tutorialOverlayHint: string;
   };
   resultModal: {
     flawlessTitle: string;
