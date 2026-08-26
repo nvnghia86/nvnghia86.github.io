@@ -243,7 +243,7 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
 
   // Tutorial overlay: shows floating finger card above target key for basic lessons (id <= 10)
   // Only active before the user starts typing on each line.
-  const showTutorialOverlay = !isStarted && lesson.id <= 10 && settings.showKeyboard;
+  const showTutorialOverlay = lesson.id <= 10 && settings.showKeyboard;
 
   // Configure sound
   useEffect(() => {
@@ -1084,13 +1084,6 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
             {/* Lower Row: Virtual Keyboard (Bàn phím ảo) */}
             {settings.showKeyboard && (
               <div className="w-full">
-                {showTutorialOverlay && (
-                  <div className="flex items-center justify-center mb-2">
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold font-body shadow-xs animate-pulse">
-                      {t.typingEngine.tutorialOverlayHint}
-                    </span>
-                  </div>
-                )}
                 <VirtualKeyboard
                   targetChar={nextExpectedPhysicalKey || currentTargetChar}
                   activePressedKey={activePressedKeyCode}

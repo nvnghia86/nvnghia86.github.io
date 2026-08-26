@@ -2066,7 +2066,7 @@
         "const result = calculateTotal(price, tax);",
         "let count = 0; while (count < 10) { count++; }",
         "function greet(name: string): string { return `Xin chào ${name}!`; }",
-        "export const config = { port: 3000, host: '0.0.0.0' };"
+        "export const config = { port: 3011, host: '0.0.0.0' };"
       ],
       "minAccuracy": 90,
       "targetWpm": 28
@@ -2147,7 +2147,7 @@
         "git status, git add ., git commit -m 'feat: update curriculum'",
         "git checkout -b feature/typing-engine, git push origin main",
         "npm install, npm run dev, npm run build, npm run lint",
-        "docker build -t hispace-app . && docker run -p 3000:3000 hispace-app"
+        "docker build -t hispace-app . && docker run -p 3011:3011 hispace-app"
       ],
       "minAccuracy": 90,
       "targetWpm": 28
