@@ -179,25 +179,28 @@ export const VirtualKeyboard: React.FC<VirtualKeyboardProps> = ({
                         className="rounded-2xl border-2 shadow-2xl bg-white flex flex-col items-center p-2 gap-1 animate-pulse-slow"
                         style={{ borderColor: ACTIVE_COLOR, boxShadow: `0 8px 32px ${ACTIVE_COLOR}55` }}
                       >
-                        {/* Mini Dual Hands */}
+                        {/* Mini Dual Hands — left hand always on left, right hand always on right */}
                         <div className="flex gap-1 items-center justify-center w-full">
-                          {/* Active hand */}
+                          {/* Left hand slot */}
                           <div
-                            className="rounded-xl p-1 flex-1"
-                            style={{ background: `${ACTIVE_COLOR}18` }}
+                            className={`rounded-xl p-1 flex-1 transition-all ${isLeftHand ? '' : 'opacity-30'}`}
+                            style={isLeftHand ? { background: `${ACTIVE_COLOR}18` } : {}}
                           >
                             <img
-                              src={activeSvg}
-                              alt={isLeftHand ? 'Left hand' : 'Right hand'}
+                              src={isLeftHand ? activeSvg : leftNeutralSvg}
+                              alt="Left hand"
                               className="w-full object-contain"
                               style={{ maxHeight: '72px' }}
                             />
                           </div>
-                          {/* Neutral other hand */}
-                          <div className="rounded-xl p-1 flex-1 opacity-30">
+                          {/* Right hand slot */}
+                          <div
+                            className={`rounded-xl p-1 flex-1 transition-all ${!isLeftHand ? '' : 'opacity-30'}`}
+                            style={!isLeftHand ? { background: `${ACTIVE_COLOR}18` } : {}}
+                          >
                             <img
-                              src={neutralSvg}
-                              alt="Other hand"
+                              src={!isLeftHand ? activeSvg : rightNeutralSvg}
+                              alt="Right hand"
                               className="w-full object-contain"
                               style={{ maxHeight: '72px' }}
                             />
