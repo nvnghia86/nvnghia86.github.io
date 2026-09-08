@@ -400,9 +400,10 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
           {activeTab === 'curriculum' && (
             <div className="space-y-6">
               {/* Word & Excel Level Cards Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={`grid grid-cols-1 gap-6 ${selectedSoftware === 'all' ? 'md:grid-cols-2' : ''}`}>
                 
                 {/* WORD TRACK */}
+                {(selectedSoftware === 'all' || selectedSoftware === 'word') && (
                 <div className="bg-gradient-to-br from-blue-950/40 via-slate-900 to-slate-900 p-5 rounded-3xl border border-blue-500/30 shadow-xl space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -461,8 +462,10 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* EXCEL TRACK */}
+                {(selectedSoftware === 'all' || selectedSoftware === 'excel') && (
                 <div className="bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-900 p-5 rounded-3xl border border-emerald-500/30 shadow-xl space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -521,6 +524,7 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
                     </div>
                   </div>
                 </div>
+                )}
               </div>
 
               {/* Detailed Topic Cards Grid */}

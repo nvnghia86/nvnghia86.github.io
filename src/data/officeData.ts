@@ -55,6 +55,90 @@ export interface OfficeTopic {
 
 export const OFFICE_TOPICS: OfficeTopic[] = [
   // =========================================================================
+  // BÀI HỌC CƠ BẢN WORD & EXCEL (NEW)
+  // =========================================================================
+  {
+    id: 'word_basic_create',
+    software: 'word',
+    level: 'basic',
+    category: 'basics',
+    categoryName: 'Các thao tác cơ bản',
+    title: 'Mở ứng dụng & Tạo File Mới',
+    vietnameseTitle: 'Hướng dẫn mở Word và tạo trang soạn thảo mới',
+    shortDescription: 'Cách khởi động Microsoft Word và bắt đầu một tài liệu trắng hoặc từ mẫu có sẵn.',
+    syntax: 'N/A',
+    example: {
+      scenario: 'Tạo một báo cáo mới từ đầu',
+      formulaOrSteps: '1. Nhấn nút Start trên Windows, gõ "Word" và nhấn Enter.\n2. Chọn "Blank document" (Tài liệu trống) hoặc một mẫu có sẵn.\n3. Nhấn Ctrl + N để mở nhanh tài liệu mới nếu đang ở trong Word.',
+      result: 'Một trang giấy trắng hiện ra để bạn bắt đầu soạn thảo.',
+      explanation: 'Đây là bước đầu tiên để sử dụng Word. Ctrl+N giúp bạn mở một file mới cực nhanh mà không cần dùng chuột.'
+    },
+    proTips: ['Ghim (Pin) Word xuống Taskbar để mở nhanh bằng một cú click chuột.'],
+    shortcutKeys: ['Ctrl', 'N'],
+    practiceDrills: ['Word', 'Blank document', 'Ctrl + N']
+  },
+  {
+    id: 'word_basic_save',
+    software: 'word',
+    level: 'basic',
+    category: 'basics',
+    categoryName: 'Các thao tác cơ bản',
+    title: 'Lưu File (Save & Save As)',
+    vietnameseTitle: 'Lưu tài liệu Word để không mất dữ liệu',
+    shortDescription: 'Lưu lần đầu (Save As) và lưu quá trình (Save) khi đang làm việc.',
+    syntax: 'N/A',
+    example: {
+      scenario: 'Lưu báo cáo vào thư mục Documents',
+      formulaOrSteps: '1. Nhấn Ctrl + S.\n2. Nếu là file mới, Word sẽ hỏi nơi lưu. Chọn thư mục và gõ tên file.\n3. Nhấn Save (hoặc Enter).',
+      result: 'File được lưu. Lần sau nhấn Ctrl+S sẽ lưu thẳng vào file này.',
+      explanation: 'Save (Ctrl+S) ghi đè lên file hiện tại. Save As (F12) dùng khi muốn lưu thành một bản sao khác.'
+    },
+    commonMistakes: ['Quên lưu file thường xuyên dẫn đến mất dữ liệu khi mất điện hoặc máy treo.'],
+    proTips: ['Hãy tạo thói quen cứ 5-10 phút lại nhấn Ctrl + S một lần.', 'Mở tính năng AutoSave nếu dùng OneDrive để tự động lưu.'],
+    shortcutKeys: ['Ctrl', 'S', 'F12'],
+    practiceDrills: ['Ctrl + S', 'F12', 'Save As']
+  },
+  {
+    id: 'excel_basic_create',
+    software: 'excel',
+    level: 'basic',
+    category: 'basics',
+    categoryName: 'Các thao tác cơ bản',
+    title: 'Mở ứng dụng & Tạo Workbook Mới',
+    vietnameseTitle: 'Khởi động Excel và tạo bảng tính',
+    shortDescription: 'Các bước mở phần mềm Excel và chuẩn bị bảng dữ liệu.',
+    syntax: 'N/A',
+    example: {
+      scenario: 'Bắt đầu tính toán bảng lương',
+      formulaOrSteps: '1. Nhấn nút Start, gõ "Excel" và nhấn Enter.\n2. Chọn "Blank workbook" (Bảng tính trống).\n3. Bắt đầu nhập dữ liệu vào các ô (cells).',
+      result: 'Một bảng tính mới (Workbook) gồm các hàng (1,2,3...) và cột (A,B,C...) hiện ra.',
+      explanation: 'Trong Excel, mỗi file gọi là một Workbook, bên trong chứa nhiều Worksheet (trang tính).'
+    },
+    shortcutKeys: ['Ctrl', 'N'],
+    practiceDrills: ['Excel', 'Blank workbook', 'Ctrl + N']
+  },
+  {
+    id: 'excel_basic_save',
+    software: 'excel',
+    level: 'basic',
+    category: 'basics',
+    categoryName: 'Các thao tác cơ bản',
+    title: 'Lưu File (Save & Save As)',
+    vietnameseTitle: 'Lưu bảng tính Excel',
+    shortDescription: 'Lưu trữ bảng dữ liệu một cách an toàn.',
+    syntax: 'N/A',
+    example: {
+      scenario: 'Lưu file bảng lương tháng 9',
+      formulaOrSteps: '1. Nhấn phím F12 (Lưu dưới tên mới) hoặc Ctrl + S.\n2. Chọn nơi lưu trữ và đặt tên file.\n3. Nhấn Enter.',
+      result: 'File được định dạng dưới dạng .xlsx và lưu an toàn trên máy.',
+      explanation: 'Dùng F12 (Save As) cực nhanh để tạo bản sao lưu mà không thay đổi file gốc.'
+    },
+    proTips: ['Khi xử lý lượng dữ liệu lớn, hãy lưu file thường xuyên bằng Ctrl+S trước khi dùng các hàm nặng để tránh treo máy.'],
+    shortcutKeys: ['Ctrl', 'S', 'F12'],
+    practiceDrills: ['Ctrl + S', 'F12', 'Save As']
+  },
+
+  // =========================================================================
   // EXCEL - BASIC
   // =========================================================================
   {

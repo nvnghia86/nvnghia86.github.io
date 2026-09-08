@@ -484,8 +484,11 @@ export const MonsterBattleGame: React.FC<MonsterBattleGameProps> = ({
     }
 
     const expectedChar = currentWord[typedIndex];
+    const expectedCharLower = expectedChar.toLowerCase();
+    const typedCharLower = e.key.toLowerCase();
 
-    if (e.key === expectedChar) {
+    // Tự động không phân biệt chữ hoa, chữ thường
+    if (typedCharLower === expectedCharLower) {
       // Keystroke correct!
       soundEngine.playKeyClick(false);
       const nextIdx = typedIndex + 1;
@@ -722,10 +725,21 @@ export const MonsterBattleGame: React.FC<MonsterBattleGameProps> = ({
           </div>
 
           {/* Current Word Progress & Tip */}
-          <div className="mt-2 text-center text-xs font-bold text-white/90 drop-shadow-md bg-black/40 px-4 py-1 rounded-full border border-white/10 flex items-center gap-2">
-            <span>Từ {wordIndex + 1}/{wordList.length}:</span>
-            <span className="text-amber-300 font-mono text-sm tracking-widest">{currentWord}</span>
-            <span className="text-slate-300 text-[11px]">(Gõ ký tự được đóng khung màu xanh)</span>
+          <div className="mt-2 text-center text-xs font-bold text-white/90 drop-shadow-md bg-black/40 px-4 py-2 rounded-xl border border-white/10 flex flex-col items-center gap-1">
+            <div className="flex items-center gap-2">
+              <span>Từ {wordIndex + 1}/{wordList.length}:</span>
+              <span className="text-amber-300 font-mono text-sm tracking-widest">{currentWord}</span>
+            </div>
+            
+            {/* Vùng hiển thị text người dùng đã nhập */}
+            <div className="flex items-center gap-2 mt-1 bg-slate-900/80 px-4 py-1.5 rounded-lg border border-slate-700 w-full max-w-xs shadow-inner">
+              <span className="text-slate-400 font-mono text-xs">Đã nhập:</span>
+              <span className="text-emerald-400 font-mono font-black text-sm tracking-widest border-r-2 border-emerald-400 pr-1 animate-pulse min-h-[20px]">
+                {currentWord.substring(0, typedIndex)}
+              </span>
+            </div>
+
+            <span className="text-slate-300 text-[11px] mt-1">(Gõ không phân biệt hoa/thường)</span>
           </div>
         </div>
 
