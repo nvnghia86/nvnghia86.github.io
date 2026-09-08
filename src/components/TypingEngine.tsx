@@ -206,10 +206,16 @@ export const TypingEngine: React.FC<TypingEngineProps> = ({
     });
   }, [nativeEvaluation, targetChars, typedText]);
 
-  const currentCharIndex = Math.min(
-    Math.max(0, nativeEvaluation.nextTargetIndex),
-    Math.max(0, targetChars.length - 1)
-  );
+  // When the line is complete nextTargetIndex === targetChars.length (past the end).
+  // Do NOT clamp it to targetChars.length-1 in that case — that would make
+  // currentTargetChar point at the last char and the keyboard would re-suggest it.
+  const lineIsComplete = nativeEvaluation.isComplete;
+  const currentCharIndex = lineIsComplete
+    ? targetChars.length // past end → currentTargetChar will be ''
+    : Math.min(
+        Math.max(0, nativeEvaluation.nextTargetIndex),
+        Math.max(0, targetChars.length - 1)
+      );
   const currentTargetChar = targetChars[currentCharIndex] || '';
 
   const activeToken = useMemo(() => {

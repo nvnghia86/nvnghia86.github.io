@@ -43,6 +43,10 @@ export function isCurriculumLessonUnlocked(
   stats: UserStats,
   curriculumLessons: Lesson[],
 ): boolean {
+  // Dev mode: unlock all lessons when running on localhost
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return true;
+  }
   const lessonIndex = curriculumLessons.findIndex((item) => item.id === lesson.id);
   if (lessonIndex <= 0) return true;
   return Boolean(stats.lessonResults[curriculumLessons[lessonIndex - 1].id]);
