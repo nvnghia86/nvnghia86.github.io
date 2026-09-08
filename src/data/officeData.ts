@@ -65,17 +65,18 @@ export const OFFICE_TOPICS: OfficeTopic[] = [
     categoryName: 'Các thao tác cơ bản',
     title: 'Mở ứng dụng & Tạo File Mới',
     vietnameseTitle: 'Hướng dẫn mở Word và tạo trang soạn thảo mới',
-    shortDescription: 'Cách khởi động Microsoft Word và bắt đầu một tài liệu trắng hoặc từ mẫu có sẵn.',
+    shortDescription: 'Tìm hiểu nhiều cách khác nhau để khởi động Microsoft Word và bắt đầu một tài liệu trắng hoặc sử dụng mẫu (Template) có sẵn.',
     syntax: 'N/A',
     example: {
       scenario: 'Tạo một báo cáo mới từ đầu',
-      formulaOrSteps: '1. Nhấn nút Start trên Windows, gõ "Word" và nhấn Enter.\n2. Chọn "Blank document" (Tài liệu trống) hoặc một mẫu có sẵn.\n3. Nhấn Ctrl + N để mở nhanh tài liệu mới nếu đang ở trong Word.',
-      result: 'Một trang giấy trắng hiện ra để bạn bắt đầu soạn thảo.',
-      explanation: 'Đây là bước đầu tiên để sử dụng Word. Ctrl+N giúp bạn mở một file mới cực nhanh mà không cần dùng chuột.'
+      formulaOrSteps: 'Cách 1: Nhấn phím Windows (Start), gõ chữ "Word" và nhấn Enter để mở ứng dụng.\nCách 2: Nhấn chuột phải ngoài Desktop -> Chọn New -> Chọn Microsoft Word Document.\nCách 3: Nếu đang ở trong một cửa sổ Word sẵn có, nhấn tổ hợp phím Ctrl + N để mở ngay lập tức một tài liệu trắng mới mà không cần chạm chuột.',
+      result: 'Một trang giấy trắng (Blank document) hiện ra để bạn bắt đầu soạn thảo văn bản.',
+      explanation: 'Việc thông thạo các cách mở file sẽ giúp bạn chủ động trong mọi tình huống. Đặc biệt, Ctrl + N là phím tắt thần thánh giúp bạn tiết kiệm rất nhiều thời gian thao tác khi cần soạn thảo nhanh.'
     },
-    proTips: ['Ghim (Pin) Word xuống Taskbar để mở nhanh bằng một cú click chuột.'],
-    shortcutKeys: ['Ctrl', 'N'],
-    practiceDrills: ['Word', 'Blank document', 'Ctrl + N']
+    commonMistakes: ['Mở nhầm shortcut của bản Word cũ (nếu máy cài nhiều phiên bản).', 'Click đúp quá nhiều lần khiến máy mở ra nhiều cửa sổ Word cùng lúc gây nặng máy.'],
+    proTips: ['Ghim (Pin to Taskbar) biểu tượng Word xuống thanh Taskbar dưới đáy màn hình để mở nhanh bằng đúng một cú click chuột trái.', 'Khám phá các mẫu (Templates) có sẵn của Word như CV, Report để không phải thiết kế lại từ đầu.'],
+    shortcutKeys: ['Ctrl', 'N', 'Win'],
+    practiceDrills: ['Microsoft Word', 'Blank document', 'Ctrl + N']
   },
   {
     id: 'word_basic_save',
@@ -85,18 +86,18 @@ export const OFFICE_TOPICS: OfficeTopic[] = [
     categoryName: 'Các thao tác cơ bản',
     title: 'Lưu File (Save & Save As)',
     vietnameseTitle: 'Lưu tài liệu Word để không mất dữ liệu',
-    shortDescription: 'Lưu lần đầu (Save As) và lưu quá trình (Save) khi đang làm việc.',
+    shortDescription: 'Phân biệt giữa lưu lần đầu (Save As) và lưu quá trình (Save) để đảm bảo an toàn cho dữ liệu soạn thảo.',
     syntax: 'N/A',
     example: {
-      scenario: 'Lưu báo cáo vào thư mục Documents',
-      formulaOrSteps: '1. Nhấn Ctrl + S.\n2. Nếu là file mới, Word sẽ hỏi nơi lưu. Chọn thư mục và gõ tên file.\n3. Nhấn Save (hoặc Enter).',
-      result: 'File được lưu. Lần sau nhấn Ctrl+S sẽ lưu thẳng vào file này.',
-      explanation: 'Save (Ctrl+S) ghi đè lên file hiện tại. Save As (F12) dùng khi muốn lưu thành một bản sao khác.'
+      scenario: 'Lưu báo cáo quan trọng vào thư mục My Documents',
+      formulaOrSteps: 'Lưu đè (Save - Ctrl+S): Nhấn Ctrl + S. Nếu file đã có tên trên máy, Word sẽ ghi đè nội dung mới lên. Nếu file mới tinh, Word sẽ chuyển sang chế độ Save As.\nLưu mới (Save As - F12): Nhấn F12. Một cửa sổ hiện ra cho phép bạn chọn lại ổ đĩa/thư mục lưu, đặt lại tên file, và chọn định dạng (PDF, Doc, Docx).',
+      result: 'File được lưu cứng vào ổ đĩa. Lần sau bạn nhấn Ctrl+S, thanh trạng thái phía dưới sẽ chạy ngang rất nhanh báo hiệu đã lưu thành công.',
+      explanation: 'Sự khác biệt lớn nhất: Ctrl+S chỉ ghi đè lên file hiện tại (dùng liên tục khi đang làm việc). F12 (Save As) dùng khi bạn muốn tạo ra một bản copy khác, hoặc đổi đuôi file sang dạng khác như PDF.'
     },
-    commonMistakes: ['Quên lưu file thường xuyên dẫn đến mất dữ liệu khi mất điện hoặc máy treo.'],
-    proTips: ['Hãy tạo thói quen cứ 5-10 phút lại nhấn Ctrl + S một lần.', 'Mở tính năng AutoSave nếu dùng OneDrive để tự động lưu.'],
+    commonMistakes: ['Soạn thảo suốt 3 tiếng không bấm Ctrl+S, khi máy tính sập nguồn hoặc treo thì mất trắng dữ liệu.', 'Đặt tên file có chứa các ký tự cấm của Windows như \\ / : * ? " < > |'],
+    proTips: ['Hãy biến Ctrl + S thành phản xạ tự nhiên: Cứ gõ xong một đoạn quan trọng, tay trái tự động bấm Ctrl + S.', 'Vào File > Options > Save, tích chọn "Save AutoRecover information every 5 minutes" để Word tự động lưu dự phòng.', 'Bạn có thể lưu thẳng file Word thành file PDF bằng cách nhấn F12 và chọn định dạng Save as type là PDF.'],
     shortcutKeys: ['Ctrl', 'S', 'F12'],
-    practiceDrills: ['Ctrl + S', 'F12', 'Save As']
+    practiceDrills: ['Ctrl + S', 'F12', 'AutoRecover', 'Save As PDF']
   },
   {
     id: 'excel_basic_create',
@@ -106,16 +107,18 @@ export const OFFICE_TOPICS: OfficeTopic[] = [
     categoryName: 'Các thao tác cơ bản',
     title: 'Mở ứng dụng & Tạo Workbook Mới',
     vietnameseTitle: 'Khởi động Excel và tạo bảng tính',
-    shortDescription: 'Các bước mở phần mềm Excel và chuẩn bị bảng dữ liệu.',
+    shortDescription: 'Làm quen với khái niệm Workbook (File) và Worksheet (Trang tính), cách mở bảng tính trống hoặc từ mẫu báo cáo.',
     syntax: 'N/A',
     example: {
-      scenario: 'Bắt đầu tính toán bảng lương',
-      formulaOrSteps: '1. Nhấn nút Start, gõ "Excel" và nhấn Enter.\n2. Chọn "Blank workbook" (Bảng tính trống).\n3. Bắt đầu nhập dữ liệu vào các ô (cells).',
-      result: 'Một bảng tính mới (Workbook) gồm các hàng (1,2,3...) và cột (A,B,C...) hiện ra.',
-      explanation: 'Trong Excel, mỗi file gọi là một Workbook, bên trong chứa nhiều Worksheet (trang tính).'
+      scenario: 'Bắt đầu thiết kế bảng tính lương tháng',
+      formulaOrSteps: 'Cách 1: Mở menu Start, tìm "Excel" và click vào ứng dụng.\nCách 2: Nhấn chuột phải ngoài màn hình Desktop -> New -> Microsoft Excel Worksheet.\nCách 3: Khi đang dùng Excel, nhấn Ctrl + N để tạo nhanh một file (Workbook) mới.',
+      result: 'Một bảng lưới với các cột (A, B, C) và các hàng (1, 2, 3) hiện ra, sẵn sàng cho việc nhập liệu.',
+      explanation: 'Hãy nhớ: Cả một file Excel lớn được gọi là một Workbook. Bên dưới góc trái màn hình, bạn sẽ thấy Sheet1, Sheet2 - đây là các trang tính nhỏ (Worksheet) nằm trong Workbook đó.'
     },
-    shortcutKeys: ['Ctrl', 'N'],
-    practiceDrills: ['Excel', 'Blank workbook', 'Ctrl + N']
+    commonMistakes: ['Không phân biệt được khái niệm Cell (Ô), Row (Hàng) và Column (Cột) khi mới bắt đầu.', 'Nhấn đúp (double-click) vào ô khiến con trỏ chui vào trong ô và làm khóa các công cụ khác trên thanh Menu.'],
+    proTips: ['Sau khi tạo mới, hãy chú ý thanh công thức (Formula Bar) ở phía trên: mọi dữ liệu thật của ô sẽ hiển thị ở đây chứ không chỉ trên lưới.', 'Sử dụng phím Tab để dịch sang ô bên phải, và phím Enter để xuống ô bên dưới.'],
+    shortcutKeys: ['Ctrl', 'N', 'Tab', 'Enter'],
+    practiceDrills: ['Microsoft Excel', 'Blank workbook', 'Ctrl + N']
   },
   {
     id: 'excel_basic_save',
@@ -125,17 +128,18 @@ export const OFFICE_TOPICS: OfficeTopic[] = [
     categoryName: 'Các thao tác cơ bản',
     title: 'Lưu File (Save & Save As)',
     vietnameseTitle: 'Lưu bảng tính Excel',
-    shortDescription: 'Lưu trữ bảng dữ liệu một cách an toàn.',
+    shortDescription: 'Phương pháp bảo vệ dữ liệu bảng tính, lưu đè và tạo bản sao lưu với các định dạng khác nhau (.xlsx, .csv).',
     syntax: 'N/A',
     example: {
-      scenario: 'Lưu file bảng lương tháng 9',
-      formulaOrSteps: '1. Nhấn phím F12 (Lưu dưới tên mới) hoặc Ctrl + S.\n2. Chọn nơi lưu trữ và đặt tên file.\n3. Nhấn Enter.',
-      result: 'File được định dạng dưới dạng .xlsx và lưu an toàn trên máy.',
-      explanation: 'Dùng F12 (Save As) cực nhanh để tạo bản sao lưu mà không thay đổi file gốc.'
+      scenario: 'Lưu file báo cáo tài chính cuối tháng',
+      formulaOrSteps: 'Lưu giữ liệu (Ctrl+S): Trong quá trình làm việc, hãy bấm Ctrl + S thường xuyên. Dữ liệu sẽ ghi đè lên file đang mở.\nTạo bản copy (F12): Nhấn F12 để mở hộp thoại Save As. Tại đây bạn có thể lưu thành một file mới (ví dụ: Bao_Cao_Thang_9_Final.xlsx).',
+      result: 'Dữ liệu được lưu an toàn xuống ổ cứng máy tính hoặc đồng bộ lên OneDrive.',
+      explanation: 'File Excel thông thường có đuôi là .xlsx. Tuy nhiên qua nút F12, bạn có thể lưu thành định dạng .csv (rất nhẹ, thường dùng để đẩy dữ liệu lên hệ thống phần mềm khác) hoặc .pdf.'
     },
-    proTips: ['Khi xử lý lượng dữ liệu lớn, hãy lưu file thường xuyên bằng Ctrl+S trước khi dùng các hàm nặng để tránh treo máy.'],
+    commonMistakes: ['Sử dụng hàm nặng làm treo máy trước khi kịp bấm Ctrl + S lưu file.', 'Gửi nhầm file chứa dữ liệu thô nhạy cảm cho đối tác thay vì chỉ lưu một bản PDF.'],
+    proTips: ['Bấm Ctrl + S trước mỗi lần chạy Filter lọc dữ liệu khổng lồ hoặc trước khi viết một hàm dài.', 'Muốn khóa file bằng mật khẩu? Khi nhấn F12 -> chọn Tools (cạnh nút Save) -> General Options -> Nhập Password to open.'],
     shortcutKeys: ['Ctrl', 'S', 'F12'],
-    practiceDrills: ['Ctrl + S', 'F12', 'Save As']
+    practiceDrills: ['Ctrl + S', 'F12', 'General Options', 'Password to open']
   },
 
   // =========================================================================

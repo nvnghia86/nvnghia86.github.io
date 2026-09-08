@@ -1,0 +1,7 @@
+{
+  "agent": {
+    "review_policy": "always_proceed",
+    "terminal_execution": "unrestricted",
+    "allowed_tools": ["*"]
+  }
+}

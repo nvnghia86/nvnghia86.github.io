@@ -1177,7 +1177,7 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
                   <Lightbulb className="w-4 h-4" /> Ví dụ thực tế: {selectedTopic.example.scenario}
                 </h4>
                 <p className="text-slate-300">
-                  <strong>Thực hiện:</strong> <span className="font-mono text-blue-300">{selectedTopic.example.formulaOrSteps}</span>
+                  <strong>Thực hiện:</strong> <span className="font-mono text-blue-300 whitespace-pre-wrap leading-relaxed inline-block mt-1">{selectedTopic.example.formulaOrSteps}</span>
                 </p>
                 <p className="text-slate-300">
                   <strong>Kết quả:</strong> <span className="text-emerald-400 font-bold">{selectedTopic.example.result}</span>
@@ -1203,13 +1203,6 @@ export const OfficeHubModal: React.FC<OfficeHubModalProps> = ({
                     <span>Thử Nghiệm Trong Sandbox</span>
                   </button>
                 )}
-                <button
-                  onClick={() => handleLaunchPracticeDrill(selectedTopic)}
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-500/30 cursor-pointer transition-all"
-                >
-                  <Play className="w-4 h-4 fill-white" />
-                  <span>Luyện Gõ Cú Pháp Này</span>
-                </button>
               </div>
 
             </div>
