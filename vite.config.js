@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  // This repository is published as a GitHub Pages project site.
-  // Keep the value overridable for a user/organization site or a custom host.
-  base: process.env.VITE_BASE_PATH || '/quiz-frontend/',
+  // This repository is the nvnghia86.github.io user site and is served at root.
+  // Keep the value overridable for a project site or a custom host.
+  base: process.env.VITE_BASE_PATH || '/',
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {
