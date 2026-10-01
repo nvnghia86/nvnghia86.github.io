@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  // GitHub Pages may host the app below /<repository-name>/.
-  // Set VITE_BASE_PATH in the Pages workflow when the repository is not a user site.
-  base: process.env.VITE_BASE_PATH || './',
+  // This repository is published as a GitHub Pages project site.
+  // Keep the value overridable for a user/organization site or a custom host.
+  base: process.env.VITE_BASE_PATH || '/quiz-frontend/',
   build: {
     chunkSizeWarningLimit: 700,
     rollupOptions: {

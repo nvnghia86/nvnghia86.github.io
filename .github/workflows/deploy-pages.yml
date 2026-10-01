@@ -2,7 +2,7 @@ name: Deploy frontend to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [prod]
   workflow_dispatch:
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-      VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+      VITE_BASE_PATH: /quiz-frontend/
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,6 +27,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm install
+      - name: Validate public build configuration
+        run: |
+          test -n "$VITE_API_BASE_URL"
+          test -n "$VITE_BASE_PATH"
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
