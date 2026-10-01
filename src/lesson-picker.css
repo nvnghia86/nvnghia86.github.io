@@ -1,0 +1,29 @@
+/* Keep the picker chrome visible while only the lesson collection scrolls. */
+.lesson-picker {
+  display: block;
+  max-height: none;
+  overflow: visible;
+}
+
+.lesson-picker-head {
+  background: #fff;
+  padding-bottom: 8px;
+}
+
+.lesson-picker-items {
+  display: grid;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.lesson-pagination {
+  background: #fff;
+  padding-top: 12px;
+}
+
+html[data-theme='dark'] .lesson-picker-head,
+html[data-theme='dark'] .lesson-pagination {
+  background: #13222d;
+}
