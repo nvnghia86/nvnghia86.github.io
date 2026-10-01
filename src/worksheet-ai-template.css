@@ -1,0 +1,21 @@
+/* The template picker only has choices during AI generation. */
+.worksheet-spec-row > .field:nth-child(3):has(select option:only-child) {
+  display: none;
+}
+
+@media (min-width: 901px) {
+  .app-sidebar { position: sticky; top: 0; height: 100vh; max-height: 100vh; overflow-y: auto; align-self: flex-start; }
+}
+
+.quiz-preview-question { display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: start; padding: 14px 0; border-bottom: 1px solid #e1ebf1; }
+.quiz-preview-question textarea { min-height: 62px; width: 100%; resize: vertical; }
+.quiz-preview-question small { grid-column: 2; color: #8190a1; }
+.quiz-preview-question .text-button { grid-column: 3; grid-row: 1 / span 2; }
+
+.ai-review-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+.ai-question-editor { width: 100%; min-height: 68px; resize: vertical; padding: 9px 10px; border: 1px solid #dbe8ef; border-radius: 8px; font: inherit; color: inherit; background: #fff; }
+.google-auth-button { width: 100%; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 10px; border: 1px solid #d7e2e8; border-radius: 9px; background: #fff; color: #243247; cursor: pointer; font: inherit; }
+.google-auth-button:hover { border-color: #16aee5; background: #f5fbfd; }
+.google-g-mark { color: #4285f4; font-weight: 900; font-size: 18px; }
+.google-auth-button-wrap { display: flex; justify-content: center; margin-top: 10px; min-height: 40px; }
+.sign-out-button { border-color: #f2c5c5; color: #b33a3a; }

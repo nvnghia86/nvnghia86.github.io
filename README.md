@@ -1,7 +1,7 @@
 # Quizzz Frontend
 
 React/Vite frontend for Quizzz. This folder is intentionally deployable as an independent repository.
-
+--
 ## Local development
 
 ```powershell

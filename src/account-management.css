@@ -1,0 +1,11 @@
+.management-table-wrap{overflow-x:auto}
+.management-table{width:100%;border-collapse:collapse;min-width:720px}
+.management-table th,.management-table td{padding:13px 14px;text-align:left;border-bottom:1px solid #edf0f5;vertical-align:middle}
+.management-table th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;background:#f8fafc}
+.management-table td strong{display:block}.management-table td small{display:block;color:#7b8190;margin-top:3px}
+.management-table .status-pill{display:inline-flex}.role-admin{background:#ede9fe;color:#6d28d9}.role-teacher{background:#e0f2fe;color:#0369a1}.role-student{background:#ecfdf5;color:#047857}
+.management-filter-row th{padding-top:8px;padding-bottom:10px;background:#fff}
+.management-filter-row input,.management-filter-row select{width:100%;min-width:130px;padding:8px 9px;border:1px solid #dbe8ef;border-radius:8px;background:#fff;color:inherit;font:inherit;font-size:12px}
+.management-filter-row input:focus,.management-filter-row select:focus{outline:0;border-color:#16aee5;box-shadow:0 0 0 3px rgba(22,174,229,.12)}
+html[data-theme='dark'] .management-filter-row th{background:#13222d}
+html[data-theme='dark'] .management-filter-row input,html[data-theme='dark'] .management-filter-row select{background:#0d1a23;border-color:#345260;color:#eaf5fa}
