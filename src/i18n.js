@@ -1,8 +1,11 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+const supportedLocales = ['vi', 'en'];
 const savedLocale = localStorage.getItem('quizzz.locale');
-const detectedLocale = navigator.language?.toLowerCase().startsWith('en') ? 'en' : 'vi';
+// Vietnamese is the product default. English is used only when the user has
+// explicitly selected it and saved that preference in this browser.
+const initialLocale = supportedLocales.includes(savedLocale) ? savedLocale : 'vi';
 
 export const resources = {
   vi: {
@@ -87,6 +90,6 @@ export const resources = {
   },
 };
 
-i18n.use(initReactI18next).init({ resources, lng: savedLocale || detectedLocale, fallbackLng: 'vi', interpolation: { escapeValue: false }, returnNull: false, saveMissing: import.meta.env.DEV });
+i18n.use(initReactI18next).init({ resources, lng: initialLocale, fallbackLng: 'vi', interpolation: { escapeValue: false }, returnNull: false, saveMissing: import.meta.env.DEV });
 
 export default i18n;
