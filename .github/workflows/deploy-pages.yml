@@ -24,8 +24,9 @@ jobs:
     env:
       # Prefer an environment/repository variable, then an environment secret.
       # The value is embedded into the public bundle, so a variable is preferred
-      # for non-sensitive API URLs.
-      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || secrets.VITE_API_BASE_URL || '/api/v1' }}
+      # for non-sensitive API URLs. Use the production API domain as the safe
+      # fallback so a missing GitHub variable cannot silently target Pages.
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || secrets.VITE_API_BASE_URL || 'https://quizzzgame.xyz/api/v1' }}
       # The repository is nvnghia86.github.io, so Pages serves it at the domain root.
       VITE_BASE_PATH: /
     steps:
