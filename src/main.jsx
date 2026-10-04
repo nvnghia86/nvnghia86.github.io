@@ -27,6 +27,7 @@ import ClassManagement from './ClassManagement';
 import QuizSetManagement from './QuizSetManagement';
 import LandingPage from './LandingPage';
 import GeometryDiagram from './GeometryDiagram';
+import HomeworkManagement from './HomeworkManagement';
 
 const API = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 // EventSource does not send cookies across frontend/backend ports by default.
@@ -191,6 +192,7 @@ const nativePushState = window.history.pushState.bind(window.history);
 window.history.pushState = (...args) => { nativePushState(...args); window.dispatchEvent(new PopStateEvent('popstate')); };
 QuizSets = QuizSetManagement;
 Classes = ClassManagement;
+Assignments = HomeworkManagement;
 function PreferenceSwitcher({ mode, onThemeChange }) {
   const { t } = useTranslation();
   const [locale, setLocale] = useState(i18n.language?.startsWith('en') ? 'en' : 'vi');
