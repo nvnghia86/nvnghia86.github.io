@@ -33,12 +33,12 @@ function TeacherProfile({ teacher, onError }) {
 function ScopeConfig({ item, options, onCancel, onError, onSaved }) {
   const { t } = useTranslation();
   const [scope, setScope] = useState(item.adminScope || 'school');
-  const [scopeId, setScopeId] = useState(item.managedSchoolId || item.managedCommuneId || item.managedProvinceId || '');
+  const [scopeId, setScopeId] = useState(item.managedClassId || item.managedSchoolId || item.managedCommuneId || item.managedProvinceId || '');
   const [saving, setSaving] = useState(false);
   const choices = options[`${scope}s`] || [];
 
   useEffect(() => {
-    setScopeId(scope === 'school' ? item.managedSchoolId || '' : scope === 'commune' ? item.managedCommuneId || '' : item.managedProvinceId || '');
+    setScopeId(scope === 'class' ? item.managedClassId || '' : scope === 'school' ? item.managedSchoolId || '' : scope === 'commune' ? item.managedCommuneId || '' : item.managedProvinceId || '');
   }, [scope, item]);
 
   async function save(event) {
@@ -56,8 +56,8 @@ function ScopeConfig({ item, options, onCancel, onError, onSaved }) {
 
   return <form className="scope-config-panel form-grid" onSubmit={save}>
     <div className="wide"><strong>{t('scopeConfig.title')}</strong><p className="muted-copy">{item.displayName || item.username} · {t('scopeConfig.description')}</p></div>
-    <label className="field">{t('scopeConfig.scope')}<select value={scope} onChange={event => setScope(event.target.value)}><option value="school">{t('scopeConfig.scopeSchool')}</option><option value="commune">{t('scopeConfig.scopeCommune')}</option><option value="province">{t('scopeConfig.scopeProvince')}</option></select></label>
-    <label className="field">{t('scopeConfig.target')}<select required value={scopeId} onChange={event => setScopeId(event.target.value)}><option value="">{t('scopeConfig.chooseTarget')}</option>{choices.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select></label>
+    <label className="field">{t('scopeConfig.scope')}<select value={scope} onChange={event => setScope(event.target.value)}><option value="class">{t('scopeConfig.scopeClass')}</option><option value="school">{t('scopeConfig.scopeSchool')}</option><option value="commune">{t('scopeConfig.scopeCommune')}</option><option value="province">{t('scopeConfig.scopeProvince')}</option></select></label>
+    <label className="field">{t('scopeConfig.target')}<select required value={scopeId} onChange={event => setScopeId(event.target.value)}><option value="">{t('scopeConfig.chooseTarget')}</option>{choices.map(option => <option key={option.id} value={option.id}>{option.name}{scope === 'class' && option.teacherName ? ` · ${option.teacherName}` : ''}</option>)}</select></label>
     <div className="actions wide"><button className="primary-button" type="submit" disabled={saving || !scopeId}>{saving ? t('common.loading') : t('scopeConfig.save')}</button><button className="secondary-button" type="button" onClick={onCancel}>{t('common.cancel')}</button></div>
   </form>;
 }
@@ -65,7 +65,7 @@ function ScopeConfig({ item, options, onCancel, onError, onSaved }) {
 export default function AccountManagement({ teacher, onError }) {
   const { t } = useTranslation();
   const [items, setItems] = useState([]);
-  const [options, setOptions] = useState({ schools: [], communes: [], provinces: [] });
+  const [options, setOptions] = useState({ classes: [], schools: [], communes: [], provinces: [] });
   const [configuring, setConfiguring] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ name: '', login: '', phone: '', role: '', classes: '', status: '' });
@@ -108,7 +108,7 @@ export default function AccountManagement({ teacher, onError }) {
   const hasFilters = Boolean(filters.name || filters.login || filters.phone || filters.role || filters.classes || filters.status);
   function updateFilter(key, value) { setFilters(previous => ({ ...previous, [key]: value })); }
   function clearFilters() { setFilters({ name: '', login: '', phone: '', role: '', classes: '', status: '' }); }
-  function scopeText(item) { return item.managementTargetName ? `${t(`scopeConfig.scope${item.adminScope.charAt(0).toUpperCase()}${item.adminScope.slice(1)}`)}: ${item.managementTargetName}` : t('scopeConfig.notConfigured'); }
+  function scopeText(item) { return item.managementTargetName && item.adminScope ? `${t(`scopeConfig.scope${item.adminScope.charAt(0).toUpperCase()}${item.adminScope.slice(1)}`)}: ${item.managementTargetName}` : t('scopeConfig.notConfigured'); }
 
   return <section className="content-page admin-management">
     <div className="dashboard-heading"><div><p className="eyebrow">{t('accounts.eyebrow')}</p><h1>{t('accounts.title')}</h1><p className="muted-copy">{isSystemAdmin ? t('accounts.systemAdminDescription') : isAdmin ? t('accounts.adminDescription') : t('accounts.teacherDescription')}</p></div><span className="panel-kicker">{filteredItems.length}/{items.length}</span></div>
