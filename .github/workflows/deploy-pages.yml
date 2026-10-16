@@ -25,6 +25,9 @@ jobs:
       # Public API endpoint embedded in the browser bundle. Keep this explicit
       # so a stale GitHub environment variable cannot deploy the old API domain.
       VITE_API_BASE_URL: https://quized.net/api/v1
+      # OAuth client IDs are public browser configuration. .env.production is
+      # intentionally ignored, so provide this value to the Pages build here.
+      VITE_GOOGLE_CLIENT_ID: 976779444943-vqd8hq1rfiql469g3ku1tj25j2erei9v.apps.googleusercontent.com
       # The repository is nvnghia86.github.io, so Pages serves it at the domain root.
       VITE_BASE_PATH: /
     steps:
