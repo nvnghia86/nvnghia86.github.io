@@ -180,7 +180,8 @@ function RouterShell({ teacher, student, onAuth, onError, error, authReady = tru
             <ModuleLink to="/teacher/assignments">↗ <span>{t('navigation.assign')}</span></ModuleLink>
             <ModuleLink to="/teacher/accounts">♙ <span>{t('navigation.accounts')}</span></ModuleLink>
             <ModuleLink to="/teacher/classes">♧ <span>{t('navigation.classList')}</span></ModuleLink>
-            {teacher.role === 'admin' && <><ModuleLink to="/teacher/schools">🏫 <span>{t('navigation.schools')}</span></ModuleLink><ModuleLink to="/teacher/locations">⌖ <span>{t('navigation.locations')}</span></ModuleLink></>}
+            {['admin', 'system_admin'].includes(teacher.role) && <ModuleLink to="/teacher/schools">🏫 <span>{t('navigation.schools')}</span></ModuleLink>}
+            {teacher.role === 'system_admin' && <ModuleLink to="/teacher/locations">⌖ <span>{t('navigation.locations')}</span></ModuleLink>}
             <ModuleLink to="/teacher/realtime">◉ <span>{t('navigation.room')}</span></ModuleLink>
             <ModuleLink to="/teacher/head-tilt">↔ <span>Tạo game lắc đầu</span></ModuleLink>
             <ModuleLink to="/teacher/reports">▥ <span>{t('navigation.reports')}</span></ModuleLink>
