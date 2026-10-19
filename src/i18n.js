@@ -1,5 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { videoStudioTranslations } from './video-studio-i18n';
 
 const supportedLocales = ['vi', 'en'];
 const savedLocale = localStorage.getItem('quizzz.locale');
@@ -95,6 +96,11 @@ export const resources = {
     },
   },
 };
+
+for (const locale of supportedLocales) {
+  resources[locale].translation.navigation.videoStudio = videoStudioTranslations[locale].nav;
+  resources[locale].translation.videoStudio = videoStudioTranslations[locale];
+}
 
 i18n.use(initReactI18next).init({ resources, lng: initialLocale, fallbackLng: 'vi', interpolation: { escapeValue: false }, returnNull: false, saveMissing: import.meta.env.DEV });
 

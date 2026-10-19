@@ -7,5 +7,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.js'],
     css: true,
+    pool: 'vmThreads',
+    maxWorkers: 1,
+    minWorkers: 1,
   },
 });
