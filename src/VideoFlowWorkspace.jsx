@@ -49,6 +49,7 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
   const [localSelectedId, setLocalSelectedId] = useState(() => selectedNodeId || nextVideoNode(flow).id);
   const [zoom, setZoom] = useState(0.85);
   const [prompts, setPrompts] = useState({});
+  const [batchReport, setBatchReport] = useState('');
   const [draft, setDraft] = useState(data.project.script);
   const [dirty, setDirty] = useState(false);
   const [input, setInput] = useState({ title: data.project.title, story: data.project.story });
@@ -114,6 +115,27 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
     const next = nextVideoNode(flow);
     select(next.id === selected.id ? 'timeline' : next.id, true);
   };
+  const batchGroups = [
+    { key: 'script', type: 'script' },
+    { key: 'characters', type: 'character' },
+    { key: 'keyframes', type: 'keyframe' },
+    { key: 'clips', type: 'clip' },
+    { key: 'export', type: 'export' },
+  ];
+  const batchCount = type => flow.nodes.filter(node => node.type === type && node.status === 'ready').length;
+  const allReadyCount = flow.nodes.filter(node => ['script', 'character', 'keyframe', 'clip', 'export'].includes(node.type) && node.status === 'ready').length;
+  async function runBatch(scope) {
+    if (disabled || dirty || inputDirty) return;
+    const expected = scope === 'all' ? allReadyCount : batchCount(batchGroups.find(group => group.key === scope)?.type);
+    if (!expected) { setBatchReport(t('videoStudio.batchNoReady')); return; }
+    setBatchReport('');
+    try {
+      const result = await mutate(`batch-${scope}`, `${base}/run`, { scope, prompt: scope === 'script' ? prompts.script || '' : '' });
+      if (!result) return;
+      const waiting = result.skipped?.length || 0;
+      setBatchReport(t('videoStudio.batchQueued', { queued: result.jobs?.length || 0, waiting }));
+    } catch (error) { onError(error.message); }
+  }
   const rows = Math.max(1, ...flow.nodes.map(n => n.row + 1));
   const width = 2044, height = rows * 146 + 68;
 
@@ -121,6 +143,11 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
     <div className="video-workspace-head"><div><h2>{data.project.title}</h2><p className="muted-copy">{t('videoStudio.flowProgress', { approved: data.shots.filter(s => s.selected_clip_id).length, total: data.shots.length })}</p></div>
       <div className="video-heading-actions"><button type="button" className="primary-button" onClick={() => select(nextVideoNode(flow).id, true)}>{t('videoStudio.nextRequired')} →</button><button type="button" className="secondary-button" disabled={disabled} onClick={() => refreshProject()}>{t('videoStudio.refresh')}</button></div>
     </div>
+    <section className="panel video-batch-controls" aria-label={t('videoStudio.runAllReady')}>
+      <div className="video-batch-heading"><strong>{t('videoStudio.runAllReady')}</strong><span>{allReadyCount}</span></div>
+      <div className="video-heading-actions"><button type="button" className="primary-button" disabled={disabled || dirty || inputDirty || !allReadyCount} onClick={() => runBatch('all')}>{t('videoStudio.runAllReady')}</button>{batchGroups.map(group => <button key={group.key} type="button" className="secondary-button" disabled={disabled || dirty || inputDirty || !batchCount(group.type)} onClick={() => runBatch(group.key)}>{t(`videoStudio.runGroup${group.key[0].toUpperCase()}${group.key.slice(1)}`)} · {batchCount(group.type)}</button>)}</div>
+      <p className="muted-copy">{t('videoStudio.batchHint')}</p>{batchReport && <p className="video-message" role="status">{batchReport}</p>}
+    </section>
     {message && <p className="video-message" role="status">{message}</p>}
     <section className="video-flow-map" aria-label={t('videoStudio.flowMap')}>
       <div className="video-flow-toolbar"><strong>{t('videoStudio.flowMap')}</strong><span>{t('videoStudio.flowMapHint')}</span><label>{t('videoStudio.zoom')}<input type="range" min="0.5" max="1.2" step="0.05" value={zoom} onChange={e => setZoom(Number(e.target.value))} /><output>{Math.round(zoom * 100)}%</output></label></div>
@@ -151,7 +178,7 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
       {dependencies.length > 0 && <div className="video-node-dependencies"><span>{t('videoStudio.dependencies')}</span>{dependencies.map(node => <button type="button" className="secondary-button" key={node.id} onClick={() => select(node.id)}>{node.status === 'done' ? '✓ ' : '← '}{label(node)}</button>)}</div>}
       {selected.status === 'locked' && <p className="video-hint" role="status">{t('videoStudio.nodeLocked')}</p>}
       {selected.status === 'queued' && <p role="status">{selected.job?.n8n_dispatch_count > 0 ? t('videoStudio.nodeDispatchSent', { count: selected.job.n8n_dispatch_count, time: selected.job.n8n_last_dispatched_at ? new Date(selected.job.n8n_last_dispatched_at).toLocaleTimeString(i18n.language) : '—' }) : t('videoStudio.nodeDispatchPending')}</p>}
-      {selected.status === 'running' && <p role="status">{t('videoStudio.nodeRunning')}</p>}
+      {selected.status === 'running' && <><p role="status">{selected.job?.progress?.message || t('videoStudio.nodeRunning')}</p>{selected.job?.n8n_execution_id && <p className="muted-copy">{t('videoStudio.jobExecution', { id: selected.job.n8n_execution_id })}</p>}{selected.job?.progress_updated_at && <p className="muted-copy">{t('videoStudio.jobLastSignal', { time: new Date(selected.job.progress_updated_at).toLocaleTimeString(i18n.language) })}</p>}</>}
       {selected.job?.status === 'failed' && <div className="video-node-error" role="alert"><p>{selected.job.error || t('videoStudio.error')}</p>{selected.job.attempts < 3 && <button type="button" className="secondary-button" disabled={disabled || selected.status === 'locked' || dirty || inputDirty || scriptBusy} onClick={() => mutate(`retry-${selected.job.id}`, `${base}/jobs/${selected.job.id}/retry`)}>{t('videoStudio.retryJob')}</button>}</div>}
 
       {selected.type === 'input' && <form onSubmit={async e => { e.preventDefault(); const result = await mutate('input', base, input, 'PATCH'); if (result) { setInputDirty(false); select('script', true); } }}>
@@ -191,6 +218,10 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
       {selected.type === 'export' && <><p>{t('videoStudio.exportHint')}</p><p>{t('videoStudio.scriptCounts', { characters: data.characters.length, shots: data.shots.length })} · {data.project.settings.aspectRatio}{data.project.selected_audio_id ? ` · ${t('videoStudio.voiceoverIncluded')}` : ''}</p><button type="button" className="primary-button" disabled={disabled || ['locked', 'running'].includes(selected.status)} onClick={() => mutate('export', `${base}/export`)}>{t('videoStudio.exportAction')}</button></>}
       {selected.type === 'output' && <>{!flow.exports.length && <p>{t('videoStudio.noOutput')}</p>}{flow.exports.map(asset => <div className="video-output" key={asset.id}><p><strong>{t(flow.currentExports.some(a => a.id === asset.id) ? 'videoStudio.currentOutput' : 'videoStudio.previousOutput')}</strong> · {new Date(asset.created_at).toLocaleString(i18n.language)}</p><video src={media(asset)} controls preload="metadata" /><button type="button" className="primary-button" onClick={() => download(asset)}>{t('videoStudio.download')}</button></div>)}</>}
     </article>
-    <details className="panel video-flow-jobs"><summary>{t('videoStudio.latestJobs')} ({data.jobs.length})</summary><div className="video-job-list">{data.jobs.slice(0, 20).map(job => <div className="video-job" key={job.id}><strong>{stageLabel(job.stage)}</strong><span className={`video-job-status ${job.status}`}>{t(`videoStudio.job${job.status[0].toUpperCase()}${job.status.slice(1)}`)}</span><small>{new Date(job.created_at).toLocaleString(i18n.language)}</small><small className="video-job-dispatch">{job.status === 'queued' ? job.n8n_dispatch_count > 0 ? t('videoStudio.nodeDispatchSent', { count: job.n8n_dispatch_count, time: job.n8n_last_dispatched_at ? new Date(job.n8n_last_dispatched_at).toLocaleString(i18n.language) : '—' }) : t('videoStudio.nodeDispatchPending') : job.status === 'running' ? t('videoStudio.nodeRunning') : ''}</small>{job.error && <p>{job.error}</p>}</div>)}</div></details>
+    <details className="panel video-flow-jobs"><summary>{t('videoStudio.latestJobs')} ({data.jobs.length})</summary><div className="video-job-list">{data.jobs.slice(0, 20).map(job => {
+      const targetLabel = job.stage === 'character' && job.character_name ? t('videoStudio.jobCharacter', { name: job.character_name }) : ['keyframe', 'clip'].includes(job.stage) && job.scene_title ? t('videoStudio.jobShot', { position: Number(job.shot_position) + 1, title: job.scene_title }) : '';
+      const lastSignal = job.progress_updated_at ? new Date(job.progress_updated_at).toLocaleTimeString(i18n.language) : '—';
+      return <div className="video-job" key={job.id}><strong>{targetLabel || stageLabel(job.stage)}</strong><span className={`video-job-status ${job.status}`}>{t(`videoStudio.job${job.status[0].toUpperCase()}${job.status.slice(1)}`)}</span><small>{new Date(job.created_at).toLocaleString(i18n.language)}</small>{job.progress?.message && <p className="video-job-progress">{job.progress.message}</p>}{job.model && <small>{t('videoStudio.jobModel', { model: job.model })}</small>}{job.status === 'running' && job.n8n_execution_id && <small>{t('videoStudio.jobExecution', { id: job.n8n_execution_id })}</small>}{job.status === 'running' && job.attempts > 0 && <small>{t('videoStudio.jobAttempts', { count: job.attempts })}</small>}{job.status === 'running' && job.progress_updated_at && <small>{t('videoStudio.jobLastSignal', { time: lastSignal })}</small>}<small className="video-job-dispatch">{job.status === 'queued' ? job.n8n_dispatch_count > 0 ? t('videoStudio.nodeDispatchSent', { count: job.n8n_dispatch_count, time: job.n8n_last_dispatched_at ? new Date(job.n8n_last_dispatched_at).toLocaleString(i18n.language) : '—' }) : t('videoStudio.nodeDispatchPending') : job.status === 'running' ? t('videoStudio.nodeRunning') : ''}</small>{job.error && <p>{job.error}</p>}</div>;
+    })}</div></details>
   </div>;
 }

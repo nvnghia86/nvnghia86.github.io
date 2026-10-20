@@ -107,6 +107,14 @@ it('continues an approved script without approving again or resetting generated 
   expect(mutate).not.toHaveBeenCalled();
 });
 
+it('queues all nodes currently unlocked as one batch', async () => {
+  const mutate = vi.fn(async () => ({ jobs: [{ id: 'character-job' }], skipped: [] }));
+  render(<VideoFlowWorkspace data={fixture(true)} catalog={catalog} mutate={mutate} busy="" onError={vi.fn()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Chạy tất cả node sẵn sàng' }));
+  await waitFor(() => expect(mutate).toHaveBeenCalledWith('batch-all', '/admin/video-projects/project/run', { scope: 'all', prompt: '' }));
+  expect(await screen.findByText(/Đã xếp 1 công việc/)).toBeInTheDocument();
+});
+
 it('keeps the character node selected when approval updates the route', async () => {
   const approved = fixture(true);
   const mutate = vi.fn(async (_key, path) => path.endsWith('/script/approve') ? approved : approved);
