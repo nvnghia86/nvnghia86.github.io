@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes, useNavigate, useParams } from 'react-route
 import i18n from './i18n';
 import VideoStudio from './VideoStudio';
 import VideoFlowWorkspace from './VideoFlowWorkspace';
-import { buildVideoFlow, nextVideoNode } from './video-flow';
+import { buildVideoFlow, formatDialogue, nextVideoNode } from './video-flow';
 
 afterEach(cleanup);
 beforeEach(async () => { await i18n.changeLanguage('vi'); });
@@ -113,6 +113,22 @@ it('queues all nodes currently unlocked as one batch', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Chạy tất cả node sẵn sàng' }));
   await waitFor(() => expect(mutate).toHaveBeenCalledWith('batch-all', '/admin/video-projects/project/run', { scope: 'all', prompt: '' }));
   expect(await screen.findByText(/Đã xếp 1 công việc/)).toBeInTheDocument();
+});
+
+it('approves all ready character images with one batch action', async () => {
+  const state = fixture(true);
+  state.assets = [{ id: 'lan-image', kind: 'image', target_id: 'lan', mime_type: 'image/png', created_at: '2026-10-20T00:00:00Z' }];
+  const mutate = vi.fn(async () => ({ project: state.project, shots: state.shots }));
+  render(<VideoFlowWorkspace data={state} catalog={catalog} mutate={mutate} busy="" onError={vi.fn()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Duyệt tất cả ảnh nhân vật · 1' }));
+  await waitFor(() => expect(mutate).toHaveBeenCalledWith('batch-approve-character-lan', '/admin/video-projects/project/characters/lan/image/approve', { assetId: 'lan-image' }));
+  expect(await screen.findByText('Đã duyệt 1 mục.')).toBeInTheDocument();
+});
+
+it('formats structured dialogue and hides the old object placeholder', () => {
+  expect(formatDialogue({ speaker: 'Lan', text: 'Xin chào!' })).toBe('Lan: Xin chào!');
+  expect(formatDialogue([{ Lan: 'Chào bạn.' }, { speaker: 'Minh', line: 'Chào Lan.' }])).toBe('Lan: Chào bạn.\nMinh: Chào Lan.');
+  expect(formatDialogue('[object Object]')).toBe('');
 });
 
 it('keeps the character node selected when approval updates the route', async () => {

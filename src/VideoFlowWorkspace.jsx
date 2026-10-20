@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ModelSelect, PromptAction, VersionGallery } from './VideoStudioControls';
-import { buildVideoFlow, nextVideoNode } from './video-flow';
+import { buildVideoFlow, formatDialogue, nextVideoNode } from './video-flow';
 
 const stageNames = ['input', 'script', 'characters', 'keyframes', 'clips', 'timeline', 'export', 'output'];
 const typeKey = type => ({ character: 'characters', keyframe: 'keyframes', clip: 'clips' }[type] || type);
@@ -33,7 +33,7 @@ function ScriptEditor({ script, onChange, disabled, t }) {
         <label className="field">{t('videoStudio.sceneTitle')}<input value={shot.sceneTitle} maxLength={160} onChange={e => updateShot(index, 'sceneTitle', e.target.value)} /></label>
         <label className="field">{t('videoStudio.shotDuration')}<input type="number" min={4} max={8} value={shot.durationSeconds} onChange={e => updateShot(index, 'durationSeconds', Number(e.target.value))} /></label>
         <label className="field wide">{t('videoStudio.sceneDescription')}<textarea rows={3} value={shot.description} maxLength={1200} onChange={e => updateShot(index, 'description', e.target.value)} /></label>
-        <label className="field">{t('videoStudio.dialogue')}<textarea value={shot.dialogue} maxLength={1000} onChange={e => updateShot(index, 'dialogue', e.target.value)} /></label>
+        <label className="field">{t('videoStudio.dialogue')}<textarea value={formatDialogue(shot.dialogue)} maxLength={1000} onChange={e => updateShot(index, 'dialogue', e.target.value)} /></label>
         <label className="field">{t('videoStudio.camera')}<textarea value={shot.camera} maxLength={400} onChange={e => updateShot(index, 'camera', e.target.value)} /></label>
       </div>
       <div className="video-character-picker"><span>{t('videoStudio.shotCharacters')}</span>{script.characters.filter(c => c.name).map((character, i) => <label key={i}><input type="checkbox" checked={shot.characters.includes(character.name)} disabled={!shot.characters.includes(character.name) && shot.characters.length >= 3} onChange={e => updateShot(index, 'characters', e.target.checked ? [...shot.characters, character.name] : shot.characters.filter(name => name !== character.name))} />{character.name}</label>)}</div>
@@ -50,6 +50,7 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
   const [zoom, setZoom] = useState(0.85);
   const [prompts, setPrompts] = useState({});
   const [batchReport, setBatchReport] = useState('');
+  const [approvalBatch, setApprovalBatch] = useState('');
   const [draft, setDraft] = useState(data.project.script);
   const [dirty, setDirty] = useState(false);
   const [input, setInput] = useState({ title: data.project.title, story: data.project.story });
@@ -122,7 +123,13 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
     { key: 'clips', type: 'clip' },
     { key: 'export', type: 'export' },
   ];
+  const approvalGroups = [
+    { key: 'characters', type: 'character', route: 'characters', kind: 'image' },
+    { key: 'keyframes', type: 'keyframe', route: 'shots', kind: 'keyframe' },
+    { key: 'clips', type: 'clip', route: 'shots', kind: 'clip' },
+  ];
   const batchCount = type => flow.nodes.filter(node => node.type === type && node.status === 'ready').length;
+  const reviewNodes = type => flow.nodes.filter(node => node.type === type && node.item && node.status === 'review' && node.versions.length);
   const allReadyCount = flow.nodes.filter(node => ['script', 'character', 'keyframe', 'clip', 'export'].includes(node.type) && node.status === 'ready').length;
   async function runBatch(scope) {
     if (disabled || dirty || inputDirty) return;
@@ -136,6 +143,23 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
       setBatchReport(t('videoStudio.batchQueued', { queued: result.jobs?.length || 0, waiting }));
     } catch (error) { onError(error.message); }
   }
+  async function approveBatch(group) {
+    const targets = reviewNodes(group.type);
+    if (!targets.length || approvalBatch || disabled) return;
+    setApprovalBatch(group.key);
+    let approved = 0;
+    for (const node of targets) {
+      const result = await mutate(`batch-approve-${node.id}`, `${base}/${group.route}/${node.item.id}/${group.kind}/approve`, { assetId: node.versions[0].id });
+      if (!result) {
+        setBatchReport(t('videoStudio.batchApprovePartial', { approved, total: targets.length }));
+        setApprovalBatch('');
+        return;
+      }
+      approved += 1;
+    }
+    setBatchReport(t('videoStudio.batchApproveDone', { approved }));
+    setApprovalBatch('');
+  }
   const rows = Math.max(1, ...flow.nodes.map(n => n.row + 1));
   const width = 2044, height = rows * 146 + 68;
 
@@ -145,7 +169,8 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
     </div>
     <section className="panel video-batch-controls" aria-label={t('videoStudio.runAllReady')}>
       <div className="video-batch-heading"><strong>{t('videoStudio.runAllReady')}</strong><span>{allReadyCount}</span></div>
-      <div className="video-heading-actions"><button type="button" className="primary-button" disabled={disabled || dirty || inputDirty || !allReadyCount} onClick={() => runBatch('all')}>{t('videoStudio.runAllReady')}</button>{batchGroups.map(group => <button key={group.key} type="button" className="secondary-button" disabled={disabled || dirty || inputDirty || !batchCount(group.type)} onClick={() => runBatch(group.key)}>{t(`videoStudio.runGroup${group.key[0].toUpperCase()}${group.key.slice(1)}`)} · {batchCount(group.type)}</button>)}</div>
+      <div className="video-heading-actions"><button type="button" className="primary-button" disabled={disabled || Boolean(approvalBatch) || dirty || inputDirty || !allReadyCount} onClick={() => runBatch('all')}>{t('videoStudio.runAllReady')}</button>{batchGroups.map(group => <button key={group.key} type="button" className="secondary-button" disabled={disabled || Boolean(approvalBatch) || dirty || inputDirty || !batchCount(group.type)} onClick={() => runBatch(group.key)}>{t(`videoStudio.runGroup${group.key[0].toUpperCase()}${group.key.slice(1)}`)} · {batchCount(group.type)}</button>)}</div>
+      <div className="video-heading-actions">{approvalGroups.map(group => { const count = reviewNodes(group.type).length; return count ? <button key={group.key} type="button" className="secondary-button" disabled={disabled || dirty || inputDirty || Boolean(approvalBatch)} onClick={() => approveBatch(group)}>{t(approvalBatch === group.key ? 'videoStudio.batchApproving' : `videoStudio.batchApprove${group.key[0].toUpperCase()}${group.key.slice(1)}`, { count })} · {count}</button> : null; })}</div>
       <p className="muted-copy">{t('videoStudio.batchHint')}</p>{batchReport && <p className="video-message" role="status">{batchReport}</p>}
     </section>
     {message && <p className="video-message" role="status">{message}</p>}
@@ -201,7 +226,7 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
       {['character', 'keyframe', 'clip'].includes(selected.type) && <>
         <ModelSelect kind={selected.type === 'clip' ? 'video' : 'image'} label={t(selected.type === 'clip' ? 'videoStudio.modelVideo' : 'videoStudio.modelImage')} models={catalog} value={data.project.settings.models[selected.type === 'clip' ? 'video' : 'image']} disabled={disabled} onChange={model => mutate('model', `${base}/models`, { kind: selected.type === 'clip' ? 'video' : 'image', model }, 'PATCH')} t={t} locale={i18n.language} />
         <p className="video-story">{selected.item.description}</p>
-        {selected.item.dialogue && <p><b>{t('videoStudio.dialogue')}: </b>{selected.item.dialogue}</p>}
+        {formatDialogue(selected.item.dialogue) && <p><b>{t('videoStudio.dialogue')}: </b>{formatDialogue(selected.item.dialogue)}</p>}
         {selected.item.camera && <p><b>{t('videoStudio.camera')}: </b>{selected.item.camera}</p>}
         {selected.type !== 'character' && <p>{t('videoStudio.seconds', { count: selected.item.duration_seconds })}</p>}
         <VersionGallery projectId={data.project.id} items={selected.versions} kind={selectedKind} selectedId={selectedAssetId} onApprove={async assetId => { const result = await mutate(`approve-${selected.id}`, `${targetPath}/approve`, { assetId }); if (result) continueFrom(result); }} apiBase={apiBase} t={t} locale={i18n.language} busy={disabled || selected.status === 'locked' || scriptBusy} />

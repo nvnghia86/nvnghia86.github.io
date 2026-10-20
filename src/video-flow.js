@@ -48,3 +48,22 @@ export function nextVideoNode(flow) {
     || flow.nodes.find(node => node.status === 'running')
     || flow.nodes.find(node => node.id === 'output');
 }
+
+export function formatDialogue(value) {
+  if (typeof value === 'string' || typeof value === 'number') {
+    const text = String(value).trim();
+    return text === '[object Object]' ? '' : text;
+  }
+  if (Array.isArray(value)) return value.map(formatDialogue).filter(Boolean).join('\n');
+  if (!value || typeof value !== 'object') return '';
+  const speaker = value.speaker ?? value.character ?? value.name;
+  const line = value.text ?? value.line ?? value.content ?? value.utterance ?? value.dialogue;
+  if (line !== undefined) {
+    const text = formatDialogue(line);
+    return `${speaker && text ? `${formatDialogue(speaker)}: ` : ''}${text}`;
+  }
+  return Object.entries(value).map(([name, text]) => {
+    const lineText = formatDialogue(text);
+    return lineText ? `${name}: ${lineText}` : '';
+  }).filter(Boolean).join('\n');
+}
