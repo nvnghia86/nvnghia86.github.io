@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import i18n from './i18n';
 import VideoStudio from './VideoStudio';
 import VideoFlowWorkspace from './VideoFlowWorkspace';
@@ -30,6 +30,13 @@ function StatefulWorkspace(props) {
     return result;
   };
   return <VideoFlowWorkspace {...props} data={data} mutate={mutate} />;
+}
+function RoutedWorkspaceHarness({ data, mutate }) {
+  const { nodeId } = useParams();
+  const navigate = useNavigate();
+  const [snapshot, setSnapshot] = useState(data);
+  const runMutation = async (...args) => { const result = await mutate(...args); if (result?.project) setSnapshot(result); return result; };
+  return <><output data-testid="route-node">{nodeId}</output><VideoFlowWorkspace data={snapshot} catalog={catalog} apiBase="/api" mutate={runMutation} busy="" onError={vi.fn()} selectedNodeId={nodeId} onNodeChange={next => navigate(`/teacher/video-studio/project/${next}`)} /></>;
 }
 
 it('completes script → character → keyframe → clip → export through visible actions', async () => {
@@ -98,6 +105,16 @@ it('continues an approved script without approving again or resetting generated 
   fireEvent.click(within(inspector()).getByRole('button', { name: 'Tiếp tục →' }));
   expect(within(inspector()).getByRole('heading', { name: 'Lan' })).toBeInTheDocument();
   expect(mutate).not.toHaveBeenCalled();
+});
+
+it('keeps the character node selected when approval updates the route', async () => {
+  const approved = fixture(true);
+  const mutate = vi.fn(async (_key, path) => path.endsWith('/script/approve') ? approved : approved);
+  render(<MemoryRouter initialEntries={['/teacher/video-studio/project/script']}><Routes><Route path="/teacher/video-studio/:projectId/:nodeId" element={<RoutedWorkspaceHarness data={fixture()} mutate={mutate} />} /></Routes></MemoryRouter>);
+  fireEvent.click(screen.getByRole('button', { name: 'Duyệt kịch bản & tiếp tục →' }));
+  await waitFor(() => expect(screen.getByTestId('route-node')).toHaveTextContent('character-lan'));
+  expect(within(inspector()).getByRole('heading', { name: 'Lan' })).toBeInTheDocument();
+  expect(mutate).toHaveBeenCalledTimes(1);
 });
 
 it('shows queued script jobs as waiting for n8n instead of looking idle', () => {

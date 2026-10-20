@@ -46,7 +46,7 @@ function ScriptEditor({ script, onChange, disabled, t }) {
 export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, message, mutate, refreshProject, moveShot, download, onError, selectedNodeId, onNodeChange }) {
   const { t, i18n } = useTranslation();
   const flow = useMemo(() => buildVideoFlow(data), [data]);
-  const [selectedId, setSelectedId] = useState(() => selectedNodeId || nextVideoNode(flow).id);
+  const [localSelectedId, setLocalSelectedId] = useState(() => selectedNodeId || nextVideoNode(flow).id);
   const [zoom, setZoom] = useState(0.85);
   const [prompts, setPrompts] = useState({});
   const [draft, setDraft] = useState(data.project.script);
@@ -58,11 +58,8 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
   const base = `/admin/video-projects/${data.project.id}`;
   const scriptVersion = JSON.stringify(data.project.script);
   useEffect(() => { if (!dirty) setDraft(data.project.script); }, [scriptVersion, dirty]);
-  useEffect(() => {
-    const routeNode = flow.nodes.find(n => n.id === selectedNodeId);
-    if (routeNode && routeNode.id !== selectedId) setSelectedId(routeNode.id);
-    else if (!routeNode && !flow.nodes.some(n => n.id === selectedId)) setSelectedId(nextVideoNode(flow).id);
-  }, [flow, selectedId, selectedNodeId]);
+  const routeNode = flow.nodes.find(n => n.id === selectedNodeId);
+  const selectedId = routeNode?.id || (flow.nodes.some(n => n.id === localSelectedId) ? localSelectedId : nextVideoNode(flow).id);
   useEffect(() => {
     if (!flow.nodes.some(n => n.id === selectedId)) return;
     if (selectedNodeId !== selectedId) onNodeChange?.(selectedId);
@@ -76,8 +73,8 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
   const statusLabel = status => t(`videoStudio.flowStatus${status[0].toUpperCase()}${status.slice(1)}`);
   const media = asset => `${apiBase}${base}/media/${asset.id}`;
   function select(id, reveal = false) {
-    setSelectedId(id);
-    onNodeChange?.(id);
+    if (onNodeChange) onNodeChange(id);
+    else setLocalSelectedId(id);
     if (reveal) inspector.current?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
   }
   useEffect(() => {
