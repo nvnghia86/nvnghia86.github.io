@@ -68,7 +68,7 @@ export default function VideoFlowWorkspace({ data, catalog, apiBase, busy, messa
   }, [flow, selectedId, selectedNodeId, onNodeChange]);
   const selected = flow.nodes.find(n => n.id === selectedId) || nextVideoNode(flow);
   const running = data.jobs.some(j => ['queued', 'running'].includes(j.status));
-  const disabled = Boolean(busy);
+  const disabled = Boolean(busy || approvalBatch);
   const scriptBusy = data.jobs.some(j => j.stage === 'script' && ['queued', 'running'].includes(j.status));
   const label = node => node.item ? (node.type === 'character' ? node.item.name : `${node.item.position + 1}. ${node.item.scene_title || t('videoStudio.shot')}`) : t(`videoStudio.flow${typeKey(node.type)[0].toUpperCase()}${typeKey(node.type).slice(1)}`);
   const stageLabel = type => t(`videoStudio.flow${typeKey(type)[0].toUpperCase()}${typeKey(type).slice(1)}`);
