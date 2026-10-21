@@ -17,6 +17,7 @@ it('creates a project with separate LLM, image and video models', async () => {
       { id: 'xai/grok-imagine-video', provider: '9Router', available: true },
       { id: 'google/veo-3.1', name: 'Veo 3.1', provider: 'OpenRouter', available: true, pricing: { items: [{ sku: 'generate', amount: 0.5, unit: 'second' }] } },
     ],
+    tts: [{ id: 'openrouter/speech/model', name: 'Speech', provider: 'OpenRouter', available: true, pricing: { items: [] } }],
   };
   let saved;
   const api = vi.fn(async (path, options = {}) => {
@@ -29,7 +30,7 @@ it('creates a project with separate LLM, image and video models', async () => {
     if (path === `/admin/video-projects/${id}`) return { project: { id, title: 'Câu chuyện của Lan', story: saved.story, settings: saved, script: null, script_approved: false }, characters: [], shots: [], assets: [], jobs: [] };
     throw new Error(`Unexpected API: ${path}`);
   });
-  render(<MemoryRouter initialEntries={['/teacher/video-studio']}><CurrentPath /><Routes><Route path="/teacher/video-studio/:projectId?/:nodeId?" element={<VideoStudio api={api} apiBase="/api/v1" onError={vi.fn()} />} /></Routes></MemoryRouter>);
+  const { container } = render(<MemoryRouter initialEntries={['/teacher/video-studio']}><CurrentPath /><Routes><Route path="/teacher/video-studio/:projectId?/:nodeId?" element={<VideoStudio api={api} apiBase="/api/v1" onError={vi.fn()} />} /></Routes></MemoryRouter>);
   fireEvent.click(await screen.findByRole('button', { name: 'Dự án mới' }));
   fireEvent.change(screen.getByLabelText('Tên dự án'), { target: { value: 'Câu chuyện của Lan' } });
   fireEvent.change(screen.getByLabelText('Nội dung hoặc cốt truyện'), { target: { value: 'Lan bước vào một khu rừng bí ẩn và gặp người bạn mới.' } });
@@ -39,6 +40,8 @@ it('creates a project with separate LLM, image and video models', async () => {
   expect(videoModelSelect).toHaveTextContent('Veo 3.1 · OpenRouter · Từ generate: 0,5');
   fireEvent.click(screen.getByRole('button', { name: 'Tạo dự án' }));
   expect(await screen.findByRole('heading', { name: 'Câu chuyện của Lan' })).toBeInTheDocument();
+  expect(container.querySelector('.video-flow-layout > .video-flow-map')).toBeInTheDocument();
+  expect(container.querySelector('.video-flow-layout > .video-node-inspector')).toBeInTheDocument();
   await waitFor(() => expect(screen.getByTestId('current-path')).toHaveTextContent(`/teacher/video-studio/${id}/script`));
-  expect(saved.models).toEqual({ llm: 'writer/model', image: 'gemini-image', video: 'google/veo-3.1' });
+  expect(saved.models).toEqual({ llm: 'writer/model', image: 'gemini-image', video: 'google/veo-3.1', tts: 'openrouter/speech/model' });
 });

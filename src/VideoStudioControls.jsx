@@ -24,9 +24,9 @@ function modelPrice(model, kind, t, locale) {
   return `${t('videoStudio.priceFrom')} ${labels.join(' · ')}`;
 }
 
-export function ModelSelect({ kind, label, models, value, onChange, t, locale, disabled = false }) {
+export function ModelSelect({ kind, label, models, value, onChange, t, locale, disabled = false, required = true }) {
   const options = models?.[kind] || [];
-  return <label className="field">{label}<select required disabled={disabled} value={value || ''} onChange={event => onChange(event.target.value)}><option value="">{t('videoStudio.noModel')}</option>{options.map(model => <option key={model.id} value={model.id} disabled={!model.available}>{model.name || model.id} · {model.provider} · {modelPrice(model, kind, t, locale)} · {t(model.available ? 'videoStudio.configured' : 'videoStudio.unavailable')}</option>)}</select></label>;
+  return <label className="field">{label}<select required={required} disabled={disabled} value={value || ''} onChange={event => onChange(event.target.value)}><option value="">{t('videoStudio.noModel')}</option>{options.map(model => <option key={model.id} value={model.id} disabled={!model.available}>{model.name || model.id} · {model.provider} · {modelPrice(model, kind, t, locale)} · {t(model.available ? 'videoStudio.configured' : 'videoStudio.unavailable')}</option>)}</select></label>;
 }
 
 export function VersionGallery({ projectId, items, kind, selectedId, onApprove, apiBase, t, busy, locale }) {
