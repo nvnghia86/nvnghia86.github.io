@@ -26,7 +26,7 @@ const initialForm = { username: '', password: '', displayName: '', email: '', ph
 
 export default function AccountCreate({ teacher, onError, onSaved }) {
   const { t } = useTranslation();
-  const isSystemAdmin = teacher?.role === 'system_admin';
+  const isSystemAdmin = ['system_admin', 'master'].includes(teacher?.role);
   const [form, setForm] = useState(initialForm);
   const [classes, setClasses] = useState([]);
   const [options, setOptions] = useState({ schools: [], communes: [], provinces: [] });

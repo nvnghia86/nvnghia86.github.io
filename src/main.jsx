@@ -33,6 +33,8 @@ import { HeadTiltStudent, HeadTiltTeacherSetup } from './HeadTiltGame';
 import { GameRoomBuilder } from './GameRoomBuilder';
 import QuestionFormComparison from './QuestionFormComparison';
 import VideoStudio from './VideoStudio';
+import MasterControl from './MasterControl';
+import { initializeAnalytics, trackApiMutation, trackPageView } from './analytics';
 
 const API = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 // EventSource does not send cookies across frontend/backend ports by default.
@@ -45,7 +47,9 @@ async function rawApi(path, options = {}) {
   const type = response.headers.get('content-type') || '';
   const data = type.includes('json') ? await response.json() : { error: `Máy chủ trả về phản hồi không hợp lệ (${response.status}).` };
   if (!response.ok || data.success === false) { const message = data.error?.message || data.error || data.message || 'Có lỗi xảy ra.'; if (!silent) toast.error(message); const error = new Error(message); error.code = data.error?.code || 'API_REQUEST_FAILED'; error.status = response.status; error.requestId = data.meta?.requestId || response.headers.get('x-request-id'); throw error; }
-  return data.success === true && Object.prototype.hasOwnProperty.call(data, 'data') ? data.data : data;
+  const result = data.success === true && Object.prototype.hasOwnProperty.call(data, 'data') ? data.data : data;
+  trackApiMutation(path, requestOptions.method, localStorage.getItem('quizzz.analytics_role'));
+  return result;
 }
 async function api(path, options = {}) {
   const maxAttempts = path === '/ai/quiz' ? 3 : 1;
@@ -152,6 +156,7 @@ function RouterShell({ teacher, student, onAuth, onError, error, authReady = tru
   const [authOpen, setAuthOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => { initializeAnalytics(); const userRole = teacher?.role || (student ? 'student' : 'guest'); localStorage.setItem('quizzz.analytics_role', userRole); trackPageView(location.pathname, userRole); }, [location.pathname, teacher?.role, student?.id]);
   const isTeacherArea = location.pathname.startsWith('/teacher');
   const isTypingArea = location.pathname.startsWith('/student/typing');
   function openAuth() { setAuthOpen(true); }
@@ -181,9 +186,10 @@ function RouterShell({ teacher, student, onAuth, onError, error, authReady = tru
             <ModuleLink to="/teacher/assignments">↗ <span>{t('navigation.assign')}</span></ModuleLink>
             <ModuleLink to="/teacher/accounts">♙ <span>{t('navigation.accounts')}</span></ModuleLink>
             <ModuleLink to="/teacher/classes">♧ <span>{t('navigation.classList')}</span></ModuleLink>
-            {['admin', 'system_admin'].includes(teacher.role) && <ModuleLink to="/teacher/schools">🏫 <span>{t('navigation.schools')}</span></ModuleLink>}
-            {teacher.role === 'system_admin' && <ModuleLink to="/teacher/locations">⌖ <span>{t('navigation.locations')}</span></ModuleLink>}
-            {teacher.role === 'system_admin' && <ModuleLink to="/teacher/video-studio">▣ <span>{t('navigation.videoStudio')}</span></ModuleLink>}
+            {['admin', 'system_admin', 'master'].includes(teacher.role) && <ModuleLink to="/teacher/schools">🏫 <span>{t('navigation.schools')}</span></ModuleLink>}
+            {['system_admin', 'master'].includes(teacher.role) && <ModuleLink to="/teacher/locations">⌖ <span>{t('navigation.locations')}</span></ModuleLink>}
+            {['system_admin', 'master'].includes(teacher.role) && <ModuleLink to="/teacher/video-studio">▣ <span>{t('navigation.videoStudio')}</span></ModuleLink>}
+            {teacher.role === 'master' && <ModuleLink to="/teacher/master">♛ <span>{t('navigation.master')}</span></ModuleLink>}
             <ModuleLink to="/teacher/realtime">◉ <span>{t('navigation.room')}</span></ModuleLink>
             <ModuleLink to="/teacher/head-tilt">↔ <span>Tạo game lắc đầu</span></ModuleLink>
             <ModuleLink to="/teacher/reports">▥ <span>{t('navigation.reports')}</span></ModuleLink>
@@ -228,7 +234,7 @@ function RouterAppWithHeadTilt() {
     setAuthReady(true);
   };
   const teacherPage = child => <RoleGuard teacher={teacher} authReady={authReady}>{child}</RoleGuard>;
-  return <HashRouter><Routes><Route element={<RouterShell teacher={teacher} student={student} onAuth={onAuth} onError={onError} error={error} authReady={authReady} />}><Route path="/" element={<Navigate to="/student" replace />} /><Route path="/student" element={<StudentHome onJoin={() => { window.location.hash = '#/student/room'; }} />} /><Route path="/student/typing" element={<TypingPractice />} /><Route path="/student/room" element={<StudentRoom onError={onError} student={student} />} /><Route path="/student/head-tilt" element={<HeadTiltStudent api={api} API={API} EventSource={EventSource} onError={onError} student={student} />} /><Route path="/student/assignments" element={<StudentGuard student={student} authReady={authReady}><StudentAssignments onError={onError} student={student} /></StudentGuard>} /><Route path="/student/classes" element={<StudentGuard student={student} authReady={authReady}><JoinClass onError={onError} student={student} /></StudentGuard>} /><Route path="/teacher" element={teacherPage(<TeacherHome teacher={teacher} setView={() => {}} />)} /><Route path="/teacher/questions" element={teacherPage(<Questions onError={onError} />)} /><Route path="/teacher/questions/ai" element={teacherPage(<AiQuiz onError={onError} />)} /><Route path="/teacher/quizzes" element={teacherPage(<QuizSets onError={onError} />)} /><Route path="/teacher/worksheets" element={teacherPage(<WorksheetExport onError={onError} />)} /><Route path="/teacher/assignments" element={teacherPage(<Assignments onError={onError} />)} /><Route path="/teacher/classes" element={teacherPage(<Classes onError={onError} />)} /><Route path="/teacher/accounts" element={teacherPage(<AccountManagement teacher={teacher} onError={onError} />)} /><Route path="/teacher/schools" element={teacherPage(<SchoolManagement onError={onError} />)} /><Route path="/teacher/locations" element={teacherPage(<LocationManagement onError={onError} />)} /><Route path="/teacher/video-studio/:projectId?/:nodeId?" element={<ProtectedRoute allowed={teacher?.role === 'system_admin'} authReady={authReady}><VideoStudio api={api} apiBase={API} onError={onError} /></ProtectedRoute>} /><Route path="/teacher/realtime" element={teacherPage(<Realtime onError={onError} />)} /><Route path="/teacher/head-tilt" element={teacherPage(<HeadTiltTeacherSetup api={api} onError={onError} />)} /><Route path="/teacher/reports" element={teacherPage(<Reports onError={onError} />)} /><Route path="*" element={<Navigate to="/student" replace />} /></Route></Routes></HashRouter>;
+  return <HashRouter><Routes><Route element={<RouterShell teacher={teacher} student={student} onAuth={onAuth} onError={onError} error={error} authReady={authReady} />}><Route path="/" element={<Navigate to="/student" replace />} /><Route path="/student" element={<StudentHome onJoin={() => { window.location.hash = '#/student/room'; }} />} /><Route path="/student/typing" element={<TypingPractice />} /><Route path="/student/room" element={<StudentRoom onError={onError} student={student} />} /><Route path="/student/head-tilt" element={<HeadTiltStudent api={api} API={API} EventSource={EventSource} onError={onError} student={student} />} /><Route path="/student/assignments" element={<StudentGuard student={student} authReady={authReady}><StudentAssignments onError={onError} student={student} /></StudentGuard>} /><Route path="/student/classes" element={<StudentGuard student={student} authReady={authReady}><JoinClass onError={onError} student={student} /></StudentGuard>} /><Route path="/teacher" element={teacherPage(<TeacherHome teacher={teacher} setView={() => {}} />)} /><Route path="/teacher/questions" element={teacherPage(<Questions onError={onError} />)} /><Route path="/teacher/questions/ai" element={teacherPage(<AiQuiz onError={onError} />)} /><Route path="/teacher/quizzes" element={teacherPage(<QuizSets onError={onError} />)} /><Route path="/teacher/worksheets" element={teacherPage(<WorksheetExport onError={onError} />)} /><Route path="/teacher/assignments" element={teacherPage(<Assignments onError={onError} />)} /><Route path="/teacher/classes" element={teacherPage(<Classes onError={onError} />)} /><Route path="/teacher/accounts" element={teacherPage(<AccountManagement teacher={teacher} onError={onError} />)} /><Route path="/teacher/schools" element={teacherPage(<SchoolManagement onError={onError} />)} /><Route path="/teacher/locations" element={teacherPage(<LocationManagement onError={onError} />)} /><Route path="/teacher/video-studio/:projectId?/:nodeId?" element={<ProtectedRoute allowed={['system_admin', 'master'].includes(teacher?.role)} authReady={authReady}><VideoStudio api={api} apiBase={API} onError={onError} /></ProtectedRoute>} /><Route path="/teacher/master" element={<ProtectedRoute allowed={teacher?.role === 'master'} authReady={authReady}><MasterControl api={api} onError={onError} /></ProtectedRoute>} /><Route path="/teacher/realtime" element={teacherPage(<Realtime onError={onError} />)} /><Route path="/teacher/head-tilt" element={teacherPage(<HeadTiltTeacherSetup api={api} onError={onError} />)} /><Route path="/teacher/reports" element={teacherPage(<Reports onError={onError} />)} /><Route path="*" element={<Navigate to="/student" replace />} /></Route></Routes></HashRouter>;
 }
 RouterAppFixed = RouterAppWithHeadTilt;
 const nativePushState = window.history.pushState.bind(window.history);
