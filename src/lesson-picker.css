@@ -23,6 +23,13 @@
   padding-top: 12px;
 }
 
+.lesson-group { display: grid; gap: 4px; }
+.lesson-group-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 10px 8px 3px; color: #285d78; }
+.lesson-group-heading small { color: #667a87; }
+.lesson-entry { margin-left: 8px; }
+.lesson-review { display: inline-block; margin-left: 8px; color: #667a87; }
+html[data-theme='dark'] .lesson-group-heading { color: #8ddcf4; }
+
 html[data-theme='dark'] .lesson-picker-head,
 html[data-theme='dark'] .lesson-pagination {
   background: #13222d;

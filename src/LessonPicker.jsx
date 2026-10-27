@@ -22,6 +22,16 @@ export default function LessonPicker({ lessons = [], selected = [], onChange, la
     () => lessons.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [lessons, page],
   );
+  const groupedLessons = useMemo(() => {
+    if (!currentLessons.some(lesson => lesson.volume)) return [{ key: 'all', lessons: currentLessons }];
+    const groups = [];
+    for (const lesson of currentLessons) {
+      const key = `${lesson.volume}:${lesson.topicTitle}:${lesson.week}`;
+      if (groups.at(-1)?.key !== key) groups.push({ key, volume: lesson.volume, topicTitle: lesson.topicTitle, week: lesson.week, lessons: [] });
+      groups.at(-1).lessons.push(lesson);
+    }
+    return groups;
+  }, [currentLessons]);
   const currentIds = currentLessons.map(lesson => lesson.id);
   const allCurrentSelected = currentIds.length > 0 && currentIds.every(id => selected.includes(id));
 
@@ -54,12 +64,13 @@ export default function LessonPicker({ lessons = [], selected = [], onChange, la
         </div>
       </div>
       <div className="lesson-picker-items">
-        {currentLessons.map(lesson => (
-          <label key={lesson.id} className="check inline-check">
+        {groupedLessons.map(group => <div key={group.key} className="lesson-group">
+          {group.volume && <div className="lesson-group-heading"><strong>{t('lessonPicker.volume', { number: group.volume })} · {group.topicTitle}</strong><small>{t('lessonPicker.week', { number: group.week })}</small></div>}
+          {group.lessons.map(lesson => <label key={lesson.id} className="check inline-check lesson-entry">
             <input type="checkbox" checked={selected.includes(lesson.id)} onChange={() => toggleLesson(lesson.id)} />
-            {lesson.title}
-          </label>
-        ))}
+            <span>{lesson.title}{lesson.isReview && <small className="lesson-review">{t('lessonPicker.review')}</small>}</span>
+          </label>)}
+        </div>)}
       </div>
       {!currentLessons.length && <small>{t('lessonPicker.empty')}</small>}
       {pageCount > 1 && (
