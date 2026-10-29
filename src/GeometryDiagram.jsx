@@ -43,21 +43,29 @@ export default function GeometryDiagram({ geometry, className = '', ariaLabel })
   const containerRef = useRef(null);
   useEffect(() => {
     if (!containerRef.current || !geometry?.elements?.length) return undefined;
-    const board = JXG.JSXGraph.initBoard(containerRef.current, {
-      boundingbox: Array.isArray(geometry.boundingBox) && geometry.boundingBox.length === 4 ? geometry.boundingBox : DEFAULT_BOX,
-      axis: Boolean(geometry.axis),
-      grid: Boolean(geometry.grid),
-      keepaspectratio: true,
-      showNavigation: false,
-      showCopyright: false,
-      pan: { enabled: false },
-      zoom: { enabled: false },
-    });
-    const points = new Map();
-    geometry.elements.filter(element => element?.type === 'point').forEach(element => createElement(board, element, points));
-    geometry.elements.filter(element => element?.type !== 'point').forEach(element => createElement(board, element, points));
-    board.fullUpdate();
-    return () => JXG.JSXGraph.freeBoard(board);
+    let board;
+    const dispose = () => { try { if (board) JXG.JSXGraph.freeBoard(board); } catch {} };
+    try {
+      const box = Array.isArray(geometry.boundingBox) && geometry.boundingBox.length === 4 && geometry.boundingBox.every(Number.isFinite) && geometry.boundingBox[0] < geometry.boundingBox[2] && geometry.boundingBox[1] > geometry.boundingBox[3] ? geometry.boundingBox : DEFAULT_BOX;
+      board = JXG.JSXGraph.initBoard(containerRef.current, {
+        boundingbox: box,
+        axis: Boolean(geometry.axis),
+        grid: Boolean(geometry.grid),
+        keepaspectratio: true,
+        showNavigation: false,
+        showCopyright: false,
+        pan: { enabled: false },
+        zoom: { enabled: false },
+      });
+      const points = new Map();
+      geometry.elements.filter(element => element?.type === 'point').forEach(element => createElement(board, element, points));
+      geometry.elements.filter(element => element?.type !== 'point').forEach(element => createElement(board, element, points));
+      board.fullUpdate();
+    } catch {
+      dispose();
+      return undefined;
+    }
+    return dispose;
   }, [geometry]);
   if (!geometry?.elements?.length) return null;
   return <div className={`geometry-diagram ${className}`} ref={containerRef} role="img" aria-label={ariaLabel || i18n.t('ai.geometryAlt')} />;
