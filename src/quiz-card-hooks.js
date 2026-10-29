@@ -80,13 +80,16 @@ export function useCamera() {
   };
 }
 
-export function useAruco(webcamRef, active, onDetected) {
+export function useAruco(webcamRef, active, onDetected, resetKey = '') {
   const [seen, setSeen] = useState([]);
   const [error, setError] = useState('');
   const [diagnostics, setDiagnostics] = useState({ frames: 0, lastFrameAt: null });
   const callbackRef = useRef(onDetected);
   callbackRef.current = onDetected;
   useEffect(() => {
+    setSeen([]);
+    setError('');
+    setDiagnostics({ frames: 0, lastFrameAt: null });
     if (!active) { setSeen([]); setDiagnostics({ frames: 0, lastFrameAt: null }); return; }
     const detector = new AR.Detector({ dictionaryName: 'ARUCO' });
     const canvas = document.createElement('canvas');
@@ -128,6 +131,6 @@ export function useAruco(webcamRef, active, onDetected) {
       finally { processing = false; }
     }, 100);
     return () => window.clearInterval(timer);
-  }, [webcamRef, active]);
+  }, [webcamRef, active, resetKey]);
   return { seen, error, diagnostics };
 }
