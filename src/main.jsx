@@ -203,7 +203,7 @@ function RouterShell({ teacher, student, onAuth, onError, preferences, authReady
           </>
         </div>}
       </nav>
-      <div className="sidebar-footer"><span className="sidebar-system-status"><span className="status-dot" /> {t('common.online')}</span>{preferences}</div>
+      <div className="sidebar-footer">{preferences}</div>
     </aside>
     <main className="app-main">
       <header className="app-header">
