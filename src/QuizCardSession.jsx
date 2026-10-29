@@ -4,8 +4,9 @@ import Webcam from 'react-webcam';
 import { useTranslation } from 'react-i18next';
 import { cardDictionary, useAruco, useCamera, useQuizSocket } from './quiz-card-hooks';
 import './quiz-card-session.css';
+import './quiz-card-scanner-mobile.css';
 
-function useSession(api, sessionId, onError, enabled = true) {
+function useSession(api, sessionId, onError, enabled = true, endpoint = `/quiz-sessions/${sessionId}`) {
   const [session, setSession] = useState(null);
   const [error, setError] = useState('');
   const errorRef = useRef(onError);
@@ -13,7 +14,7 @@ function useSession(api, sessionId, onError, enabled = true) {
   useEffect(() => {
     if (!enabled) return undefined;
     let active = true;
-    api(`/quiz-sessions/${sessionId}`).then(data => {
+    api(endpoint).then(data => {
       if (!active) return;
       setSession(data);
       setError('');
@@ -23,7 +24,7 @@ function useSession(api, sessionId, onError, enabled = true) {
       errorRef.current(failure.message);
     });
     return () => { active = false; };
-  }, [api, sessionId, enabled]);
+  }, [api, sessionId, enabled, endpoint]);
   return [session, setSession, error];
 }
 
@@ -117,29 +118,40 @@ export function QuizCardHost({ api, API, sessionId, onError }) {
     }
   });
   useEffect(() => { timerAdvance.current = false; }, [session?.currentQuestionData?.id]);
-  const scanUrl = `${window.location.origin}${window.location.pathname}#/quiz/${sessionId}/scan`;
   if (!session) return <section className="content-page"><p className={sessionError ? 'error' : 'muted-copy'}>{sessionError || t('common.loading')}</p></section>;
+  const scanUrl = `${window.location.origin}${window.location.pathname}#/quiz/${sessionId}/scan?token=${encodeURIComponent(session.scannerToken || '')}`;
   const answered = session.players.filter(player => player.answer).length;
   return <section className={`content-page card-session-page ${isFullscreen ? 'card-host-fullscreen' : ''}`} ref={hostRef}><div className="dashboard-heading card-host-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{session.title}</h1><p className="muted-copy">{session.className} · {t('cardScan.questionProgress', { current: Math.min(session.currentQuestion + 1, session.questionCount), total: session.questionCount })}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</span><button className="secondary-button card-fullscreen-toggle" type="button" onClick={toggleFullscreen}>{isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')}</button></div></div>{socket.error && <p className="error">{socket.error}</p>}<div className="card-host-layout"><main className="dashboard-panel card-host-question">{session.currentQuestionData ? <><div className="card-question-meta"><span className="eyebrow">{t('cardScan.questionProgress', { current: session.currentQuestion + 1, total: session.questionCount })}</span><strong className="card-countdown">{seconds}s</strong></div><h2>{session.currentQuestionData.question}</h2><div className="card-option-grid">{session.currentQuestionData.options?.map((option, index) => <div key={index}><b>{'ABCD'[index]}</b><span>{option}</span></div>)}</div></> : <div className="empty-state"><h2>{session.status === 'finished' ? t('cardScan.finished') : t('cardScan.ready')}</h2><p>{session.status === 'finished' ? t('cardScan.finishedHint') : t('cardScan.readyHint')}</p></div>}<div className="card-host-actions">{session.status === 'lobby' && <button className="primary-button" disabled={busy} onClick={() => action('start')}>{t('cardScan.start')}</button>}{session.status === 'playing' && <><button className="primary-button" disabled={busy} onClick={() => action('next')}>{t('cardScan.next')}</button><button className="secondary-button" disabled={busy} onClick={() => action('finish')}>{t('cardScan.finish')}</button></>}</div></main><aside className="dashboard-panel card-host-side"><h2>{t('cardScan.connectScanner')}</h2><QRCodeSVG value={scanUrl} size={180} level="M" /><small>{scanUrl}</small><div className="card-host-count"><strong>{answered}/{session.players.length}</strong><span>{t('cardScan.answered')}</span></div><button className="secondary-button" type="button" onClick={() => setShowCards(value => !value)}>{showCards ? t('cardScan.hideCards') : t('cardScan.showCards')}</button></aside><TopThree players={session.players} t={t} /></div><div className="dashboard-panel card-roster"><h2>{t('cardScan.students')}</h2><div className="card-roster-grid">{session.players.map(player => <div className={player.answer ? 'answered' : ''} key={player.id}><b>#{player.markerId}</b><span>{player.nickname}</span><strong>{player.answer || '—'}</strong><small>{player.score || 0}</small></div>)}</div></div>{showCards && <CardSheet players={session.players} />}</section>;
 }
 
-export function QuizCardScanner({ api, API, sessionId, teacher, onError }) {
+export function QuizCardScanner({ api, API, sessionId, scannerToken, onError }) {
   const { t } = useTranslation();
-  const [session, setSession, sessionError] = useSession(api, sessionId, onError, Boolean(teacher));
+  const hasAccess = /^[0-9a-f]{48}$/i.test(scannerToken || '');
+  const scannerEndpoint = `/quiz-sessions/${sessionId}/scanner?token=${encodeURIComponent(scannerToken || '')}`;
+  const [session, setSession, sessionError] = useSession(api, sessionId, onError, hasAccess, scannerEndpoint);
   const [recent, setRecent] = useState([]);
+  const [testResults, setTestResults] = useState([]);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [testMode, setTestMode] = useState(false);
   const camera = useCamera();
   const sent = useRef(new Map());
   const pending = useRef(new Set());
   const lastAttempt = useRef(new Map());
   const scannerRef = useRef(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(scannerRef);
-  const socket = useQuizSocket(API, sessionId, 'scanner', snapshot => { if (snapshot) setSession(snapshot); }, Boolean(teacher));
+  const socket = useQuizSocket(API, sessionId, 'scanner', snapshot => { if (snapshot) setSession(snapshot); }, hasAccess, scannerToken);
   const questionId = session?.currentQuestionData?.id;
   const seconds = useSessionCountdown(session);
+  const openCamera = () => { camera.prepareCamera(); setCameraEnabled(true); };
+  const closeCamera = () => { camera.resetCamera(); setCameraEnabled(false); };
   const activeQuestion = useRef(questionId);
   activeQuestion.current = questionId;
   useEffect(() => { sent.current.clear(); pending.current.clear(); lastAttempt.current.clear(); setRecent([]); }, [questionId]);
   const onDetected = ({ markerId, answer }) => {
+    if (testMode) {
+      setTestResults(previous => [{ markerId, answer, detectedAt: Date.now() }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 12));
+      return;
+    }
     if (!questionId || socket.connection !== 'connected' || !session?.players.some(player => player.markerId === markerId)) return;
     const pendingKey = `${questionId}:${markerId}`;
     if (sent.current.get(markerId) === answer || pending.current.has(pendingKey)) return;
@@ -153,7 +165,9 @@ export function QuizCardScanner({ api, API, sessionId, teacher, onError }) {
       setRecent(previous => [{ markerId, answer }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 8));
     }).catch(error => onError(error.message)).finally(() => pending.current.delete(pendingKey));
   };
-  const { seen, error: detectorError } = useAruco(camera.webcamRef, Boolean(teacher && questionId), onDetected);
-  if (!teacher) return <section className="content-page"><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{t('cardScan.loginRequired')}</p></section>;
-  return <section className={`content-page card-session-page card-scanner-page ${isFullscreen ? 'card-scanner-fullscreen' : ''}`}><div className="dashboard-heading card-scanner-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{session?.title || t('common.loading')}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</span>{questionId && <strong className="card-countdown">{seconds}s</strong>}</div></div>{socket.error && <p className="error">{socket.error}</p>}{sessionError && <p className="error">{sessionError}</p>}{camera.cameraError && <p className="error">{camera.cameraError}</p>}{detectorError && <p className="error">{detectorError}</p>}<div className="card-scanner-layout"><div className="card-camera" ref={scannerRef}><Webcam ref={camera.webcamRef} audio={false} mirrored={false} playsInline videoConstraints={{ facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }} onUserMedia={camera.onUserMedia} onUserMediaError={camera.onUserMediaError} /><div className="card-camera-guide" /><span>{questionId ? t('cardScan.scanning') : t('cardScan.waitingQuestion')}</span><button className="card-camera-fullscreen" type="button" onClick={toggleFullscreen}>{isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')}</button></div><aside className="dashboard-panel card-scanner-info"><h2>{t('cardScan.detected')}</h2><p>{t('cardScan.cameraHint')}</p><div className="card-detected">{seen.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div><h3>{t('cardScan.sent')}</h3><div className="card-detected">{recent.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div></aside></div></section>;
+  const { seen, error: detectorError, diagnostics } = useAruco(camera.webcamRef, Boolean(hasAccess && cameraEnabled && (testMode || questionId)), onDetected);
+  if (!hasAccess) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><div className="dashboard-panel card-scanner-welcome"><span className="card-scanner-welcome-icon">⌁</span><h2>{t('cardScan.invalidScanLink')}</h2><p>{t('cardScan.invalidScanLinkHint')}</p></div></section>;
+  if (!session) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className={sessionError ? 'error' : 'muted-copy'}>{sessionError || t('common.loading')}</p></section>;
+  const statusLabel = session.status === 'playing' ? t('cardScan.sessionPlaying') : session.status === 'finished' ? t('cardScan.finished') : t('cardScan.sessionWaiting');
+  return <section className={`content-page card-session-page card-scanner-page ${isFullscreen ? 'card-scanner-fullscreen' : ''}`}><div className="dashboard-heading card-scanner-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{session.title}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{statusLabel}</span>{questionId && <strong className="card-countdown">{seconds}s</strong>}</div></div><div className="dashboard-panel scanner-room-summary"><div><span>{t('cardScan.classInfo')}</span><strong>{session.className || '—'}</strong></div><div><span>{t('cardScan.students')}</span><strong>{session.players?.length || 0}</strong></div><div><span>{t('cardScan.connection')}</span><strong>{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</strong></div></div>{socket.error && <p className="error">{socket.error}</p>}{sessionError && <p className="error">{sessionError}</p>}{camera.cameraError && <p className="error">{camera.cameraError}</p>}{detectorError && <p className="error">{detectorError}</p>}<div className="scanner-mode-actions"><button className={testMode ? 'secondary-button' : 'primary-button'} type="button" onClick={cameraEnabled ? closeCamera : openCamera}>{cameraEnabled ? t('cardScan.closeCamera') : t('cardScan.openCamera')}</button><button className={testMode ? 'primary-button' : 'secondary-button'} type="button" onClick={() => { setTestMode(value => !value); setTestResults([]); if (!cameraEnabled) openCamera(); }}>{testMode ? t('cardScan.stopTest') : t('cardScan.startTest')}</button></div>{testMode && <div className="scanner-test-banner"><b>{t('cardScan.testMode')}</b><span>{t('cardScan.testModeHint')}</span></div>}<div className="card-scanner-layout">{cameraEnabled ? <div className="card-camera" ref={scannerRef}><Webcam ref={camera.webcamRef} audio={false} mirrored={false} playsInline videoConstraints={{ facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }} onUserMedia={camera.onUserMedia} onUserMediaError={camera.onUserMediaError} /><div className="card-camera-guide" /><span>{testMode ? t('cardScan.testing') : questionId ? t('cardScan.scanning') : t('cardScan.waitingQuestion')}</span><button className="card-camera-fullscreen" type="button" onClick={toggleFullscreen}>{isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')}</button></div> : <div className="dashboard-panel card-camera-placeholder"><span>▣</span><h2>{t('cardScan.cameraReadyTitle')}</h2><p>{t('cardScan.cameraReadyHint')}</p><button className="primary-button" type="button" onClick={openCamera}>{t('cardScan.openCamera')}</button></div>}<aside className="dashboard-panel card-scanner-info"><div className="scanner-diagnostic"><span className={camera.cameraState === 'ready' ? 'ready' : ''} />{camera.cameraState === 'ready' ? t('cardScan.cameraActive') : t('cardScan.cameraInactive')}<small>{t('cardScan.processedFrames', { count: diagnostics.frames })}</small></div><h2>{testMode ? t('cardScan.testResults') : t('cardScan.detected')}</h2><p>{t('cardScan.cameraHint')}</p><div className="card-detected">{seen.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div>{testMode ? <><h3>{t('cardScan.stableDetections')}</h3><div className="card-detected test-results">{testResults.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div>{!testResults.length && <small className="muted-copy">{t('cardScan.noTestDetection')}</small>}</> : <><h3>{t('cardScan.sent')}</h3><div className="card-detected">{recent.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div></>}</aside></div></section>;
 }

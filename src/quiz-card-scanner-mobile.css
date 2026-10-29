@@ -1,0 +1,33 @@
+.card-scanner-entry{max-width:620px}
+.card-scanner-welcome{display:grid;justify-items:center;text-align:center;padding:34px 24px}
+.card-scanner-welcome-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:18px;background:#e6f7fd;color:#087fb7;font-size:32px}
+.scanner-room-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 16px;padding:14px}
+.scanner-room-summary>div{display:grid;gap:4px;padding:10px 12px;border-radius:10px;background:#f4f9fb}
+.scanner-room-summary span{color:#718592;font-size:11px;font-weight:700}
+.scanner-room-summary strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scanner-mode-actions{display:flex;gap:10px;margin:0 0 14px}
+.scanner-mode-actions button{flex:1}
+.scanner-test-banner{display:grid;gap:4px;margin-bottom:14px;padding:12px 14px;border:1px solid #f1d28c;border-radius:12px;background:#fff8e7;color:#7d5b16}
+.scanner-test-banner span{font-size:12px;line-height:1.45}
+.card-camera-placeholder{display:grid;place-items:center;align-content:center;min-height:420px;text-align:center}
+.card-camera-placeholder>span{font-size:48px;color:#16aee5}
+.card-camera-placeholder h2{margin:10px 0 6px}
+.card-camera-placeholder p{max-width:420px;margin:0 0 18px;color:#718592}
+.scanner-diagnostic{display:flex;align-items:center;gap:7px;margin-bottom:18px;padding:9px 10px;border-radius:9px;background:#f4f9fb;color:#607784;font-size:12px;font-weight:700}
+.scanner-diagnostic>span{width:9px;height:9px;border-radius:50%;background:#9baeb8}
+.scanner-diagnostic>span.ready{background:#20b879;box-shadow:0 0 0 4px #dff8ec}
+.scanner-diagnostic small{margin-left:auto;color:#8498a3}
+.test-results span{background:#e9faf2;color:#16805a}
+html[data-theme='dark'] .scanner-room-summary>div,html[data-theme='dark'] .scanner-diagnostic{background:#102a38;color:#c8dae2}
+html[data-theme='dark'] .scanner-test-banner{background:#3d3218;border-color:#725e28;color:#ffe19a}
+@media(max-width:800px){
+  .scanner-room-summary{grid-template-columns:1fr 1fr}
+  .scanner-room-summary>div:first-child{grid-column:1/-1}
+  .scanner-mode-actions{position:sticky;z-index:4;top:70px;padding:8px 0;background:#f5f9fc}
+  html[data-theme='dark'] .scanner-mode-actions{background:#0d1720}
+  .card-camera-placeholder{min-height:46svh;padding:24px}
+  .card-scanner-page .card-camera{min-height:58svh}
+  .scanner-diagnostic{flex-wrap:wrap}
+  .scanner-diagnostic small{width:100%;margin-left:16px}
+  .card-scanner-page .dashboard-heading{margin-bottom:14px}
+}

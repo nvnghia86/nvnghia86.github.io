@@ -17,7 +17,7 @@ export function answerFromCorners(corners) {
   return distance <= 35 ? ['A', 'B', 'C', 'D'][quadrant] : null;
 }
 
-export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true) {
+export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true, scannerToken = '') {
   const [connection, setConnection] = useState('connecting');
   const [error, setError] = useState('');
   const socketRef = useRef(null);
@@ -30,7 +30,7 @@ export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true
     socketRef.current = socket;
     const join = () => {
       setConnection('connecting');
-      socket.timeout(8000).emit('join_room', { sessionId, role }, (err, response) => {
+      socket.timeout(8000).emit('join_room', { sessionId, role, ...(role === 'scanner' ? { scannerToken } : {}) }, (err, response) => {
         if (err || !response?.ok) { setConnection('error'); setError(response?.error || 'Không thể kết nối phòng.'); return; }
         setError(''); setConnection('connected'); updateRef.current(response.snapshot);
       });
@@ -41,7 +41,7 @@ export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true
     socket.on('student_answered', answer => updateRef.current(null, answer));
     socket.on('connect_error', () => { setConnection('error'); setError('Mất kết nối tới máy chủ. Đang thử lại…'); });
     return () => { socket.disconnect(); socketRef.current = null; };
-  }, [apiBase, sessionId, role, enabled]);
+  }, [apiBase, sessionId, role, enabled, scannerToken]);
   function sendAnswer(payload) {
     return new Promise((resolve, reject) => {
       const socket = socketRef.current;
@@ -57,26 +57,38 @@ export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true
 
 export function useCamera() {
   const webcamRef = useRef(null);
-  const [cameraState, setCameraState] = useState('loading');
+  const [cameraState, setCameraState] = useState('idle');
   const [cameraError, setCameraError] = useState('');
   return { webcamRef, cameraState, cameraError,
+    prepareCamera: () => { setCameraState('loading'); setCameraError(''); },
+    resetCamera: () => { setCameraState('idle'); setCameraError(''); },
     onUserMedia: () => { setCameraState('ready'); setCameraError(''); },
-    onUserMediaError: error => { setCameraState('error'); setCameraError(error?.message || 'Không thể mở camera. Hãy kiểm tra quyền truy cập và HTTPS.'); },
+    onUserMediaError: error => {
+      setCameraState('error');
+      const message = error?.name === 'NotAllowedError'
+        ? 'Camera đang bị chặn. Hãy cho phép quyền camera trong cài đặt trình duyệt rồi thử lại.'
+        : error?.name === 'NotFoundError'
+          ? 'Không tìm thấy camera trên thiết bị.'
+          : error?.message || 'Không thể mở camera. Hãy kiểm tra quyền truy cập và HTTPS.';
+      setCameraError(message);
+    },
   };
 }
 
 export function useAruco(webcamRef, active, onDetected) {
   const [seen, setSeen] = useState([]);
   const [error, setError] = useState('');
+  const [diagnostics, setDiagnostics] = useState({ frames: 0, lastFrameAt: null });
   const callbackRef = useRef(onDetected);
   callbackRef.current = onDetected;
   useEffect(() => {
-    if (!active) { setSeen([]); return; }
+    if (!active) { setSeen([]); setDiagnostics({ frames: 0, lastFrameAt: null }); return; }
     const detector = new AR.Detector({ dictionaryName: 'ARUCO' });
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d', { willReadFrequently: true });
     const stable = new Map();
     let processing = false;
+    let frames = 0;
     const timer = window.setInterval(() => {
       const video = webcamRef.current?.video;
       if (!video || video.readyState < 2 || !context || processing) return;
@@ -88,6 +100,8 @@ export function useAruco(webcamRef, active, onDetected) {
         canvas.width = width; canvas.height = height;
         context.drawImage(video, 0, 0, width, height);
         const markers = detector.detect(context.getImageData(0, 0, width, height));
+        frames += 1;
+        if (frames === 1 || frames % 10 === 0) setDiagnostics({ frames, lastFrameAt: Date.now() });
         setError('');
         const observations = [];
         for (const marker of markers) {
@@ -110,5 +124,5 @@ export function useAruco(webcamRef, active, onDetected) {
     }, 100);
     return () => window.clearInterval(timer);
   }, [webcamRef, active]);
-  return { seen, error };
+  return { seen, error, diagnostics };
 }
