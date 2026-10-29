@@ -20,6 +20,13 @@ it('generates class cards and paginates the A4 preview', async () => {
   expect(container.querySelectorAll('.class-marker-svg svg')).toHaveLength(9);
   fireEvent.change(screen.getByLabelText('Bố cục A4'), { target: { value: '4' } });
   expect(container.querySelectorAll('.class-card-page')).toHaveLength(3);
+  fireEvent.change(screen.getByLabelText('Bố cục A4'), { target: { value: '1' } });
+  expect(screen.getByRole('option', { name: '1 thẻ / trang' })).toBeInTheDocument();
+  expect(container.querySelectorAll('.class-card-page')).toHaveLength(9);
+  expect(container.querySelector('.class-card-layout-1')).toBeInTheDocument();
+  expect(container.querySelector('.marker-right')).toHaveTextContent('B');
+  expect(container.querySelector('.marker-bottom')).toHaveTextContent('C');
+  expect(container.querySelector('.marker-left')).toHaveTextContent('D');
   fireEvent.click(screen.getByRole('button', { name: 'In A4' }));
   expect(print).toHaveBeenCalledOnce();
   expect(request).toHaveBeenCalledWith('/classes/class-1/markers', { method: 'POST' });

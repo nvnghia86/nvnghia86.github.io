@@ -52,7 +52,7 @@ export default function ClassMarkerCards({ classItem, request, onError, onClose,
     </div>
     <div className="class-cards-controls">
       <button className="primary-button" type="button" onClick={generate} disabled={busy || loading || data?.studentCount < 1 || data?.studentCount > 40}>{busy ? t('common.loading') : needsUpdate ? t('classCards.update') : t('classCards.generate')}</button>
-      <label className="field">{t('classCards.layout')}<select value={perPage} onChange={event => setPerPage(Number(event.target.value))}><option value={8}>{t('classCards.eightPerPage')}</option><option value={4}>{t('classCards.fourPerPage')}</option></select></label>
+      <label className="field">{t('classCards.layout')}<select value={perPage} onChange={event => setPerPage(Number(event.target.value))}><option value={8}>{t('classCards.eightPerPage')}</option><option value={4}>{t('classCards.fourPerPage')}</option><option value={1}>{t('classCards.onePerPage')}</option></select></label>
       <button className="secondary-button" type="button" onClick={() => window.print()} disabled={!cards.length || needsUpdate}>{t('classCards.printA4')}</button>
       {data && <small>{t('classCards.count', { assigned: cards.length, total: data.studentCount })}</small>}
     </div>
