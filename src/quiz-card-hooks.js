@@ -26,7 +26,10 @@ export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true
   useEffect(() => {
     if (!enabled) return;
     const origin = new URL(apiBase, window.location.href).origin;
-    const socket = io(`${origin}/realtime`, { withCredentials: true, transports: ['websocket'], reconnection: true });
+    // Start with Socket.IO's polling transport and upgrade to WebSocket when
+    // available. Some mobile networks and embedded browsers block a direct
+    // WebSocket handshake, so forcing websocket here leaves the room offline.
+    const socket = io(`${origin}/realtime`, { withCredentials: true, reconnection: true });
     socketRef.current = socket;
     const join = () => {
       setConnection('connecting');
