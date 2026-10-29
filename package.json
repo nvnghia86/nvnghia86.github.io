@@ -19,6 +19,7 @@
     "antd": "^6.6.5",
     "framer-motion": "^13.4.6",
     "i18next": "^26.4.2",
+    "js-aruco2": "^2.0.0",
     "jsxgraph": "^1.13.3",
     "lucide-react": "^1.48.0",
     "qrcode.react": "^4.2.0",
@@ -27,7 +28,9 @@
     "react-hook-form": "^7.89.0",
     "react-i18next": "^17.0.15",
     "react-router-dom": "^7.18.4",
+    "react-webcam": "^7.2.0",
     "recharts": "^3.10.1",
+    "socket.io-client": "^4.8.4",
     "sonner": "^2.0.8",
     "vite": "^6.1.0",
     "zod": "^4.6.5"
