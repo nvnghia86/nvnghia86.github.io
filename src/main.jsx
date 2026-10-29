@@ -159,18 +159,34 @@ function ModuleLink({ to, children, end = false }) { return <NavLink to={to} end
 function RouterShell({ teacher, student, onAuth, onError, preferences, authReady = true }) {
   const { t } = useTranslation();
   const [authOpen, setAuthOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => { initializeAnalytics(); const userRole = teacher?.role || (student ? 'student' : 'guest'); localStorage.setItem('quizzz.analytics_role', userRole); trackPageView(location.pathname, userRole); }, [location.pathname, teacher?.role, student?.id]);
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = event => { if (event.key === 'Escape') setSidebarOpen(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', closeOnEscape);
+    return () => { document.body.style.overflow = previousOverflow; window.removeEventListener('keydown', closeOnEscape); };
+  }, [sidebarOpen]);
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 901px)');
+    const closeOnDesktop = event => { if (event.matches) setSidebarOpen(false); };
+    media.addEventListener?.('change', closeOnDesktop);
+    return () => media.removeEventListener?.('change', closeOnDesktop);
+  }, []);
   const isTeacherArea = location.pathname.startsWith('/teacher') || (location.pathname.startsWith('/quiz/') && Boolean(teacher));
   const isTypingArea = location.pathname.startsWith('/student/typing');
   function openAuth() { setAuthOpen(true); }
   async function logout() { try { await api(teacher ? '/auth/logout' : '/student/logout', { method: 'POST' }); window.location.reload(); } catch (error) { onError(error.message); } }
-  return <div className={`app-shell${!isTeacherArea ? ' student-meadow-shell' : ''}`}>
-    <aside className="app-sidebar">
-      <div className="brand-lockup"><span className="brand-mark">✦</span><span>quizzz</span></div>
+  return <div className={`app-shell${!isTeacherArea ? ' student-meadow-shell' : ''}${sidebarOpen ? ' sidebar-open' : ''}`}>
+    <aside className="app-sidebar" id="app-navigation" aria-label={t('navigation.menu')}>
+      <div className="sidebar-mobile-heading"><div className="brand-lockup"><span className="brand-mark">✦</span><span>quizzz</span></div><button className="sidebar-close-button" type="button" aria-label={t('navigation.closeMenu')} onClick={() => setSidebarOpen(false)}>×</button></div>
       <div className="brand-caption">{t('brand.caption')}</div>
-      <nav className="module-nav">
+      <nav className="module-nav" onClick={event => { if (event.target.closest('a')) setSidebarOpen(false); }}>
         {(!teacher || student) && <div className="nav-group">
           <div className="nav-heading">{t('navigation.student')}</div>
           <ModuleLink to="/student" end>⌂ <span>{t('navigation.home')}</span></ModuleLink>
@@ -205,9 +221,10 @@ function RouterShell({ teacher, student, onAuth, onError, preferences, authReady
       </nav>
       <div className="sidebar-footer">{preferences}</div>
     </aside>
+    <button className="sidebar-backdrop" type="button" aria-label={t('navigation.closeMenu')} onClick={() => setSidebarOpen(false)} />
     <main className="app-main">
       <header className="app-header">
-        <div><span className="breadcrumb">Quizzz</span><span className="route-title">{isTeacherArea ? t('brand.teacherSpace') : isTypingArea ? t('typing.title') : t('brand.studentSpace')}</span></div>
+        <div className="app-header-title"><button className="mobile-menu-button" type="button" aria-label={t('navigation.openMenu')} aria-controls="app-navigation" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(true)}>☰</button><div><span className="breadcrumb">Quizzz</span><span className="route-title">{isTeacherArea ? t('brand.teacherSpace') : isTypingArea ? t('typing.title') : t('brand.studentSpace')}</span></div></div>
         <div className="header-actions"><span className="user-chip">{teacher ? t('brand.teacherChip', { name: teacher.displayName }) : student ? t('brand.studentChip', { name: student.nickname }) : t('common.guest')}</span>{teacher || student ? <><button className="auth-button" onClick={openAuth}>{t('common.changeAccount')}</button><button className="auth-button sign-out-button" onClick={logout}>{t('common.signOut')}</button></> : <button className="auth-button" onClick={openAuth}>{t('common.signIn')}</button>}</div>
       </header>
       <div className="page-content">{location.pathname === '/teacher/accounts' ? <RoleGuard teacher={teacher} authReady={authReady}><AccountManagement teacher={teacher} onError={onError} /></RoleGuard> : location.pathname === '/teacher/schools' ? <RoleGuard teacher={teacher} authReady={authReady}><SchoolManagement onError={onError} /></RoleGuard> : location.pathname === '/teacher/locations' ? <RoleGuard teacher={teacher} authReady={authReady}><LocationManagement onError={onError} /></RoleGuard> : <Outlet />}</div>
