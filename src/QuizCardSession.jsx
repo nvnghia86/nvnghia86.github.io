@@ -6,6 +6,7 @@ import { cardDictionary, useAruco, useCamera, useQuizSocket } from './quiz-card-
 import './quiz-card-session.css';
 import './quiz-card-scanner-mobile.css';
 import './quiz-card-host-enhanced.css';
+import './quiz-card-celebration.css';
 
 function useSession(api, sessionId, onError, enabled = true, endpoint = `/quiz-sessions/${sessionId}`) {
   const [session, setSession] = useState(null);
@@ -83,8 +84,14 @@ function CardSheet({ players }) {
   return <div className="card-sheet"><div className="card-sheet-toolbar"><h2>{t('cardScan.cardsTitle')}</h2><button className="secondary-button" type="button" onClick={() => window.print()}>{t('cardScan.printCards')}</button></div><div className="card-sheet-grid">{cards.map(card => <article className="print-card" key={card.markerId}><strong>#{card.markerId} · {card.nickname}</strong><div className="print-card-marker"><span className="card-side top">A</span><span className="card-side right">B</span><span className="card-side bottom">C</span><span className="card-side left">D</span><div dangerouslySetInnerHTML={{ __html: card.svg }} /></div></article>)}</div></div>;
 }
 
+function rankedPlayers(players) {
+  return [...players]
+    .sort((left, right) => Number(right.score || 0) - Number(left.score || 0) || Number(left.markerId || 0) - Number(right.markerId || 0))
+    .slice(0, 3);
+}
+
 function TopThree({ players, t }) {
-  const leaders = [...players].sort((left, right) => Number(right.score || 0) - Number(left.score || 0)).slice(0, 3);
+  const leaders = rankedPlayers(players);
   const medals = ['🥇', '🥈', '🥉'];
   return <section className="dashboard-panel card-leaderboard"><div className="card-leaderboard-heading"><div><span className="card-leaderboard-icon">♛</span><div><p>{t('cardScan.topThree')}</p><h2>{t('cardScan.leaderboard')}</h2></div></div></div><div className="card-leader-list">{leaders.length ? leaders.map((player, index) => <article className={`card-leader-row place-${index + 1}`} key={player.id}><span className="card-leader-medal" aria-hidden="true">{medals[index]}</span><span className="card-leader-avatar">{String(player.nickname || '?').trim().charAt(0).toUpperCase()}</span><span className="card-leader-name"><strong>{player.nickname}</strong><small>#{player.markerId}</small></span><span className="card-leader-score"><strong>{player.score || 0}</strong><small>{t('cardScan.points')}</small></span></article>) : <p className="muted-copy">{t('cardScan.noScores')}</p>}</div></section>;
 }
@@ -115,11 +122,25 @@ function ScannerConnect({ scanUrl, answered, total, showCards, onToggleCards, on
   return <section className="dashboard-panel card-host-side"><div className="card-scanner-connect-heading"><div><p>{t('cardScan.scannerQr')}</p><h3>{t('cardScan.connectScanner')}</h3></div><div className="card-host-count"><strong>{answered}/{total}</strong><span>{t('cardScan.answered')}</span></div></div><div className="card-scanner-connect-body"><QRCodeSVG value={scanUrl} size={112} level="M" /><div className="card-scanner-connect-actions"><button className="primary-button" type="button" onClick={copyLink}>⧉ {copied ? t('cardScan.copied') : t('cardScan.copyLink')}</button><button className="secondary-button" type="button" onClick={onToggleCards}>{showCards ? t('cardScan.hideCards') : t('cardScan.showCards')}</button></div></div></section>;
 }
 
+function CelebrationModal({ players, onClose, t }) {
+  const leaders = rankedPlayers(players);
+  const podium = [leaders[1] && { player: leaders[1], rank: 2 }, leaders[0] && { player: leaders[0], rank: 1 }, leaders[2] && { player: leaders[2], rank: 3 }].filter(Boolean);
+  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  useEffect(() => {
+    const closeOnEscape = event => { if (event.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose]);
+  return <div className="card-celebration-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}><section className="card-celebration-modal" role="dialog" aria-modal="true" aria-labelledby="card-celebration-title"><div className="card-confetti" aria-hidden="true">{Array.from({ length: 18 }, (_, index) => <i key={index} />)}</div><button className="card-celebration-close" type="button" onClick={onClose} aria-label={t('common.close')}>×</button><div className="card-celebration-heading"><span>🏆</span><p>{t('cardScan.gameComplete')}</p><h2 id="card-celebration-title">{t('cardScan.congratulations')}</h2><small>{t('cardScan.congratulationsHint')}</small></div>{podium.length ? <div className="card-podium">{podium.map(({ player, rank }) => <article className={`card-podium-place podium-${rank}`} key={player.id}><span className="card-podium-medal">{medals[rank]}</span><span className="card-podium-avatar">{String(player.nickname || '?').trim().charAt(0).toUpperCase()}</span><strong>{player.nickname}</strong><small>#{player.markerId}</small><b>{player.score || 0} {t('cardScan.points')}</b><div className="card-podium-step"><span>{rank}</span></div></article>)}</div> : <p className="muted-copy">{t('cardScan.noScores')}</p>}<button className="primary-button card-celebration-action" type="button" onClick={onClose}>{t('cardScan.closeResults')}</button></section></div>;
+}
+
 export function QuizCardHost({ api, API, sessionId, onError }) {
   const { t } = useTranslation();
   const [session, setSession, sessionError] = useSession(api, sessionId, onError);
   const [busy, setBusy] = useState(false);
   const [showCards, setShowCards] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const previousStatus = useRef(null);
   const hostRef = useRef(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(hostRef);
   const onUpdate = (snapshot, answer) => {
@@ -146,10 +167,15 @@ export function QuizCardHost({ api, API, sessionId, onError }) {
     }
   });
   useEffect(() => { timerAdvance.current = false; }, [session?.currentQuestionData?.id]);
+  useEffect(() => {
+    const status = session?.status || null;
+    if (previousStatus.current && previousStatus.current !== 'finished' && status === 'finished') setShowCelebration(true);
+    previousStatus.current = status;
+  }, [session?.status]);
   if (!session) return <section className="content-page"><p className={sessionError ? 'error' : 'muted-copy'}>{sessionError || t('common.loading')}</p></section>;
   const scanUrl = `${window.location.origin}${window.location.pathname}#/quiz/${sessionId}/scan?token=${encodeURIComponent(session.scannerToken || '')}`;
   const answered = session.players.filter(player => player.answer).length;
-  return <section className={`content-page card-session-page ${isFullscreen ? 'card-host-fullscreen' : ''}`} ref={hostRef}><div className="dashboard-heading card-host-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{session.title}</h1><p className="muted-copy">{session.className} · {t('cardScan.questionProgress', { current: Math.min(session.currentQuestion + 1, session.questionCount), total: session.questionCount })}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</span><button className="secondary-button card-fullscreen-toggle" type="button" onClick={toggleFullscreen}>{isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')}</button></div></div>{socket.error && <p className="error">{socket.error}</p>}<div className="card-host-layout"><main className="dashboard-panel card-host-question">{session.currentQuestionData ? <><div className="card-question-meta"><span className="eyebrow">{t('cardScan.questionProgress', { current: session.currentQuestion + 1, total: session.questionCount })}</span><strong className="card-countdown">{seconds}s</strong></div><h2>{session.currentQuestionData.question}</h2><div className="card-option-grid">{session.currentQuestionData.options?.map((option, index) => <div key={index}><b>{'ABCD'[index]}</b><span>{option}</span></div>)}</div></> : <div className="empty-state"><h2>{session.status === 'finished' ? t('cardScan.finished') : t('cardScan.ready')}</h2><p>{session.status === 'finished' ? t('cardScan.finishedHint') : t('cardScan.readyHint')}</p></div>}<div className="card-host-actions">{session.status === 'lobby' && <button className="primary-button" disabled={busy} onClick={() => action('start')}>{t('cardScan.start')}</button>}{session.status === 'playing' && <><button className="primary-button" disabled={busy} onClick={() => action('next')}>{t('cardScan.next')}</button><button className="secondary-button" disabled={busy} onClick={() => action('finish')}>{t('cardScan.finish')}</button></>}</div></main><aside className="card-host-rail"><TopThree players={session.players} t={t} /><ScannerConnect scanUrl={scanUrl} answered={answered} total={session.players.length} showCards={showCards} onToggleCards={() => setShowCards(value => !value)} onError={onError} t={t} /></aside></div><div className="dashboard-panel card-roster"><h2>{t('cardScan.students')}</h2><div className="card-roster-grid">{session.players.map(player => <div className={player.answer ? 'answered' : ''} key={player.id}><b>#{player.markerId}</b><span>{player.nickname}</span><strong>{player.answer || '—'}</strong><small>{player.score || 0}</small></div>)}</div></div>{showCards && <CardSheet players={session.players} />}</section>;
+  return <section className={`content-page card-session-page ${isFullscreen ? 'card-host-fullscreen' : ''}`} ref={hostRef}><div className="dashboard-heading card-host-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{session.title}</h1><p className="muted-copy">{session.className} · {t('cardScan.questionProgress', { current: Math.min(session.currentQuestion + 1, session.questionCount), total: session.questionCount })}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</span><button className="secondary-button card-fullscreen-toggle" type="button" onClick={toggleFullscreen}>{isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')}</button></div></div>{socket.error && <p className="error">{socket.error}</p>}<div className="card-host-layout"><main className="dashboard-panel card-host-question">{session.currentQuestionData ? <><div className="card-question-meta"><span className="eyebrow">{t('cardScan.questionProgress', { current: session.currentQuestion + 1, total: session.questionCount })}</span><strong className="card-countdown">{seconds}s</strong></div><h2>{session.currentQuestionData.question}</h2><div className="card-option-grid">{session.currentQuestionData.options?.map((option, index) => <div key={index}><b>{'ABCD'[index]}</b><span>{option}</span></div>)}</div></> : <div className="empty-state"><h2>{session.status === 'finished' ? t('cardScan.finished') : t('cardScan.ready')}</h2><p>{session.status === 'finished' ? t('cardScan.finishedHint') : t('cardScan.readyHint')}</p></div>}<div className="card-host-actions">{session.status === 'lobby' && <button className="primary-button" disabled={busy} onClick={() => action('start')}>{t('cardScan.start')}</button>}{session.status === 'playing' && <><button className="primary-button" disabled={busy} onClick={() => action('next')}>{t('cardScan.next')}</button><button className="secondary-button" disabled={busy} onClick={() => action('finish')}>{t('cardScan.finish')}</button></>}</div></main><aside className="card-host-rail"><TopThree players={session.players} t={t} /><ScannerConnect scanUrl={scanUrl} answered={answered} total={session.players.length} showCards={showCards} onToggleCards={() => setShowCards(value => !value)} onError={onError} t={t} /></aside></div><div className="dashboard-panel card-roster"><h2>{t('cardScan.students')}</h2><div className="card-roster-grid">{session.players.map(player => <div className={player.answer ? 'answered' : ''} key={player.id}><b>#{player.markerId}</b><span>{player.nickname}</span><strong>{player.answer || '—'}</strong><small>{player.score || 0}</small></div>)}</div></div>{showCards && <CardSheet players={session.players} />}{showCelebration && <CelebrationModal players={session.players} onClose={() => setShowCelebration(false)} t={t} />}</section>;
 }
 
 export function QuizCardScanner({ api, API, sessionId, scannerToken, onError }) {
