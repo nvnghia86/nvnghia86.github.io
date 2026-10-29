@@ -36,7 +36,7 @@ describe('printed ARUCO cards and scanner orientation', () => {
     for (let turns = 0; turns < 4; turns++) {
       const marker = detector.detect(renderCard(5, turns)).find(item => item.id === 5);
       expect(marker).toBeDefined();
-      expect(answerFromCorners(marker.corners)).toBe('ABCD'[turns]);
+      expect(answerFromCorners(marker.corners)).toBe('ADCB'[turns]);
     }
   });
 });

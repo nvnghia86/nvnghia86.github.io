@@ -14,7 +14,9 @@ export function answerFromCorners(corners) {
   const angle = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
   const quadrant = Math.round(angle / 90) % 4;
   const distance = Math.abs(((angle - quadrant * 90 + 540) % 360) - 180);
-  return distance <= 35 ? ['A', 'B', 'C', 'D'][quadrant] : null;
+  // Camera coordinates have a downward Y axis. Clockwise physical rotation
+  // therefore moves the labelled answer from A to D, C, then B.
+  return distance <= 35 ? ['A', 'D', 'C', 'B'][quadrant] : null;
 }
 
 export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true, scannerToken = '') {

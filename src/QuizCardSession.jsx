@@ -152,17 +152,19 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError }) 
       setTestResults(previous => [{ markerId, answer, detectedAt: Date.now() }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 12));
       return;
     }
-    if (!questionId || socket.connection !== 'connected' || !session?.players.some(player => player.markerId === markerId)) return;
+    const player = session?.players.find(item => item.markerId === markerId);
+    if (!questionId || socket.connection !== 'connected' || !player || player.answer || sent.current.has(markerId)) return;
     const pendingKey = `${questionId}:${markerId}`;
-    if (sent.current.get(markerId) === answer || pending.current.has(pendingKey)) return;
+    if (pending.current.has(pendingKey)) return;
     const now = Date.now();
     if (now - (lastAttempt.current.get(markerId) || 0) < 500) return;
     lastAttempt.current.set(markerId, now);
     pending.current.add(pendingKey);
-    socket.sendAnswer({ sessionId, questionId, markerId, answer }).then(() => {
+    socket.sendAnswer({ sessionId, questionId, markerId, answer }).then(response => {
       if (activeQuestion.current !== questionId) return;
-      sent.current.set(markerId, answer);
-      setRecent(previous => [{ markerId, answer }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 8));
+      const recordedAnswer = response.answer || answer;
+      sent.current.set(markerId, recordedAnswer);
+      setRecent(previous => [{ markerId, answer: recordedAnswer }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 8));
     }).catch(error => onError(error.message)).finally(() => pending.current.delete(pendingKey));
   };
   const { seen, error: detectorError, diagnostics } = useAruco(camera.webcamRef, Boolean(hasAccess && cameraEnabled && (testMode || questionId)), onDetected);
