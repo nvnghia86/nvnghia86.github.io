@@ -17,6 +17,7 @@ import './styles.css';
 import './modules.css';
 import './student-meadow.css';
 import './worksheet-ai-template.css';
+import './stitch-theme.css';
 import TypingPractice from './TypingPractice';
 import AiQuizEnhanced from './AiQuizEnhanced';
 import ExamBuilder from './ExamBuilder';
@@ -183,7 +184,7 @@ function RouterShell({ teacher, student, onAuth, onError, preferences, authReady
   const isScannerRoute = /^\/quiz\/[^/]+\/scan$/.test(location.pathname);
   function openAuth() { setAuthOpen(true); }
   async function logout() { try { await api(teacher ? '/auth/logout' : '/student/logout', { method: 'POST' }); window.location.reload(); } catch (error) { onError(error.message); } }
-  return <div className={`app-shell${!isTeacherArea ? ' student-meadow-shell' : ''}${sidebarOpen ? ' sidebar-open' : ''}${isScannerRoute ? ' scanner-route-shell' : ''}`}>
+  return <div className={`app-shell${isTeacherArea ? ' teacher-kinetic-shell' : ' student-meadow-shell'}${sidebarOpen ? ' sidebar-open' : ''}${isScannerRoute ? ' scanner-route-shell' : ''}`}>
     <aside className="app-sidebar" id="app-navigation" aria-label={t('navigation.menu')}>
       <div className="sidebar-mobile-heading"><div className="brand-lockup"><span className="brand-mark">✦</span><span>quizzz</span></div><button className="sidebar-close-button" type="button" aria-label={t('navigation.closeMenu')} onClick={() => setSidebarOpen(false)}>×</button></div>
       <div className="brand-caption">{t('brand.caption')}</div>
@@ -283,6 +284,6 @@ function AppProviders() {
   useEffect(() => { document.documentElement.dataset.theme = mode; localStorage.setItem('quizzz.theme', mode); }, [mode]);
   const isDark = mode === 'dark';
   const preferences = <PreferenceSwitcher mode={mode} onThemeChange={setMode} />;
-  return <ConfigProvider theme={{ algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm, token: { colorPrimary: '#16aee5', colorInfo: '#16aee5', borderRadius: 10, fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif" }, components: { Button: { controlHeight: 40, fontWeight: 700 }, Card: { borderRadiusLG: 16 }, Table: { headerBg: isDark ? '#162a3a' : '#e5f7fd' } } }}><QueryClientProvider client={queryClient}><RouterAppFixed preferences={preferences} /><Toaster position="top-right" duration={5000} richColors closeButton theme={mode} /></QueryClientProvider></ConfigProvider>;
+  return <ConfigProvider theme={{ algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm, token: { colorPrimary: '#4f46e5', colorInfo: '#4f46e5', borderRadius: 12, fontFamily: "'Plus Jakarta Sans', Inter, system-ui, sans-serif" }, components: { Button: { controlHeight: 42, fontWeight: 700, borderRadius: 12 }, Card: { borderRadiusLG: 18 }, Table: { headerBg: isDark ? '#20244a' : '#f3f4ff' } } }}><QueryClientProvider client={queryClient}><RouterAppFixed preferences={preferences} /><Toaster position="top-right" duration={5000} richColors closeButton theme={mode} /></QueryClientProvider></ConfigProvider>;
 }
 createRoot(document.getElementById('root')).render(<AppProviders />);
