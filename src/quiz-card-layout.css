@@ -68,7 +68,11 @@
 .card-host-fullscreen:fullscreen .card-host-question .card-host-actions { margin: 0; padding-top: 12px; }
 .card-session-page.card-host-fullscreen:fullscreen .card-host-rail { display: block; min-height: 0; overflow: auto; }
 .card-session-page.card-host-fullscreen:fullscreen .card-host-side { display: none; }
-.card-host-fullscreen:fullscreen .card-leaderboard { height: 100%; }
+.card-host-fullscreen:fullscreen .card-leaderboard { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+.card-host-fullscreen:fullscreen .card-leaderboard-heading { flex: 0 0 auto; }
+.card-host-fullscreen:fullscreen .card-leader-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; align-content: start; padding-right: 4px; scrollbar-gutter: stable; }
+.card-host-fullscreen:fullscreen .card-leader-list:focus-visible { outline: 2px solid #16aee5; outline-offset: 2px; }
+.card-host-fullscreen:fullscreen .card-leader-medal { font-variant-numeric: tabular-nums; }
 
 @container card-host (max-width: 900px) {
   .card-session-page .card-host-layout, .card-session-page .card-host-layout:has(.empty-state) { grid-template-columns: minmax(0, 1fr); }
