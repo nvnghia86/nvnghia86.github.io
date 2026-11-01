@@ -7,6 +7,15 @@
 .scanner-room-summary strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scanner-mode-actions{display:flex;gap:10px;margin:0 0 14px}
 .scanner-mode-actions button{flex:1}
+.scanner-question-control{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px;padding:14px}
+.scanner-answer-summary{display:flex;align-items:center;gap:18px;min-width:0}
+.scanner-answer-summary h2{margin:0 0 3px;font-size:16px;color:#173f52}
+.scanner-answer-summary small{color:#718592;font-size:12px}
+.scanner-answer-counts{display:grid;grid-template-columns:repeat(4,38px);gap:7px}
+.scanner-answer-counts span{display:grid;place-items:center;gap:1px;min-height:42px;border:1px solid #cceaf5;border-radius:10px;background:#f3fbfe;color:#087fb7}
+.scanner-answer-counts b{font-size:11px;line-height:1}
+.scanner-answer-counts strong{font-size:17px;line-height:1}
+.scanner-next-button{flex:0 0 auto;min-height:42px;padding-inline:15px;white-space:nowrap}
 .scanner-test-banner{display:grid;gap:4px;margin-bottom:14px;padding:12px 14px;border:1px solid #f1d28c;border-radius:12px;background:#fff8e7;color:#7d5b16}
 .scanner-test-banner span{font-size:12px;line-height:1.45}
 .card-camera-placeholder{display:grid;place-items:center;align-content:center;min-height:420px;text-align:center}
@@ -18,15 +27,54 @@
 .scanner-diagnostic>span.ready{background:#20b879;box-shadow:0 0 0 4px #dff8ec}
 .scanner-diagnostic small{margin-left:auto;color:#8498a3}
 .test-results span{background:#e9faf2;color:#16805a}
+.card-camera-guide{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;padding:11px;border:0}
+.camera-guide-corner{width:28px;height:28px;border-color:#fff;border-style:solid;filter:drop-shadow(0 2px 4px #071923b3)}
+.camera-guide-corner.top-left{border-width:3px 0 0 3px;border-radius:11px 0 0}
+.camera-guide-corner.top-right{justify-self:end;border-width:3px 3px 0 0;border-radius:0 11px 0 0}
+.camera-guide-corner.bottom-left{align-self:end;border-width:0 0 3px 3px;border-radius:0 0 0 11px}
+.camera-guide-corner.bottom-right{justify-self:end;align-self:end;border-width:0 3px 3px 0;border-radius:0 0 11px}
+.card-camera.is-scanning .camera-guide-corner{border-color:#7be3ff;animation:scanner-guide-pulse 1.6s ease-in-out infinite}
+.scanner-live-feedback{position:absolute;left:12px;right:76px;bottom:12px;display:flex;align-items:center;gap:9px;min-height:40px;padding:7px 10px;border:1px solid #ffffff42;border-radius:11px;background:#122936dc;color:#fff;backdrop-filter:blur(8px);pointer-events:none}
+.scanner-live-feedback small,.scanner-live-feedback b,.scanner-live-feedback strong{display:block}.scanner-live-feedback small{font-size:10px;font-weight:700;line-height:1.2;opacity:.78}.scanner-live-feedback b,.scanner-live-feedback strong{margin-top:2px;font-size:13px;line-height:1.2}.scanner-live-indicator{width:9px;height:9px;flex:0 0 auto;border-radius:50%;background:#c1d1d8}.scanner-live-feedback.has-result{border-color:#74e0ac;background:#0e4a37e6}.scanner-live-feedback.has-result .scanner-live-indicator{background:#65e6a1;box-shadow:0 0 0 4px #65e6a136}
+@keyframes scanner-guide-pulse{50%{opacity:.58;transform:scale(.94)}}
 html[data-theme='dark'] .scanner-room-summary>div,html[data-theme='dark'] .scanner-diagnostic{background:#102a38;color:#c8dae2}
 html[data-theme='dark'] .scanner-test-banner{background:#3d3218;border-color:#725e28;color:#ffe19a}
 @media(max-width:800px){
+  .card-scanner-page{padding:0 12px max(18px,env(safe-area-inset-bottom))}
+  .card-scanner-page .card-scanner-heading{position:sticky;z-index:5;top:0;margin:0 -12px 10px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;background:#f5f9fc;box-shadow:0 8px 16px #d9e7ed88}
+  html[data-theme='dark'] .card-scanner-page .card-scanner-heading{background:#0d1720;box-shadow:0 8px 16px #0007}
+  .card-scanner-heading .eyebrow{display:none}
+  .card-scanner-heading h1{font-size:22px;line-height:1.15}
+  .card-scanner-heading .muted-copy{max-width:44vw;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+  .card-scanner-heading .card-host-heading-actions{gap:6px}
+  .card-scanner-heading .setup-badge{font-size:10px}
+  .card-scanner-heading .card-countdown{min-width:42px;padding:6px;font-size:15px}
   .scanner-room-summary{grid-template-columns:1fr 1fr}
-  .scanner-room-summary>div:first-child{grid-column:1/-1}
-  .scanner-mode-actions{position:sticky;z-index:4;top:70px;padding:8px 0;background:#f5f9fc}
+  .scanner-room-summary>div{padding:8px 10px}
+  .scanner-room-summary>div:first-child{grid-column:auto}
+  .scanner-room-summary>div:last-child{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}
+  .scanner-mode-actions{position:sticky;z-index:4;top:62px;padding:8px 0;background:#f5f9fc}
   html[data-theme='dark'] .scanner-mode-actions{background:#0d1720}
-  .card-camera-placeholder{min-height:46svh;padding:24px}
-  .card-scanner-page .card-camera{min-height:58svh}
+  .scanner-mode-actions button{min-height:44px;padding-inline:10px;font-size:13px}
+  .scanner-question-control{position:sticky;z-index:4;top:62px;display:grid;gap:10px;margin-bottom:8px;padding:12px}
+  .scanner-answer-summary{justify-content:space-between;gap:8px}
+  .scanner-answer-summary h2{font-size:15px}
+  .scanner-answer-summary small{font-size:11px}
+  .scanner-answer-counts{grid-template-columns:repeat(4,34px);gap:5px}
+  .scanner-answer-counts span{min-height:38px}
+  .scanner-next-button{width:100%;min-height:44px}
+  .card-camera-placeholder{min-height:calc(100dvh - 285px);padding:24px}
+  .card-scanner-page .card-camera{min-height:clamp(320px,calc(100dvh - 278px),560px);border-radius:16px}
+  .card-scanner-page .card-camera-guide{inset:9% 7%;padding:12px}
+  .camera-guide-corner{width:34px;height:34px}
+  .scanner-live-feedback{left:10px;bottom:10px;right:74px;min-height:44px;padding:8px 10px}
+  .card-camera-fullscreen{right:10px;bottom:10px;width:54px;height:44px;padding:0;font-size:0}
+  .card-camera-fullscreen::before{content:'⛶';font-size:20px}
+  .card-scanner-page .card-scanner-info{padding:14px}
+  .card-scanner-page .card-scanner-info>h2{font-size:17px}
+  .card-scanner-page .card-scanner-info>p{font-size:12px;line-height:1.45}
+  .card-detected{min-height:28px;max-height:86px;overflow:auto}
+  .card-detected span{padding:5px 8px;font-size:12px}
   .scanner-diagnostic{flex-wrap:wrap}
   .scanner-diagnostic small{width:100%;margin-left:16px}
   .card-scanner-page .dashboard-heading{margin-bottom:14px}
