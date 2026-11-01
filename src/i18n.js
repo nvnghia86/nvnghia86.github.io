@@ -119,11 +119,31 @@ const telegramStudioTranslations = {
   },
 };
 
+const cardScanAdditions = {
+  vi: {
+    questionResult: 'Kết quả câu {{current}}',
+    correctAnswer: 'Đáp án đúng',
+    studentRoster: 'Danh sách học sinh',
+    correct: 'Đúng',
+    incorrect: 'Sai',
+    answeredCount: '{{count}} câu đã trả lời',
+  },
+  en: {
+    questionResult: 'Question {{current}} result',
+    correctAnswer: 'Correct answer',
+    studentRoster: 'Student roster',
+    correct: 'Correct',
+    incorrect: 'Incorrect',
+    answeredCount: '{{count}} questions answered',
+  },
+};
+
 for (const locale of supportedLocales) {
   resources[locale].translation.navigation.videoStudio = videoStudioTranslations[locale].nav;
   resources[locale].translation.videoStudio = videoStudioTranslations[locale];
   Object.assign(resources[locale].translation.master.telegram.actions, telegramStudioTranslations[locale].actions);
   resources[locale].translation.master.telegram.studio = telegramStudioTranslations[locale].studio;
+  Object.assign(resources[locale].translation.cardScan, cardScanAdditions[locale]);
 }
 
 i18n.use(initReactI18next).init({ resources, lng: initialLocale, fallbackLng: 'vi', interpolation: { escapeValue: false }, returnNull: false, saveMissing: import.meta.env.DEV });

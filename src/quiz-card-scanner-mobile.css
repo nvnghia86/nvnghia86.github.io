@@ -22,10 +22,21 @@
 .card-camera-placeholder>span{font-size:48px;color:#16aee5}
 .card-camera-placeholder h2{margin:10px 0 6px}
 .card-camera-placeholder p{max-width:420px;margin:0 0 18px;color:#718592}
-.scanner-diagnostic{display:flex;align-items:center;gap:7px;margin-bottom:18px;padding:9px 10px;border-radius:9px;background:#f4f9fb;color:#607784;font-size:12px;font-weight:700}
+.scanner-diagnostic{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:7px;margin-bottom:18px;padding:9px 10px;border-radius:9px;background:#f4f9fb;color:#607784;font-size:12px;font-weight:700}
 .scanner-diagnostic>span{width:9px;height:9px;border-radius:50%;background:#9baeb8}
 .scanner-diagnostic>span.ready{background:#20b879;box-shadow:0 0 0 4px #dff8ec}
-.scanner-diagnostic small{margin-left:auto;color:#8498a3}
+.scanner-diagnostic small{margin-left:0;color:#8498a3;white-space:nowrap}
+.scanner-closed-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin:0 0 14px;padding:14px}
+.scanner-closed-summary h2{margin:0 0 3px;font-size:16px;color:#173f52}
+.scanner-closed-summary small{color:#718592;font-size:12px}
+.scanner-closed-summary p{grid-column:1/-1;margin:0;color:#426171;font-size:13px}
+.scanner-answer-counts span.is-correct{border-color:#55c996;background:#e8f9ef;color:#117347;box-shadow:inset 0 0 0 1px #9ce1bc}
+.scanner-student-roster{margin:0 0 16px;padding:14px}
+.scanner-roster-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.scanner-roster-heading h2{margin:0 0 2px;font-size:17px;color:#173f52}.scanner-roster-heading small{color:#718592;font-size:12px}.scanner-roster-heading>strong{display:grid;place-items:center;min-width:30px;height:30px;border-radius:999px;background:#e6f7fd;color:#087fb7}
+.scanner-roster-list{display:grid;gap:7px;max-height:280px;overflow:auto;padding-right:2px}
+.scanner-roster-list article{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:center;padding:9px 10px;border:1px solid #dcecf3;border-radius:10px;background:#fbfdfe}
+.scanner-roster-marker{font-size:11px;font-weight:800;color:#087fb7}.scanner-roster-list article>strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#214657}.scanner-roster-score{font-size:12px;font-weight:800;color:#087fb7}.scanner-roster-list article>small{grid-column:2/-1;display:flex;gap:9px;color:#718592;font-size:11px}.scanner-roster-list article>small b:first-child{color:#16805a}.scanner-roster-list article>small b:nth-child(2){color:#c05252}
 .test-results span{background:#e9faf2;color:#16805a}
 .card-camera-guide{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;padding:11px;border:0}
 .camera-guide-corner{width:28px;height:28px;border-color:#fff;border-style:solid;filter:drop-shadow(0 2px 4px #071923b3)}
@@ -41,6 +52,7 @@ html[data-theme='dark'] .scanner-room-summary>div,html[data-theme='dark'] .scann
 html[data-theme='dark'] .scanner-test-banner{background:#3d3218;border-color:#725e28;color:#ffe19a}
 @media(max-width:800px){
   .card-scanner-page{padding:0 12px max(18px,env(safe-area-inset-bottom))}
+  .card-scanner-page{display:flex;flex-direction:column}
   .card-scanner-page .card-scanner-heading{position:sticky;z-index:5;top:0;margin:0 -12px 10px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;background:#f5f9fc;box-shadow:0 8px 16px #d9e7ed88}
   html[data-theme='dark'] .card-scanner-page .card-scanner-heading{background:#0d1720;box-shadow:0 8px 16px #0007}
   .card-scanner-heading .eyebrow{display:none}
@@ -75,7 +87,13 @@ html[data-theme='dark'] .scanner-test-banner{background:#3d3218;border-color:#72
   .card-scanner-page .card-scanner-info>p{font-size:12px;line-height:1.45}
   .card-detected{min-height:28px;max-height:86px;overflow:auto}
   .card-detected span{padding:5px 8px;font-size:12px}
-  .scanner-diagnostic{flex-wrap:wrap}
-  .scanner-diagnostic small{width:100%;margin-left:16px}
+  .scanner-diagnostic{grid-template-columns:9px minmax(0,1fr) auto;gap:6px;margin-bottom:12px;font-size:11px}
+  .scanner-diagnostic small{width:auto;margin:0;font-size:10px}
+  .scanner-closed-summary{grid-template-columns:1fr;gap:9px;padding:12px}
+  .scanner-closed-summary .scanner-answer-counts{justify-content:space-between;grid-template-columns:repeat(4,1fr)}
+  .scanner-student-roster{order:10;margin-top:14px;padding:12px}
+  .scanner-roster-list{max-height:300px}
+  .scanner-roster-list article{grid-template-columns:auto minmax(0,1fr) auto;padding:8px}
+  .scanner-roster-list article>small{gap:7px;font-size:10px}
   .card-scanner-page .dashboard-heading{margin-bottom:14px}
 }
