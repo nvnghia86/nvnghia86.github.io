@@ -1,0 +1,103 @@
+/* Final layout rules shared by the projector and handheld controller. */
+.card-session-page { box-sizing: border-box; min-width: 0; }
+.card-session-page *, .card-session-page *::before, .card-session-page *::after { box-sizing: border-box; }
+.card-session-page .card-host-layout { grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); align-items: stretch; }
+.card-session-page .card-host-layout:has(.empty-state) { grid-template-columns: minmax(0, 1fr) minmax(340px, 1.2fr); }
+.card-session-page .card-host-question { min-width: 0; min-height: 480px; }
+.card-session-page .card-question-meta { width: 100%; }
+.card-session-page .card-host-question h2 { overflow-wrap: anywhere; line-height: 1.35; }
+.card-session-page .card-option-grid { width: 100%; min-width: 0; align-self: stretch; }
+.card-session-page .card-option-grid > div { min-width: 0; align-items: flex-start; }
+.card-session-page .card-option-grid span { min-width: 0; overflow-wrap: anywhere; line-height: 1.45; }
+.card-session-page .card-leader-row { grid-template-columns: 26px 32px minmax(0, 1fr) auto; }
+.card-session-page .card-leader-row .card-leader-name { overflow: visible; white-space: normal; }
+.card-session-page .card-leader-name strong { white-space: normal; overflow-wrap: anywhere; line-height: 1.4; }
+.card-session-page .card-leader-score { flex-shrink: 0; }
+.card-session-page .card-host-rail { grid-template-rows: auto auto; align-content: start; }
+.card-session-page aside.card-host-rail { width: 100%; padding: 0; border: 0; background: transparent; position: static; flex: none; }
+.card-session-page .primary-button { background: #16aee5; color: #fff; box-shadow: 0 3px 0 #087fb7; }
+.card-session-page .primary-button:hover { background: #087fb7; }
+.card-session-page button:disabled { opacity: .55; cursor: wait; }
+.card-session-page .card-scanner-connect-body { grid-template-columns: 140px minmax(0, 1fr); }
+.card-session-page .card-scanner-connect-body svg { width: 140px; height: 140px; }
+.card-session-page .card-host-question .empty-state { display: grid; align-content: center; text-align: center; }
+.card-session-page .card-roster-grid > div { min-width: 0; }
+.card-session-page .card-roster-grid span { min-width: 0; overflow-wrap: anywhere; }
+
+.card-session-page.card-scanner-page { display: flex; flex-direction: column; gap: 12px; max-width: 1160px; }
+.card-scanner-page > * { min-width: 0; margin-block: 0; }
+.card-scanner-page .card-scanner-heading { position: static; margin: 0; padding: 0; box-shadow: none; background: transparent; }
+.card-scanner-page .scanner-room-summary { padding: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card-scanner-page .scanner-room-summary > div { grid-column: auto; display: grid; padding: 6px; }
+.card-scanner-page .scanner-room-summary strong { font-size: 13px; }
+.card-scanner-page .scanner-mode-actions { position: static; padding: 0; background: transparent; }
+.card-scanner-page .scanner-mode-actions button { min-width: 0; min-height: 44px; white-space: normal; }
+.card-scanner-page .card-scanner-layout { grid-template-columns: minmax(0, 1fr) minmax(230px, .45fr); align-items: start; }
+.card-scanner-page .card-camera { min-width: 0; min-height: 0; height: clamp(280px, 48dvh, 500px); }
+.card-scanner-page .card-camera video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.card-scanner-page .card-camera-placeholder { min-height: 280px; padding: 22px; }
+.card-scanner-page aside.card-scanner-info { width: 100%; min-width: 0; padding: 16px; position: static; flex: none; }
+.card-scanner-page .card-detected:empty { display: none; }
+.card-scanner-page .card-scanner-info h2 { margin: 0 0 8px; font-size: 17px; }
+.card-scanner-page .card-scanner-info h3 { margin: 12px 0 8px; font-size: 14px; }
+.card-scanner-page .card-scanner-info p { margin: 0; font-size: 12px; line-height: 1.5; }
+.card-scanner-page .scanner-diagnostic { grid-template-columns: 9px minmax(0, 1fr); gap: 8px; }
+.card-scanner-page .scanner-diagnostic > b { font-weight: 700; overflow-wrap: anywhere; }
+.card-scanner-page .scanner-diagnostic small { grid-column: 2; white-space: normal; }
+.card-scanner-page .scanner-live-feedback { right: 74px; min-width: 0; }
+.card-scanner-page .scanner-live-feedback > div { min-width: 0; }
+.card-scanner-page .scanner-live-feedback small { line-height: 1.4; overflow-wrap: anywhere; }
+.card-scanner-page .card-camera-fullscreen { width: 48px; height: 44px; padding: 0; font-size: 0; }
+.card-scanner-page .card-camera-fullscreen::before { content: '⛶'; font-size: 22px; }
+.card-scanner-page .scanner-question-control { position: static; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.card-scanner-page .scanner-answer-summary { min-width: 0; flex-wrap: wrap; }
+.card-scanner-page .scanner-next-button { white-space: normal; }
+.card-scanner-page .scanner-student-roster { order: 0; margin: 0; }
+.card-scanner-page .scanner-roster-list article > strong { white-space: normal; overflow-wrap: anywhere; }
+.card-scanner-page .scanner-roster-list article > small { flex-wrap: wrap; }
+.card-scanner-page .card-camera:fullscreen { width: 100vw; height: 100dvh; max-height: none; }
+
+.card-session-page.card-host-fullscreen:fullscreen { height: 100dvh; min-height: 0; padding: clamp(12px, 2vw, 30px); gap: 14px; }
+.card-host-fullscreen:fullscreen .card-host-heading { margin: 0; }
+.card-host-fullscreen:fullscreen .card-host-heading h1 { margin: 0; font-size: clamp(20px, 2vw, 30px); }
+.card-session-page.card-host-fullscreen:fullscreen .card-host-layout { grid-template-columns: minmax(0, 1fr) minmax(280px, 28%); min-height: 0; }
+.card-session-page.card-host-fullscreen:fullscreen .card-host-question { display: grid; grid-template-rows: auto minmax(0, 1fr) minmax(100px, auto) auto; height: 100%; min-height: 0; overflow: hidden; padding: clamp(16px, 2vw, 30px); }
+.card-host-fullscreen:fullscreen .card-host-question:has(.empty-state) { grid-template-rows: minmax(0, 1fr) auto; }
+.card-session-page.card-host-fullscreen:fullscreen .card-host-question > h2 { display: block; align-content: center; margin: 16px 0; min-height: 0; overflow: auto; font-size: clamp(24px, 3vw, 48px); }
+.card-session-page.card-host-fullscreen:fullscreen .card-option-grid { max-height: 34dvh; overflow: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card-host-fullscreen:fullscreen .card-host-question .card-host-actions { margin: 0; padding-top: 12px; }
+.card-session-page.card-host-fullscreen:fullscreen .card-host-rail { display: block; min-height: 0; overflow: auto; }
+.card-session-page.card-host-fullscreen:fullscreen .card-host-side { display: none; }
+.card-host-fullscreen:fullscreen .card-leaderboard { height: 100%; }
+
+@container card-host (max-width: 900px) {
+  .card-session-page .card-host-layout, .card-session-page .card-host-layout:has(.empty-state) { grid-template-columns: minmax(0, 1fr); }
+  .card-session-page .card-host-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: auto; }
+  .card-session-page .card-host-question { min-height: 360px; }
+  .card-session-page .card-scanner-connect-body { grid-template-columns: 1fr; justify-items: center; }
+  .card-session-page .card-scanner-connect-actions { width: 100%; }
+}
+@media (max-width: 600px) {
+  .card-scanner-page .card-scanner-heading { display: flex; justify-content: space-between; gap: 8px; }
+  .card-scanner-page .card-scanner-heading h1 { font-size: 21px; }
+  .card-scanner-page .card-host-heading-actions { justify-content: flex-end; }
+  .card-scanner-page .card-scanner-layout { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .card-scanner-page .card-camera { height: clamp(250px, 42dvh, 400px); }
+  .card-scanner-page .card-scanner-info { padding: 12px; }
+  .card-scanner-page .scanner-diagnostic { grid-template-columns: 9px minmax(0, 1fr) auto; margin-bottom: 10px; }
+  .card-scanner-page .scanner-diagnostic small { grid-column: auto; max-width: 120px; }
+  .card-scanner-page .scanner-question-control { grid-template-columns: 1fr; padding: 12px; }
+  .card-scanner-page .scanner-answer-summary { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .card-scanner-page .scanner-answer-counts { grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  .card-scanner-page .scanner-answer-counts span { min-height: 46px; }
+  .card-session-page .card-host-rail { grid-template-columns: 1fr; }
+  .card-session-page .card-scanner-connect-body { grid-template-columns: 120px minmax(0, 1fr); }
+  .card-session-page .card-scanner-connect-body svg { width: 120px; height: 120px; }
+  .card-session-page.card-host-fullscreen:fullscreen { overflow: auto; }
+  .card-session-page.card-host-fullscreen:fullscreen .card-host-layout { grid-template-columns: 1fr; flex: none; }
+  .card-session-page.card-host-fullscreen:fullscreen .card-host-question { height: 70dvh; }
+}
+html[data-theme='dark'] .card-scanner-page .scanner-roster-list article { background: #142e3b; border-color: #294654; }
+html[data-theme='dark'] .card-scanner-page .scanner-roster-list article > strong,
+html[data-theme='dark'] .card-scanner-page h2 { color: #e3f2f8; }
+@media (prefers-reduced-motion: reduce) { .card-camera.is-scanning .camera-guide-corner { animation: none; } }
