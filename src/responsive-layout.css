@@ -1,0 +1,18 @@
+/* Page layout containment: scrolling tables stay inside their panels. */
+.app-main,.page-content,.content-page,.dashboard-panel,.panel{min-width:0;box-sizing:border-box}
+.page-content>.content-page{width:100%}
+.page-content .content-page aside:not(.app-sidebar){width:auto;min-width:0;position:static}
+.page-content .content-page aside.game-live-side,.page-content .content-page aside.setup-preview{padding:20px}
+.management-table-wrap,.class-table-wrap,.account-table-wrap{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.form-grid>*{min-width:0}.field input,.field select,.field textarea{width:100%;max-width:100%;box-sizing:border-box}
+.title,.panel-heading,.dashboard-heading,.modal-heading{gap:14px;flex-wrap:wrap}
+.panel-heading>div,.dashboard-heading>div,.title>div{min-width:0}
+.content-page h1,.content-page h2,.content-page h3{overflow-wrap:anywhere}
+.content-page .inline-form{display:flex;gap:10px;flex-wrap:wrap}.content-page .inline-form>input{min-width:180px;flex:1}
+.member-row{gap:10px;flex-wrap:wrap}.member-row>span{min-width:0;overflow-wrap:anywhere}
+.game-live-side .game-player span{overflow-wrap:anywhere}.game-live-side{max-height:80dvh;overflow:auto}
+.class-create-modal,.game-picker-modal,.video-create-form{max-width:100%;min-width:0}
+[role=dialog]{max-width:100vw;box-sizing:border-box}
+.content-page button{overflow-wrap:normal}.page-content .content-page .filters{flex-wrap:wrap}.filters>*{min-width:0}
+@media(max-width:1000px){.page-content{padding-inline:20px}.dashboard-grid,.setup-layout,.live-layout,.student-room-grid{grid-template-columns:minmax(0,1fr)}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.page-content{padding:16px 12px}.page-content .content-page{padding-block:16px}.content-page h1{font-size:26px}.form-grid{grid-template-columns:minmax(0,1fr)}.form-grid>.wide{grid-column:1/-1}.stat-grid,.summary-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-panel,.panel{padding:16px}.panel-heading,.title{align-items:flex-start}.content-page .filters>input,.content-page .filters>select{width:100%;flex-basis:100%}.content-page button.primary-button,.content-page button.secondary-button{min-height:44px}.class-create-modal,.game-picker-modal{max-height:90dvh;overflow:auto;padding:18px}.summary-row{grid-template-columns:30px minmax(0,1fr) auto}.summary-row>span{overflow-wrap:anywhere}}
