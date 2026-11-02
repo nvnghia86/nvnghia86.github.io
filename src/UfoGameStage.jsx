@@ -23,16 +23,21 @@ const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reduc
   const rosterKey = students.map(student => `${student.studentId}:${student.nickname}`).join('|');
 
   useEffect(() => {
+    sound.audio.setMusic('ufo');
+    // Entering this screen from a click can already permit audio playback.
+    if (navigator.userActivation?.hasBeenActive) void sound.audio.unlock();
+    return () => sound.audio.setMusic(null);
+  }, [sound.audio]);
+
+  useEffect(() => {
     const previous = lastSound.current;
     if (!mission) {
-      sound.audio.setMusic(null);
       if (previous && capturedStudents.length) sound.audio.play('success');
       lastSound.current = null;
       return;
     }
     if (status !== 'ready') return;
     const phase = `${progress.phase}:${progress.captured || 0}`;
-    sound.audio.setMusic('ufo');
     if (previous?.id !== mission.id) sound.audio.play('launch');
     else if (previous.phase !== phase) {
       if (progress.phase === 'capture') sound.audio.play('beam');

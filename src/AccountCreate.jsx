@@ -1,5 +1,5 @@
 import StudentAddressFields from './StudentAddressFields';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const API = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -16,11 +16,20 @@ function classLabel(item) { return [item.name, item.schoolName, item.communeName
 export function SearchableSelector({ items, value, onChange, labelFor, multiple = false, placeholder }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const optionsId = useId();
+  function close() { setOpen(false); setQuery(''); }
+  useEffect(() => {
+    if (!open) return undefined;
+    const outside = event => { if (!rootRef.current?.contains(event.target)) close(); };
+    document.addEventListener('pointerdown', outside, true);
+    return () => document.removeEventListener('pointerdown', outside, true);
+  }, [open]);
   const selected = multiple ? (Array.isArray(value) ? value : []) : value ? [value] : [];
   const selectedItems = items.filter(item => selected.includes(item.id));
   const visible = useMemo(() => items.filter(item => labelFor(item).toLocaleLowerCase().includes(query.toLocaleLowerCase())).slice(0, 50), [items, labelFor, query]);
-  function choose(id) { onChange(multiple ? (selected.includes(id) ? selected.filter(item => item !== id) : [...selected, id]) : id); if (!multiple) { setOpen(false); setQuery(''); } }
-  return <div className="searchable-selector"><input type="search" value={open ? query : (multiple ? '' : selectedItems[0] ? labelFor(selectedItems[0]) : '')} onFocus={() => setOpen(true)} onChange={event => { setQuery(event.target.value); setOpen(true); }} placeholder={placeholder} aria-label={placeholder} />{multiple && selectedItems.length > 0 && <div className="selected-options">{selectedItems.map(item => <button type="button" key={item.id} onClick={() => choose(item.id)}>{labelFor(item)} ×</button>)}</div>}{open && <div className="selector-options">{visible.length ? visible.map(item => <button type="button" className={selected.includes(item.id) ? 'selected' : ''} key={item.id} onMouseDown={event => event.preventDefault()} onClick={() => choose(item.id)}>{multiple && <span>{selected.includes(item.id) ? '✓' : '○'}</span>}{labelFor(item)}</button>) : <small>{placeholder}</small>}</div>}</div>;
+  function choose(id) { onChange(multiple ? (selected.includes(id) ? selected.filter(item => item !== id) : [...selected, id]) : id); if (!multiple) close(); }
+  return <div className="searchable-selector" ref={rootRef} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) close(); }} onKeyDown={event => { if (open && event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); } }}><input type="search" role="combobox" aria-expanded={open} aria-controls={open ? optionsId : undefined} aria-autocomplete="list" value={open ? query : (multiple ? '' : selectedItems[0] ? labelFor(selectedItems[0]) : '')} onFocus={() => setOpen(true)} onClick={() => setOpen(true)} onChange={event => { setQuery(event.target.value); setOpen(true); }} placeholder={placeholder} aria-label={placeholder} />{multiple && selectedItems.length > 0 && <div className="selected-options">{selectedItems.map(item => <button type="button" key={item.id} onClick={() => choose(item.id)}>{labelFor(item)} ×</button>)}</div>}{open && <div className="selector-options" id={optionsId} role="listbox" aria-label={placeholder} aria-multiselectable={multiple || undefined}>{visible.length ? visible.map(item => <button type="button" role="option" aria-selected={selected.includes(item.id)} className={selected.includes(item.id) ? 'selected' : ''} key={item.id} onMouseDown={event => event.preventDefault()} onClick={() => choose(item.id)}>{multiple && <span>{selected.includes(item.id) ? '✓' : '○'}</span>}{labelFor(item)}</button>) : <small>{placeholder}</small>}</div>}</div>;
 }
 
 const initialForm = { username: '', password: '', displayName: '', email: '', phone: '', village: '', provinceId: '', communeId: '', role: 'student', classIds: [], adminScope: 'class', adminScopeId: '' };
