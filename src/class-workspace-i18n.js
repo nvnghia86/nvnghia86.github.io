@@ -3,7 +3,6 @@ import i18n from './i18n';
 export const classWorkspaceTranslations = {
   vi: {
     gameQuality: 'Chất lượng hình ảnh', gameQualityAuto: 'Tự động', gameQualitySmooth: 'Ưu tiên mượt', gameQualityHigh: 'Chi tiết cao',
-    gameHidingTree: 'Nấp gốc cây', gameHidingClass: 'Trốn vào lớp',
     gameCaptured: '{{count}} học sinh bị bắt',
     gameWorld: 'SÂN TRƯỜNG VŨ TRỤ', gameCanvasLabel: 'Sân trường 3D với học sinh chạy trốn và UFO gọi tên', gameLoading: 'Đang chuẩn bị sân chơi…', gameReady: 'Phi hành đoàn đã sẵn sàng', gameEscaping: 'UFO xuất hiện! Cả lớp chạy thôi!', gameCapturing: 'Đang hút học sinh lên tàu…', gameReturning: 'Đã tìm đủ phi hành đoàn!', gameProgress: '{{count}} / {{total}} đã lên tàu', gameTask: 'Nhiệm vụ của phi hành đoàn', gameUnavailable: 'Sân chơi 3D chưa sẵn sàng', gameFallback: 'Bạn vẫn có thể gọi tên học sinh. Hãy thử tải lại sân chơi để bật hoạt cảnh.', gameSkip: 'Bỏ qua hoạt cảnh', gameReducedMotion: 'Giảm chuyển động', gameContinue: 'Tiếp tục chơi',
     scopeHomework: 'Bài tập của {{name}}', clearClassFilter: 'Xem tất cả lớp',
@@ -21,7 +20,6 @@ export const classWorkspaceTranslations = {
   },
   en: {
     gameQuality: 'Visual quality', gameQualityAuto: 'Automatic', gameQualitySmooth: 'Smoother play', gameQualityHigh: 'High detail',
-    gameHidingTree: 'Hiding by a tree', gameHidingClass: 'Running into class',
     gameCaptured: '{{count}} students captured',
     gameWorld: 'COSMIC SCHOOLYARD', gameCanvasLabel: '3D schoolyard with students running from a UFO name picker', gameLoading: 'Preparing the playground…', gameReady: 'The crew is ready', gameEscaping: 'A UFO has arrived! Run, everyone!', gameCapturing: 'Beaming students aboard…', gameReturning: 'The whole crew is aboard!', gameProgress: '{{count}} / {{total}} aboard', gameTask: 'Crew mission', gameUnavailable: 'The 3D playground is unavailable', gameFallback: 'You can still pick students. Try reloading the playground to enable the animation.', gameSkip: 'Skip animation', gameReducedMotion: 'Reduce motion', gameContinue: 'Continue playing',
     scopeHomework: 'Homework for {{name}}', clearClassFilter: 'View all classes',

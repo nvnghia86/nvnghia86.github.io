@@ -8,7 +8,20 @@ export const UFO_REFUGES = {
   trees: [{ x: -3.2, z: -3.2 }, { x: 4.1, z: 2.2 }],
   classApproach: { x: -4.3, z: 4.85 },
   classDoor: { x: -4.3, z: 6.65 },
+  toiletApproach: { x: 3.5, z: 4.3 },
+  toiletDoor: { x: 3.5, z: 6.45 },
 };
+export const UFO_TREES = [
+  { x: -11, z: 4, size: 1.3 }, { x: 9.8, z: 5.7, size: 1.4 },
+  { x: 12, z: 0, size: 1 }, { x: -11.5, z: -2, size: .9 }, { x: 5.8, z: 8, size: 1.2 },
+  ...UFO_REFUGES.trees.map(tree => ({ ...tree, size: .72 })),
+];
+const INDOOR_MODES = ['enterClass', 'insideClass', 'exitClass', 'enterToilet', 'insideToilet', 'exitToilet'];
+function buildingFor(motion) {
+  return /Toilet$/.test(motion.mode)
+    ? { approach: UFO_REFUGES.toiletApproach, door: UFO_REFUGES.toiletDoor, enter: 'enterToilet', inside: 'insideToilet', exit: 'exitToilet' }
+    : { approach: UFO_REFUGES.classApproach, door: UFO_REFUGES.classDoor, enter: 'enterClass', inside: 'insideClass', exit: 'exitClass' };
+}
 
 function random(motion) {
   motion.seed = (Math.imul(motion.seed, 1664525) + 1013904223) >>> 0;
@@ -34,7 +47,7 @@ function chooseRoute(motion, { boundX, panic, ufo }) {
     motion.mode = 'wander'; motion.target = freeTarget(motion, boundX, ufo, false);
     return;
   }
-  const choice = motion.route++ % 4;
+  const choice = motion.route++ % 5;
   if (choice < 2) {
     const tree = UFO_REFUGES.trees[choice];
     const angle = Math.atan2(tree.z - ufo.z, tree.x - ufo.x) + (random(motion) - 0.5) * 0.8;
@@ -44,19 +57,22 @@ function chooseRoute(motion, { boundX, panic, ufo }) {
   } else if (choice === 2) {
     motion.mode = 'runToClass';
     motion.target = { ...UFO_REFUGES.classApproach };
+  } else if (choice === 3) {
+    motion.mode = 'runToToilet';
+    motion.target = { ...UFO_REFUGES.toiletApproach };
   } else {
     motion.mode = 'flee'; motion.target = freeTarget(motion, boundX, ufo, true);
   }
 }
 export function createStudentMotion(index, position) {
-  return { x: position.x, z: position.z, heading: index * 2.39996, seed: (index + 1) * 7919, route: index % 4, mode: 'wander', modeTime: 0, target: null, refuge: null, wasPanic: false, hidden: false, moving: false, speed: 0, walkPhase: index * 2.1, baseSpeed: 0.95 + index % 5 * 0.08 };
+  return { x: position.x, z: position.z, heading: index * 2.39996, seed: (index + 1) * 7919, route: index % 5, mode: 'wander', modeTime: 0, target: null, refuge: null, wasPanic: false, hidden: false, moving: false, speed: 0, walkPhase: index * 2.1, baseSpeed: 0.95 + index % 5 * 0.08 };
 }
 export function resetStudentMotion(motion) {
-  if (['insideClass', 'enterClass', 'exitClass'].includes(motion.mode)) Object.assign(motion, UFO_REFUGES.classApproach);
+  if (INDOOR_MODES.includes(motion.mode)) Object.assign(motion, buildingFor(motion).approach);
   motion.mode = 'wander'; motion.target = null; motion.detour = null; motion.hidden = false; motion.wasPanic = false; motion.modeTime = 0; motion.speed = 0;
 }
 export function wakeStudentForCapture(motion) {
-  if (['insideClass', 'enterClass', 'exitClass'].includes(motion.mode)) Object.assign(motion, UFO_REFUGES.classApproach);
+  if (INDOOR_MODES.includes(motion.mode)) Object.assign(motion, buildingFor(motion).approach);
   motion.hidden = false; motion.mode = 'flee'; motion.modeTime = 0; motion.moving = false;
 }
 export function resizeStudentMotion(motion, previousBound, boundX) {
@@ -92,9 +108,10 @@ export function stepStudentMotion(motion, seconds, context) {
   motion.hidden = false;
   if (motion.wasPanic !== panic) {
     motion.wasPanic = panic;
-    if (!panic && ['insideClass', 'enterClass'].includes(motion.mode)) {
-      motion.mode = 'exitClass'; motion.target = { ...UFO_REFUGES.classApproach }; motion.modeTime = 0;
-    } else if (!['enterClass', 'insideClass', 'exitClass'].includes(motion.mode)) chooseRoute(motion, context);
+    if (!panic && ['insideClass', 'enterClass', 'insideToilet', 'enterToilet'].includes(motion.mode)) {
+      const building = buildingFor(motion);
+      motion.mode = building.exit; motion.target = { ...building.approach }; motion.modeTime = 0;
+    } else if (!INDOOR_MODES.includes(motion.mode)) chooseRoute(motion, context);
   }
   if (!motion.target) chooseRoute(motion, context);
   if (motion.mode === 'hugTree') {
@@ -103,21 +120,23 @@ export function stepStudentMotion(motion, seconds, context) {
     if (motion.modeTime < motion.holdTime && panic) return motion;
     chooseRoute(motion, context);
   }
-  if (motion.mode === 'insideClass') {
+  if (motion.mode === 'insideClass' || motion.mode === 'insideToilet') {
     motion.hidden = true; motion.moving = false; motion.speed = 0;
     if (motion.modeTime < motion.holdTime && panic) return motion;
-    motion.hidden = false; motion.mode = 'exitClass'; motion.target = { ...UFO_REFUGES.classApproach }; motion.modeTime = 0;
+    const building = buildingFor(motion);
+    motion.hidden = false; motion.mode = building.exit; motion.target = { ...building.approach }; motion.modeTime = 0;
   }
   if (distance(motion, motion.target) < 0.23) {
     if (motion.mode === 'runToTree') {
       motion.mode = 'hugTree'; motion.modeTime = 0; motion.holdTime = 1 + random(motion) * 1.3; motion.speed = 0; motion.moving = false;
       return motion;
     }
-    if (motion.mode === 'runToClass') { motion.mode = 'enterClass'; motion.target = { ...UFO_REFUGES.classDoor }; motion.modeTime = 0; }
-    else if (motion.mode === 'enterClass') { motion.mode = 'insideClass'; motion.modeTime = 0; motion.holdTime = 0.9 + random(motion) * 1.1; motion.hidden = true; motion.speed = 0; motion.moving = false; return motion; }
+    const building = buildingFor(motion);
+    if (motion.mode === 'runToClass' || motion.mode === 'runToToilet') { motion.mode = building.enter; motion.target = { ...building.door }; motion.modeTime = 0; }
+    else if (motion.mode === 'enterClass' || motion.mode === 'enterToilet') { motion.mode = building.inside; motion.modeTime = 0; motion.holdTime = 0.9 + random(motion) * 1.1; motion.hidden = true; motion.speed = 0; motion.moving = false; return motion; }
     else chooseRoute(motion, context);
   }
-  const throughDoor = ['enterClass', 'exitClass'].includes(motion.mode);
+  const throughDoor = ['enterClass', 'exitClass', 'enterToilet', 'exitToilet'].includes(motion.mode);
   const waypoint = throughDoor ? motion.target : nextWaypoint(motion, boundX);
   const targetAngle = Math.atan2(waypoint.z - motion.z, waypoint.x - motion.x);
   let vx = Math.cos(targetAngle), vz = Math.sin(targetAngle);
@@ -146,7 +165,7 @@ export function stepStudentMotion(motion, seconds, context) {
     else {
       motion.target = freeTarget(motion, boundX, ufo, panic);
       motion.detour = null;
-      if (motion.mode === 'runToTree' || motion.mode === 'runToClass') motion.mode = panic ? 'flee' : 'wander';
+      if (['runToTree', 'runToClass', 'runToToilet'].includes(motion.mode)) motion.mode = panic ? 'flee' : 'wander';
       motion.heading = Math.atan2(motion.target.z - motion.z, motion.target.x - motion.x);
     }
   }

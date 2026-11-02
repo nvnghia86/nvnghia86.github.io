@@ -1,4 +1,7 @@
-export const SPRITES = { width: 128, height: 160, columns: 16, perPalette: 36, palettes: 6, tree: 216, door: 217, total: 221 };
+export const SPRITES = { width: 128, height: 160, columns: 16, perPalette: 36, palettes: 6, tree: 216, door: 217, toilet: 221, total: 225 };
+export function studentDisplayName(name) {
+  return String(name || '').trim().split(/\s+/).at(-1) || '';
+}
 export function studentSpriteCell(palette, heading, mode, walkPhase = 0) {
   const direction = ((Math.round((heading + Math.PI / 2) / (Math.PI / 2)) % 4) + 4) % 4;
   const base = (palette % SPRITES.palettes) * SPRITES.perPalette;

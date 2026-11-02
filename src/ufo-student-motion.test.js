@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createStudentMotion, stepStudentMotion, UFO_REFUGES, wakeStudentForCapture, resizeStudentMotion } from './ufo-student-motion';
+import { createStudentMotion, stepStudentMotion, UFO_REFUGES, wakeStudentForCapture, resizeStudentMotion, resetStudentMotion } from './ufo-student-motion';
 import { UFO_YARD } from './ufo-render-quality';
 
 describe('student movement in the UFO schoolyard', () => {
@@ -28,11 +28,11 @@ describe('student movement in the UFO schoolyard', () => {
     const seen = new Set(), hold = students.map(() => 0), context = { boundX, panic: true, ufo: { x: 0, z: 0 }, neighbours: students };
     for (let frame = 0; frame < 30 * 60; frame++) for (const [i, motion] of students.entries()) {
       stepStudentMotion(motion, 1 / 30, context); seen.add(motion.mode);
-      hold[i] = ['hugTree', 'insideClass'].includes(motion.mode) ? hold[i] + 1 / 30 : 0;
+      hold[i] = ['hugTree', 'insideClass', 'insideToilet'].includes(motion.mode) ? hold[i] + 1 / 30 : 0;
       if (hold[i] >= 2.6) throw new Error(`Student ${i} stayed hidden too long`);
       if (!Number.isFinite(motion.x + motion.z + motion.heading)) throw new Error(`Student ${i} has invalid coordinates`);
     }
-    for (const mode of ['runToTree', 'hugTree', 'runToClass', 'enterClass', 'insideClass', 'exitClass', 'flee']) expect(seen.has(mode), mode).toBe(true);
+    for (const mode of ['runToTree', 'hugTree', 'runToClass', 'enterClass', 'insideClass', 'exitClass', 'runToToilet', 'enterToilet', 'insideToilet', 'exitToilet', 'flee']) expect(seen.has(mode), mode).toBe(true);
     }
   });
   it('brings hidden students to the classroom entrance when selected by the UFO', () => {
@@ -41,6 +41,15 @@ describe('student movement in the UFO schoolyard', () => {
     wakeStudentForCapture(motion);
     expect(motion.hidden).toBe(false);
     expect({ x: motion.x, z: motion.z }).toEqual(UFO_REFUGES.classApproach);
+  });
+  it('returns students hiding in the restroom to its own entrance when captured or reset', () => {
+    for (const action of [wakeStudentForCapture, resetStudentMotion]) {
+      const motion = createStudentMotion(3, UFO_REFUGES.toiletDoor);
+      motion.mode = 'insideToilet'; motion.hidden = true;
+      action(motion);
+      expect(motion.hidden).toBe(false);
+      expect({ x: motion.x, z: motion.z }).toEqual(UFO_REFUGES.toiletApproach);
+    }
   });
   it('preserves real refuge positions when resizing and returns to wandering after the UFO leaves', () => {
     const motion = createStudentMotion(1, { x: 4.1, z: 2.8 });

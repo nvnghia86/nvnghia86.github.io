@@ -4,7 +4,7 @@ import { Orbit, Radio, RefreshCw, Maximize, Minimize } from 'lucide-react';
 import './ufo-game.css';
 
 const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reducedMotion, progress, prompt, onComplete, onProgress, onFullscreenChange, onFullscreenError, controls, capturedStudents = [], showResults = true, onShowResults, onDismissResults }, ref) {
-  const { t, i18n } = useTranslation('classWorkspace');
+  const { t } = useTranslation('classWorkspace');
   const canvasRef = useRef(null);
   const spriteCanvasRef = useRef(null);
   const arenaRef = useRef(null);
@@ -38,7 +38,6 @@ const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reduc
       if (cancelled) return;
       const controller = await createUfoScene(canvasRef.current, {
         spriteCanvas: spriteCanvasRef.current,
-        text: { tree: t('gameHidingTree'), classroom: t('gameHidingClass') },
         onProgress: value => { if (!cancelled) latest.current.onProgress(value); },
         onComplete: () => { if (!cancelled) latest.current.onComplete(latest.current.mission?.id); },
         onFailure: error => { if (!cancelled) { if (import.meta.env.DEV) console.warn('UFO scene stopped', error); setStatus('failed'); sceneRef.current?.dispose(); sceneRef.current = null; } },
@@ -52,7 +51,6 @@ const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reduc
   useEffect(() => { if (status === 'ready') { sceneRef.current.setStudents(latest.current.students); playedRef.current = null; } }, [status, rosterKey]);
   useEffect(() => { if (status === 'ready') sceneRef.current.setReducedMotion(reducedMotion); }, [reducedMotion, status]);
   useEffect(() => { if (status === 'ready') sceneRef.current.setQuality?.(quality); }, [quality, status]);
-  useEffect(() => { if (status === 'ready') sceneRef.current.setText?.({ tree: t('gameHidingTree'), classroom: t('gameHidingClass') }); }, [status, i18n.language]);
   useEffect(() => {
     if (!mission) { sceneRef.current?.cancel(); return; }
     if (status === 'failed') { latest.current.onComplete(mission.id); return; }

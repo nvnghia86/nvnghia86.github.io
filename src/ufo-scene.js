@@ -14,7 +14,7 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { createUfoMission, missionFrame } from './ufo-mission';
-import { UFO_REFUGES, createStudentMotion, stepStudentMotion, resetStudentMotion, resizeStudentMotion, wakeStudentForCapture } from './ufo-student-motion';
+import { UFO_REFUGES, UFO_TREES, createStudentMotion, stepStudentMotion, resetStudentMotion, resizeStudentMotion, wakeStudentForCapture } from './ufo-student-motion';
 import { UFO_ACTOR_SCALE, UFO_YARD, renderScale, createQualityMonitor } from './ufo-render-quality';
 
 import { SPRITES, studentSpriteCell, yardProjection } from './ufo-sprite-layout';
@@ -26,9 +26,9 @@ const mix = (a, b, t) => a + (b - a) * t;
 const ease = value => { const t = clamp(value, 0, 1); return t * t * (3 - 2 * t); };
 const STEP = 1 / 15;
 
-export async function createUfoScene(canvas, { spriteCanvas, text, onProgress, onComplete, onFailure }) {
+export async function createUfoScene(canvas, { spriteCanvas, onProgress, onComplete, onFailure }) {
   const atlas = await loadUfoAtlas();
-  const painter = createSpriteRenderer(spriteCanvas, atlas, text);
+  const painter = createSpriteRenderer(spriteCanvas, atlas);
   const engine = new Engine(canvas, false, { stencil: false, preserveDrawingBuffer: false, powerPreference: 'high-performance', antialias: false }, false);
   try {
   const scene = new Scene(engine); scene.clearColor = new Color4(0, 0, 0, 0); scene.skipPointerMovePicking = true;
@@ -97,7 +97,7 @@ export async function createUfoScene(canvas, { spriteCanvas, text, onProgress, o
 
   let actors = [], plan = null, elapsed = 0, flightIndex = -1, lastPhase = '', batchOrigin = null, boundX = 9;
   let visible = true, hidden = document.hidden, disposed = false, clock = 0, lastRender = performance.now(), reducedMotion = false;
-  let quality = 'auto', pressure = 1, qualityWarmup = 2, viewport, widthRatio = 1, heightRatio = 1, pixelsPerUnit = 1, accumulator = 0, doorOpen = 0, background = '';
+  let quality = 'auto', pressure = 1, qualityWarmup = 2, viewport, widthRatio = 1, heightRatio = 1, pixelsPerUnit = 1, accumulator = 0, doorOpen = 0, toiletOpen = 0, background = '';
   let theme = '', pendingTheme = null, themeRequest = 0;
   function changeTheme() {
     const chosen = nextUfoBackground(pendingTheme || theme), request = ++themeRequest;
@@ -214,14 +214,18 @@ export async function createUfoScene(canvas, { spriteCanvas, text, onProgress, o
     }
     const doorwayInUse = actors.some(actor => !actor.captured && ['enterClass', 'insideClass', 'exitClass'].includes(actor.motion.mode));
     doorOpen = mix(doorOpen, doorwayInUse && !reducedMotion ? 1 : 0, Math.min(1, dt * 7));
+    const toiletInUse = actors.some(actor => !actor.captured && ['enterToilet', 'insideToilet', 'exitToilet'].includes(actor.motion.mode));
+    toiletOpen = mix(toiletOpen, toiletInUse && !reducedMotion ? 1 : 0, Math.min(1, dt * 7));
     painter.begin();
-    const queue = [], labels = [], blend = accumulator / STEP;
-    for (const tree of UFO_REFUGES.trees) {
+    const queue = [], blend = accumulator / STEP;
+    for (const tree of UFO_TREES) {
       const point = project(tree.x, .18, tree.z);
-      queue.push({ ...point, depth: point.y, cell: SPRITES.tree, height: 3 * pixelsPerUnit, anchor: .843 });
+      queue.push({ ...point, depth: point.y, cell: SPRITES.tree, height: 3 * tree.size / .72 * pixelsPerUnit, anchor: .843 });
     }
     const door = project(-4.3, .2, 6.16);
     queue.push({ ...door, depth: door.y, cell: SPRITES.door + Math.round(doorOpen * 3), height: 2.3 * pixelsPerUnit, anchor: .858 });
+    const toilet = project(UFO_REFUGES.toiletDoor.x, .18, 6.05);
+    queue.push({ ...toilet, depth: toilet.y, cell: SPRITES.toilet + Math.round(toiletOpen * 3), height: 4.4 * pixelsPerUnit, anchor: .785 });
     for (const actor of actors) {
       if (actor.captured) continue;
       const targeted = targets.includes(actor.id);
@@ -238,12 +242,15 @@ export async function createUfoScene(canvas, { spriteCanvas, text, onProgress, o
       painter.shadow(ground.x, ground.y, pixelsPerUnit * UFO_ACTOR_SCALE * (1 - actor.lift * .7));
       const height = 1.8 * UFO_ACTOR_SCALE * actor.scale * pixelsPerUnit;
       const mode = targeted ? 'lift' : actor.motion.mode === 'hugTree' ? 'hugTree' : reducedMotion || !actor.motion.moving ? 'idle' : 'walk';
-      queue.push({ ...foot, depth: targeted ? foot.y + 10000 : ground.y, cell: studentSpriteCell(actor.palette, actor.motion.heading, mode, actor.motion.walkPhase), height, angle: actor.tilt });
-      labels.push({ student: actor.student, x: foot.x, y: foot.y - height * .82 - 2, mode: actor.motion.mode, targeted });
+      queue.push({ ...foot, depth: ground.y, cell: studentSpriteCell(actor.palette, actor.motion.heading, mode, actor.motion.walkPhase), height, angle: actor.tilt, student: actor.student, targeted });
     }
     queue.sort((a, b) => a.depth - b.depth);
-    queue.forEach(item => painter.sprite(item.cell, item.x, item.y, item.height, item.angle || 0, 1, item.anchor || .86));
-    labels.forEach(item => painter.name(item.student, item.x, item.y, item.mode, item.targeted));
+    // Paint both the character and their name before any nearer foliage or building facade.
+    // Transparent pixels in the foreground sprite reveal only the uncovered part behind it.
+    queue.forEach(item => {
+      painter.sprite(item.cell, item.x, item.y, item.height, item.angle || 0, 1, item.anchor || .86);
+      if (item.student) painter.name(item.student, item.x, item.y - item.height * .82 - 2, item.targeted);
+    });
     scene.render();
   }
   const loop = () => { try { render(); } catch (error) { engine.stopRenderLoop(loop); onFailure(error); } };
@@ -253,7 +260,6 @@ export async function createUfoScene(canvas, { spriteCanvas, text, onProgress, o
   const contextLost = engine.onContextLostObservable.add(() => onFailure(new Error('WebGL context lost'))); engine.runRenderLoop(loop);
   return {
     setStudents, start, skip: finishFlight, cancel, reset() { cancel(); resetActors(); }, setReducedMotion(value) { reducedMotion = value; },
-    setText(value) { painter.setText(value); },
     setQuality(value) { quality = ['smooth', 'high'].includes(value) ? value : 'auto'; pressure = 1; qualityMonitor.reset(); qualityWarmup = 2; resize(); },
     dispose() { disposed = true; engine.stopRenderLoop(loop); resizeObserver.disconnect(); intersection?.disconnect(); document.removeEventListener('visibilitychange', visibility); engine.onContextLostObservable.remove(contextLost); painter.dispose(); scene.dispose(); engine.dispose(); },
   };

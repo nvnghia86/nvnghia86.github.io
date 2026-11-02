@@ -58,6 +58,10 @@ export async function bakeAssets() {
     sprites.camera.setTarget(new Vector3(0, .92, 0)); sprites.camera.position.set(0, 4.22, -6.6); size(sprites.camera, 128, 160, 1.15);
     const door = sprites.models.door(); await sprites.scene.whenReadyAsync();
     for (let frame = 0; frame < 4; frame++) { door.rotation.y = -frame / 3 * 1.3; capture(SPRITES.door + frame); }
+    door.dispose();
+    sprites.camera.setTarget(new Vector3(0, 1.05, .65)); sprites.camera.position.set(0, 4.35, -5.95); size(sprites.camera, 128, 160, 2.2);
+    const toilet = sprites.models.toilet(); await sprites.scene.whenReadyAsync();
+    for (let frame = 0; frame < 4; frame++) { toilet.hinge.rotation.y = -frame / 3 * 1.3; capture(SPRITES.toilet + frame); }
     results['students.webp'] = atlas.toDataURL('image/webp', .96); sprites.scene.dispose();
     return results;
   } finally { engine.dispose(); }

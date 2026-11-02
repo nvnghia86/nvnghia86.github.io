@@ -4,6 +4,8 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
+import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
+import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { UFO_REFUGES } from '../src/ufo-student-motion';
 
@@ -63,7 +65,6 @@ const SHIRTS = ['#ffb550', '#6dd6cf', '#ee8fb0', '#7f9bff', '#b69bf5', '#eff3ff'
     sphere('tree-highlight', '#579780', [-0.4, 2.8, -0.2], [1.5, 1.6, 1.5], root);
     return root;
   }
-  [[-11, 4, 1.3], [9.8, 5.7, 1.4], [12, 0, 1], [-11.5, -2, 0.9], [5.8, 8, 1.2]].forEach(args => tree(...args));
   const refugeTrees = UFO_REFUGES.trees.map(({ x, z }) => tree(x, z, 0.72));
   for (let i = 0; i < 19; i++) {
     const x = -11 + i * 1.2;
@@ -147,6 +148,20 @@ const SHIRTS = ['#ffb550', '#6dd6cf', '#ee8fb0', '#7f9bff', '#b69bf5', '#eff3ff'
     box('door-panel', '#3e5476', [.58, .92, 0], [1.15, 1.84, .08], root);
     return root;
   }
-  return { environment, actor, refuge, door };
+  function toilet() {
+    const root = new TransformNode('restroom', scene);
+    box('restroom-walls', '#d8e8d3', [0, 1.1, .7], [2.7, 2.2, 1.4], root);
+    box('restroom-roof', '#467f8b', [0, 2.28, .7], [3.05, .22, 1.75], root);
+    box('doorway', '#173b4e', [0, .85, -.025], [.85, 1.7, .05], root);
+    const hinge = new TransformNode('restroom-hinge', scene); hinge.parent = root; hinge.position.set(-.39, 0, -.06);
+    box('restroom-door', '#6ca3a7', [.39, .85, 0], [.78, 1.7, .06], hinge);
+    box('vent', '#64878a', [1, 1.5, -.04], [.45, .55, .06], root);
+    const sign = CreatePlane('WC-sign', { width: .95, height: .42 }, scene); sign.parent = root; sign.position.set(0, 1.98, -.07);
+    const texture = new DynamicTexture('WC-lettering', { width: 256, height: 128 }, scene, false);
+    texture.drawText('WC', null, 92, 'bold 72px Arial', '#fff', '#176e81', true);
+    const signMaterial = new StandardMaterial('WC-sign-material', scene); signMaterial.diffuseTexture = texture; signMaterial.emissiveColor = new Color3(.25, .25, .25); sign.material = signMaterial;
+    return { root, hinge };
+  }
+  return { environment, actor, refuge, door, toilet };
 }
 

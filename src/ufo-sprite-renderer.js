@@ -1,4 +1,4 @@
-import { SPRITES } from './ufo-sprite-layout';
+import { SPRITES, studentDisplayName } from './ufo-sprite-layout';
 
 let atlasPromise;
 export function loadUfoAtlas() {
@@ -12,10 +12,10 @@ export function loadUfoAtlas() {
 function roundBox(context, x, y, width, height, radius) {
   context.beginPath(); context.moveTo(x + radius, y); context.arcTo(x + width, y, x + width, y + height, radius); context.arcTo(x + width, y + height, x, y + height, radius); context.arcTo(x, y + height, x, y, radius); context.arcTo(x, y, x + width, y, radius); context.closePath(); context.fill();
 }
-export function createSpriteRenderer(canvas, atlas, text) {
+export function createSpriteRenderer(canvas, atlas) {
   const context = canvas.getContext('2d', { alpha: true });
   if (!context) throw new Error('Canvas 2D unavailable');
-  const names = new Map(), chips = new Map();
+  const names = new Map();
   let width = 1, height = 1, ratio = 1, fontSize = 11;
   function label(value, background = '#172c4ef0', foreground = '#fff') {
     const image = document.createElement('canvas'), ctx = image.getContext('2d');
@@ -37,16 +37,10 @@ export function createSpriteRenderer(canvas, atlas, text) {
   function nameFor(student) {
     const key = `${student.studentId}:${student.nickname}`;
     if (!names.has(key)) {
-      const image = label(student.nickname); image.dataset.studentId = student.studentId;
+      const image = label(studentDisplayName(student.nickname)); image.dataset.studentId = student.studentId;
       names.set(key, image);
     }
     return names.get(key);
-  }
-  function chip(mode) {
-    const value = mode === 'hugTree' ? text.tree : ['runToClass', 'enterClass'].includes(mode) ? text.classroom : '';
-    if (!value) return null;
-    if (!chips.has(value)) chips.set(value, label(value, '#dbfff0f0', '#155c4e'));
-    return chips.get(value);
   }
   return {
     resize(nextWidth, nextHeight) {
@@ -54,9 +48,8 @@ export function createSpriteRenderer(canvas, atlas, text) {
       canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       const nextFont = width < 600 ? 9 : 11;
-      if (fontSize !== nextFont) { fontSize = nextFont; names.clear(); chips.clear(); }
+      if (fontSize !== nextFont) { fontSize = nextFont; names.clear(); }
     },
-    setText(value) { text = value; chips.clear(); },
     begin() { context.clearRect(0, 0, width, height); },
     sprite(cell, x, feetY, pixelHeight, angle = 0, alpha = 1, anchor = .86) {
       const pixelWidth = pixelHeight * SPRITES.width / SPRITES.height;
@@ -65,13 +58,11 @@ export function createSpriteRenderer(canvas, atlas, text) {
       context.restore();
     },
     shadow(x, y, scale) { context.fillStyle = '#233e5530'; context.beginPath(); context.ellipse(x, y, scale * .28, scale * .1, 0, 0, Math.PI * 2); context.fill(); },
-    name(student, x, y, mode, targeted) {
+    name(student, x, y, targeted) {
       const image = nameFor(student), width = image.width / 2, height = image.height / 2;
-      const hint = targeted ? null : chip(mode), hintHeight = hint ? hint.height / 2 + 2 : 0;
-      if (targeted) { context.fillStyle = '#a5ffe7'; roundBox(context, x - width / 2 - 2, y - height - hintHeight - 2, width + 4, height + 4, 5); }
-      context.drawImage(image, x - width / 2, y - height - hintHeight, width, height);
-      if (hint) context.drawImage(hint, x - hint.width / 4, y - hint.height / 2, hint.width / 2, hint.height / 2);
+      if (targeted) { context.fillStyle = '#a5ffe7'; roundBox(context, x - width / 2 - 2, y - height - 2, width + 4, height + 4, 5); }
+      context.drawImage(image, x - width / 2, y - height, width, height);
     },
-    dispose() { names.clear(); chips.clear(); context.clearRect(0, 0, canvas.width, canvas.height); },
+    dispose() { names.clear(); context.clearRect(0, 0, canvas.width, canvas.height); },
   };
 }

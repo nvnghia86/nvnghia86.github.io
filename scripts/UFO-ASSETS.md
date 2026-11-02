@@ -24,3 +24,7 @@ The runtime camera and centered `background-size: cover` cropping use these same
 
 Student sprites and cached name bitmaps are composited on Canvas 2D; Babylon renders only the UFO and tractor-beam effects.
 Navigation runs at 15 Hz and positions are interpolated for display. Student selection and result history remain in `ClassStudentCaller`.
+
+Trees are excluded from the baked backdrop and drawn as depth-sorted foreground sprites, including decorative trees.
+Character name bitmaps share their character's depth so nearer foliage covers both correctly.
+The atlas also contains four WC door poses. Restroom navigation uses its own approach/inside/exit positions and keeps hidden students eligible for UFO selection.
