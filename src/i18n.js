@@ -121,6 +121,8 @@ const telegramStudioTranslations = {
 
 const cardScanAdditions = {
   vi: {
+    enlargeQr: 'Phóng to mã QR',
+    enlargeQrHint: 'Mở camera điện thoại và quét mã QR để kết nối máy quét thẻ.',
     questionResult: 'Kết quả câu {{current}}',
     correctAnswer: 'Đáp án đúng',
     studentRoster: 'Danh sách học sinh',
@@ -129,6 +131,8 @@ const cardScanAdditions = {
     answeredCount: '{{count}} câu đã trả lời',
   },
   en: {
+    enlargeQr: 'Enlarge QR code',
+    enlargeQrHint: 'Open your phone camera and scan this QR code to connect the card scanner.',
     questionResult: 'Question {{current}} result',
     correctAnswer: 'Correct answer',
     studentRoster: 'Student roster',
@@ -138,7 +142,13 @@ const cardScanAdditions = {
   },
 };
 
+const gameAudioTranslations = {
+  vi: { controls: 'Âm thanh trò chơi', mute: 'Tắt âm thanh', enable: 'Bật âm thanh', volume: 'Âm lượng', music: 'Nhạc nền', musicOff: 'Tắt nhạc nền', musicOn: 'Bật nhạc nền' },
+  en: { controls: 'Game audio', mute: 'Mute sound', enable: 'Enable sound', volume: 'Volume', music: 'Music', musicOff: 'Turn music off', musicOn: 'Turn music on' },
+};
+
 for (const locale of supportedLocales) {
+  resources[locale].translation.gameAudio = gameAudioTranslations[locale];
   resources[locale].translation.navigation.videoStudio = videoStudioTranslations[locale].nav;
   resources[locale].translation.videoStudio = videoStudioTranslations[locale];
   Object.assign(resources[locale].translation.master.telegram.actions, telegramStudioTranslations[locale].actions);

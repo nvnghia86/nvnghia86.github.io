@@ -1,6 +1,8 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Orbit, Radio, RefreshCw, Maximize, Minimize } from 'lucide-react';
+import GameAudioControls from './GameAudioControls';
+import { useGameAudio } from './use-game-audio';
 import './ufo-game.css';
 
 const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reducedMotion, progress, prompt, onComplete, onProgress, onFullscreenChange, onFullscreenError, controls, capturedStudents = [], showResults = true, onShowResults, onDismissResults }, ref) {
@@ -16,7 +18,28 @@ const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reduc
   const [revision, setRevision] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [quality, setQuality] = useState('auto');
+  const sound = useGameAudio();
+  const lastSound = useRef(null);
   const rosterKey = students.map(student => `${student.studentId}:${student.nickname}`).join('|');
+
+  useEffect(() => {
+    const previous = lastSound.current;
+    if (!mission) {
+      sound.audio.setMusic(null);
+      if (previous && capturedStudents.length) sound.audio.play('success');
+      lastSound.current = null;
+      return;
+    }
+    if (status !== 'ready') return;
+    const phase = `${progress.phase}:${progress.captured || 0}`;
+    sound.audio.setMusic('ufo');
+    if (previous?.id !== mission.id) sound.audio.play('launch');
+    else if (previous.phase !== phase) {
+      if (progress.phase === 'capture') sound.audio.play('beam');
+      else if (progress.phase === 'departure') sound.audio.play('depart');
+    }
+    lastSound.current = { id: mission.id, phase };
+  }, [mission, progress.phase, progress.captured, capturedStudents.length, status, sound.audio]);
 
   useImperativeHandle(ref, () => ({ skip() { sceneRef.current?.skip(); }, reset() { sceneRef.current?.reset(); } }), []);
   useEffect(() => {
@@ -72,6 +95,7 @@ const UfoGameStage = forwardRef(function UfoGameStage({ students, mission, reduc
     {status === 'failed' && <div className="ufo-game-cover ufo-game-unavailable"><Orbit size={42} /><strong>{t('gameUnavailable')}</strong><p>{t('gameFallback')}</p><button type="button" className="secondary-button" onClick={() => setRevision(value => value + 1)}><RefreshCw size={16} />{t('retry')}</button></div>}
     <button type="button" className="ufo-game-fullscreen-button" aria-label={t(fullscreen ? 'exitFullscreen' : 'fullscreen')} title={t(fullscreen ? 'exitFullscreen' : 'fullscreen')} onClick={toggleFullscreen}>{fullscreen ? <Minimize size={19} /> : <Maximize size={19} />}</button>
     <label className="ufo-game-quality"><span>{t('gameQuality')}</span><select aria-label={t('gameQuality')} value={quality} onChange={event => setQuality(event.target.value)}><option value="auto">{t('gameQualityAuto')}</option><option value="smooth">{t('gameQualitySmooth')}</option><option value="high">{t('gameQualityHigh')}</option></select></label>
+    <GameAudioControls {...sound} />
     {capturedStudents.length > 0 && (showResults ? <section className="ufo-game-results" role="region" aria-live="polite" aria-label={t('gameCaptured', { count: capturedStudents.length })}><div className="ufo-game-results-heading"><h3>{t('gameCaptured', { count: capturedStudents.length })}</h3><button type="button" className="text-button" onClick={onDismissResults}>{t('gameContinue')}</button></div><div className="ufo-winners">{capturedStudents.map(student => <article key={student.studentId} className="ufo-winner"><strong>{student.nickname}</strong><small>{student.username || ''}</small></article>)}</div></section> : <button type="button" className="ufo-game-last-results" onClick={onShowResults}>{t('gameCaptured', { count: capturedStudents.length })}</button>)}
     {fullscreen && <div className="ufo-game-controls">{controls}</div>}
   </div>;
