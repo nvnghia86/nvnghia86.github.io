@@ -1,5 +1,8 @@
+import TableAction from './TableAction';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
+import './class-workspace-i18n';
 
 import './homework-management.css';
 
@@ -38,13 +41,17 @@ function answerOf(question) {
 
 export default function HomeworkManagement({ onError }) {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialClassId = searchParams.get('classId') || '';
   const [items, setItems] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [form, setForm] = useState({ title: '', quizId: '', classId: '', dueAt: '', allowRetry: false, showAnswers: true });
+  const [form, setForm] = useState({ title: '', quizId: '', classId: initialClassId, dueAt: '', allowRetry: false, showAnswers: true });
+  useEffect(() => { setForm(previous => ({ ...previous, classId: initialClassId })); }, [initialClassId]);
   const [results, setResults] = useState(null);
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
+  const displayedItems = initialClassId ? items.filter(item => item.classId === initialClassId) : items;
 
   async function load() {
     try {
@@ -123,11 +130,12 @@ export default function HomeworkManagement({ onError }) {
       <div className="wide"><button className="primary-button" type="submit" disabled={busy}>{busy ? t('common.loading') : t('homework.create')}</button></div>
     </form>
     <div className="dashboard-panel homework-list-panel">
-      <div className="panel-heading"><div><h2>{t('homework.list')}</h2><small>{t('homework.count', { count: items.length })}</small></div></div>
-      <div className="homework-list">{items.map(item => <article className="homework-card" key={item.id}>
+      <div className="panel-heading"><div><h2>{t('homework.list')}</h2><small>{t('homework.count', { count: displayedItems.length })}</small></div></div>
+      {initialClassId && <p className="class-homework-scope">{t('classWorkspace:scopeHomework', { name: classes.find(item => item.id === initialClassId)?.name || initialClassId })} <button type="button" className="text-button" onClick={() => setSearchParams({})}>{t('classWorkspace:clearClassFilter')}</button></p>}
+      <div className="homework-list">{displayedItems.map(item => <article className="homework-card" key={item.id}>
         <div><strong>{item.title}</strong><small>{item.quizTitle} · {item.className} · {item.submissionCount || 0} {t('homework.submissions')} · {item.computedStatus}</small></div>
-        <div className="homework-actions"><button className="text-button" type="button" disabled={busy} onClick={() => showQuestions(item)}>{t('homework.viewQuestions')}</button><button className="text-button" type="button" onClick={() => publish(item.id, item.status === 'published' ? 'closed' : 'published')}>{item.status === 'published' ? t('homework.close') : t('homework.publish')}</button><button className="text-button" type="button" onClick={() => showResults(item.id)}>{t('homework.viewResults')}</button></div>
-      </article>)}{!items.length && <div className="empty-state compact"><small>{t('homework.empty')}</small></div>}</div>
+        <div className="homework-actions"><TableAction action="view" label={t('homework.viewQuestions')} disabled={busy} onClick={() => showQuestions(item)} /><TableAction action={item.status === 'published' ? 'close' : 'publish'} label={item.status === 'published' ? t('homework.close') : t('homework.publish')} onClick={() => publish(item.id, item.status === 'published' ? 'closed' : 'published')} /><TableAction action="results" label={t('homework.viewResults')} onClick={() => showResults(item.id)} /></div>
+      </article>)}{!displayedItems.length && <div className="empty-state compact"><small>{t('homework.empty')}</small></div>}</div>
     </div>
     {results && <div className="dashboard-panel"><div className="panel-heading"><h2>{t('homework.results')}</h2><button className="text-button" type="button" onClick={() => setResults(null)}>{t('common.close')}</button></div>{results.map(result => <div className="member-row" key={result.id}><span>{result.nickname}</span><span>{result.score}/{result.total} · {result.percentage}%</span></div>)}</div>}
     {preview && <div className="auth-overlay" role="dialog" aria-modal="true"><div className="auth-card homework-preview-modal"><button className="close-auth" type="button" onClick={() => setPreview(null)} aria-label={t('common.close')}>×</button><p className="eyebrow">{t('homework.previewEyebrow')}</p><h2>{preview.title}</h2><div className="homework-question-list">{preview.questions.map((question, index) => <article className="homework-question" key={question.id || index}><b>{index + 1}. {promptOf(question) || t('homework.missingPrompt')}</b>{question.geometry && <small>{t('homework.hasIllustration')}</small>}{isFillBlank(question) ? <div className="homework-correct-answer"><span>{t('homework.correctAnswer')}</span><strong>{answerOf(question) || '—'}</strong></div> : <div className="homework-options">{(Array.isArray(question.options) ? question.options : []).map((option, optionIndex) => <span key={optionIndex}>{String.fromCharCode(65 + optionIndex)}. {option}</span>)}</div>}</article>)}</div></div></div>}

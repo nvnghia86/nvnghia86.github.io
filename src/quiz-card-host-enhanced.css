@@ -1,17 +1,50 @@
 .card-host-layout {
-  grid-template-columns: minmax(0, 1fr) 320px;
-  align-items: start;
+  grid-template-columns: minmax(0, 7fr) minmax(320px, 3fr);
+  align-items: stretch;
+  gap: clamp(16px, 1.8vw, 26px);
+}
+
+.card-session-page {
+  width: 100%;
+  max-width: 1680px;
+  container-name: card-host;
+  container-type: inline-size;
+}
+
+.card-host-question {
+  display: flex;
+  flex-direction: column;
+  min-height: clamp(500px, 62vh, 680px);
+  padding: clamp(22px, 2.2vw, 36px);
+}
+
+.card-host-question > .empty-state {
+  flex: 1;
+  align-content: center;
+  min-height: 0;
+}
+
+.card-host-question .card-host-actions {
+  margin-top: auto;
+  padding-top: 24px;
 }
 
 .card-host-rail {
   display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 16px;
   min-width: 0;
+}
+
+.card-host-rail > * {
+  width: 100%;
+  max-width: none;
 }
 
 .card-leaderboard {
   position: relative;
   display: block;
+  align-self: stretch;
   overflow: hidden;
   padding: 18px;
   background: linear-gradient(145deg, #ffffff 0%, #f4fbfe 100%);
@@ -152,6 +185,7 @@
 
 .card-host-side {
   display: block;
+  align-self: end;
   padding: 16px;
   text-align: left;
 }
@@ -214,7 +248,25 @@
 }
 
 .card-host-fullscreen:fullscreen .card-host-layout {
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 7fr) minmax(320px, 3fr);
+}
+
+@container card-host (max-width: 940px) {
+  .card-host-layout,
+  .card-host-fullscreen:fullscreen .card-host-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .card-host-question {
+    min-height: clamp(430px, 56vh, 580px);
+  }
+
+  .card-host-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto;
+  }
+
+  .card-host-side { align-self: stretch; }
 }
 
 html[data-theme='dark'] .card-leaderboard {
@@ -242,10 +294,6 @@ html[data-theme='dark'] .card-scanner-connect-heading h3 {
 }
 
 @media (max-width: 1080px) {
-  .card-host-layout {
-    grid-template-columns: minmax(0, 1fr) 290px;
-  }
-
   .card-leaderboard {
     display: block;
     grid-column: auto;
@@ -268,7 +316,13 @@ html[data-theme='dark'] .card-scanner-connect-heading h3 {
   }
 
   .card-host-rail {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
     gap: 12px;
+  }
+
+  .card-host-question {
+    min-height: auto;
   }
 
   .card-leaderboard,

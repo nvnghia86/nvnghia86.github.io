@@ -1,6 +1,7 @@
 import QuestionMedia from './QuestionMedia';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import './game-room-builder.css';
 
 const emptyForm = { title: '', quizId: '', classId: '', questionCount: 10, timeLimitSeconds: 20 };
@@ -36,9 +37,12 @@ function useNativeFullscreen(elementRef) {
 
 export function GameRoomBuilder({ api, API, EventSource, onError, mode = 'realtime' }) {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const initialClassId = searchParams.get('classId') || '';
   const headTilt = mode === 'head-tilt';
   const cardScan = mode === 'card-scan';
-  const [form, setForm] = useState({ ...emptyForm, title: headTilt ? 'Đấu trường so sánh Toán học' : cardScan ? t('cardScan.defaultTitle') : 'Quiz realtime' });
+  const [form, setForm] = useState({ ...emptyForm, classId: initialClassId, title: headTilt ? 'Đấu trường so sánh Toán học' : cardScan ? t('cardScan.defaultTitle') : 'Quiz realtime' });
+  useEffect(() => { setForm(previous => ({ ...previous, classId: initialClassId })); }, [initialClassId]);
   const [quizzes, setQuizzes] = useState([]); const [questions, setQuestions] = useState([]); const [classes, setClasses] = useState([]); const [selected, setSelected] = useState([]); const [pickerOpen, setPickerOpen] = useState(false); const [room, setRoom] = useState(null); const streamRef = useRef(null);
   const liveRef = useRef(null); const { isFullscreen: isLiveFullscreen, toggle: toggleLiveFullscreen } = useNativeFullscreen(liveRef);
   const questionType = headTilt ? 'comparison' : '';
