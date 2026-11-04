@@ -48,31 +48,122 @@
     });
   }
   function span(className, value) { var element = document.createElement('span'); element.className = className; element.textContent = value; return element; }
+  var medals = ['🥇', '🥈', '🥉'];
+  function renderPodium(players) {
+    var podium = el('podium'), empty = el('celebration-empty');
+    podium.innerHTML = '';
+    empty.hidden = players.length > 0;
+    empty.textContent = text('Chưa có học sinh trong bảng xếp hạng.', 'No students on the leaderboard yet.');
+    for (var index = 0; index < Math.min(3, players.length); index++) {
+      var player = players[index], rank = index + 1, score = Number(player.score) || 0;
+      var place = document.createElement('li'), medal = span('podium-medal', medals[index]);
+      place.className = 'podium-place podium-' + rank;
+      medal.setAttribute('aria-hidden', 'true');
+      place.appendChild(medal);
+      place.appendChild(span('podium-rank', text('Hạng ', 'Rank ') + rank));
+      place.appendChild(span('podium-name', player.nickname));
+      place.appendChild(span('podium-score', score + text(' điểm', score === 1 ? ' point' : ' points')));
+      var step = span('podium-step', String(rank));
+      step.setAttribute('aria-hidden', 'true');
+      place.appendChild(step);
+      podium.appendChild(place);
+    }
+  }
+
+  var answerLetters = ['A', 'B', 'C', 'D'];
+  var nameOrder = window.Intl && Intl.Collator ? new Intl.Collator('vi', { sensitivity: 'base' }) : null;
+  function compareNames(left, right) { return nameOrder ? nameOrder.compare(left, right) : left.localeCompare(right); }
+
+  function renderStudentResults(players, correctAnswer) {
+    var list = el('student-results'), names = Object.create(null);
+    players.forEach(function (player) { names[player.nickname] = true; });
+    var entries = players.map(function (player) {
+      var fullName = String(player.nickname || '').trim();
+      // The roster may append a number to distinguish duplicate full names.
+      var baseName = fullName.replace(/\s+\d+$/, '');
+      var words = (names[baseName] ? baseName : fullName).split(/\s+/);
+      return { fullName: fullName, name: words[words.length - 1], player: player };
+    });
+    entries.sort(function (left, right) {
+      return compareNames(left.name, right.name) || compareNames(left.fullName, right.fullName) || left.player.markerId - right.player.markerId;
+    });
+    list.innerHTML = '';
+    entries.forEach(function (entry) {
+      var answer = entry.player.answer;
+      var answered = answerLetters.indexOf(answer) !== -1;
+      var correct = answered && answer === correctAnswer;
+      var status = !answered ? text('Chưa trả lời', 'No answer') : correct ? text('Đúng', 'Correct') : text('Sai', 'Incorrect');
+      var card = document.createElement('li');
+      card.className = 'student-result ' + (!answered ? 'unanswered' : correct ? 'correct' : 'incorrect');
+      card.title = entry.fullName;
+      card.setAttribute('aria-label', entry.fullName + ', ' + (answered ? answer + ', ' : '') + status);
+      card.appendChild(span('student-result-name', entry.name));
+      card.appendChild(span('student-result-answer', answered ? answer : '—'));
+      list.appendChild(card);
+    });
+  }
+
+  function renderQuestionResults(session) {
+    var summary = session.questionSummary, chart = el('answer-chart');
+    var roster = el('student-results-scroll'), questionKey = session.id + '/' + session.currentQuestion;
+    var sameQuestion = roster.getAttribute('data-question') === questionKey;
+    var scrollTop = sameQuestion ? roster.scrollTop : 0;
+    var counts = answerLetters.map(function (letter) { return Number(summary.counts[letter]) || 0; });
+    var answered = counts.reduce(function (total, count) { return total + count; }, 0);
+    var highest = Math.max.apply(null, counts) || 1;
+    el('correct-choice').textContent = text('Đáp án đúng ', 'Correct answer ') + summary.correctAnswer;
+    el('review-totals').textContent = answered + '/' + session.players.length + text(' học sinh đã trả lời', ' students answered');
+    chart.innerHTML = '';
+    answerLetters.forEach(function (letter, index) {
+      var column = document.createElement('li'), track = document.createElement('div'), bar = document.createElement('div');
+      column.className = 'answer-column' + (letter === summary.correctAnswer ? ' correct' : '');
+      column.setAttribute('aria-label', letter + ': ' + counts[index] + (letter === summary.correctAnswer ? text(', đáp án đúng', ', correct answer') : ''));
+      track.className = 'answer-track';
+      bar.className = 'answer-bar';
+      bar.style.height = counts[index] / highest * 100 + '%';
+      bar.appendChild(span('answer-count', String(counts[index])));
+      track.appendChild(bar);
+      column.appendChild(track);
+      column.appendChild(span('answer-letter', letter));
+      chart.appendChild(column);
+    });
+    renderStudentResults(session.players, summary.correctAnswer);
+    roster.setAttribute('data-question', questionKey);
+    roster.scrollTop = scrollTop;
+  }
+
   function render(value) {
     var session = value.session, waiting = !session || session.status === 'lobby', finished = session && session.status === 'finished';
+    var reviewing = !waiting && !finished && session.questionStatus === 'closed' && session.questionSummary;
+    var stage = el('stage'), newlyFinished = finished && stage.className !== 'is-finished';
+    stage.className = finished ? 'is-finished' : reviewing ? 'is-reviewing' : '';
     el('new-display').textContent = finished ? text('Chơi lại', 'Play again') : text('Chuẩn bị lượt chơi mới', 'Prepare a new run');
     el('title').textContent = value.title; el('subtitle').textContent = value.className + (session && !waiting ? ' · ' + text('Câu ', 'Question ') + Math.min(session.currentQuestion + 1, session.questionCount) + ' / ' + session.questionCount : ' · ' + value.questionCount + text(' câu hỏi', ' questions'));
     el('notice').textContent = waiting ? value.paired ? text('Đã kết nối. Chờ bấm Bắt đầu trên điện thoại.', 'Connected. Waiting for Start on the phone.') : text('Chưa bắt đầu. Chờ điện thoại kết nối.', 'Not started. Waiting for the phone.') : finished ? text('Trò chơi đã kết thúc.', 'The game has ended.') : session.questionStatus === 'closed' ? text('Đã chốt câu. Giáo viên chủ động chuyển câu trên điện thoại.', 'Question ended. Continue from the phone when ready.') : '';
-    el('waiting').style.display = waiting ? 'flex' : 'none'; el('stage').style.display = waiting ? 'none' : 'flex';
+    el('waiting').style.display = waiting ? 'flex' : 'none'; stage.style.display = waiting ? 'none' : 'flex';
     if (waiting) { if (el('qr').src !== value.qr) el('qr').src = value.qr; el('pair-link').href = value.pairUrl; }
-    if (!waiting) {
-      var question = session.currentQuestionData, summary = session.questionSummary, closed = session.questionStatus === 'closed';
-      el('question').textContent = finished ? text('Chúc mừng cả lớp!', 'Well done, everyone!') : question ? question.question : '';
+    if (!waiting && !reviewing) {
+      var ranking = el('ranking'), rankingScroll = newlyFinished ? 0 : ranking.scrollTop;
+      var players = session.players.slice().sort(function (a, b) { return (b.score || 0) - (a.score || 0) || a.markerId - b.markerId; });
+      ranking.innerHTML = '';
+      for (var p = 0; p < players.length; p++) { var row = document.createElement('div'); row.className = 'rank-row'; row.appendChild(span('rank-number', medals[p] || String(p + 1))); row.appendChild(span('rank-name', players[p].nickname)); row.appendChild(span('rank-score', String(players[p].score || 0))); ranking.appendChild(row); }
+      ranking.scrollTop = rankingScroll;
+      if (finished) renderPodium(players);
+    }
+    if (reviewing) renderQuestionResults(session);
+    if (!waiting && !finished && !reviewing) {
+      var question = session.currentQuestionData;
+      el('question').textContent = question ? question.question : '';
       el('options').innerHTML = ''; el('media').innerHTML = '';
       if (question) {
         media(question);
         for (var index = 0; index < question.options.length; index++) {
-          var letter = 'ABCD'.charAt(index), box = document.createElement('div'); box.className = 'option' + (closed && summary && summary.correctAnswer === letter ? ' correct' : '');
+          var letter = answerLetters[index], box = document.createElement('div'); box.className = 'option';
           var badge = document.createElement('b'); badge.textContent = letter + '.'; box.appendChild(badge); box.appendChild(span('', question.options[index]));
-          if (closed && summary) { var count = document.createElement('small'); count.textContent = (summary.counts[letter] || 0) + text(' học sinh chọn', ' students selected') + (summary.correctAnswer === letter ? text(' · Đáp án đúng', ' · Correct answer') : ''); box.appendChild(count); }
           el('options').appendChild(box);
         }
       }
       el('question-panel').className = el('media').childNodes.length ? 'has-media' : '';
-      el('review-hint').textContent = closed ? text('Đã chốt đáp án. Chờ chuyển câu trên điện thoại.', 'Answers are final. Continue from the phone.') : '';
-      var rankingScroll = el('ranking').scrollTop, players = session.players.slice().sort(function (a, b) { return (b.score || 0) - (a.score || 0) || a.markerId - b.markerId; }); el('ranking').innerHTML = '';
-      for (var p = 0; p < players.length; p++) { var row = document.createElement('div'); row.className = 'rank-row'; row.appendChild(span('rank-number', p < 3 ? ['🥇','🥈','🥉'][p] : String(p + 1))); row.appendChild(span('rank-name', players[p].nickname)); row.appendChild(span('rank-score', String(players[p].score || 0))); el('ranking').appendChild(row); }
-      el('ranking').scrollTop = rankingScroll;
     }
     clock();
   }
@@ -113,6 +204,12 @@
   el('new-display').onclick = function () { if (!window.confirm(text('Mở màn ghép nối mới? Lượt chơi cũ vẫn được lưu.', 'Open a new pairing display? Previous results are kept.'))) return; generation++; signature=''; window.clearTimeout(timer); current = null; remember(null); el('notice').textContent=text('Đang tạo QR mới…','Creating a new QR…'); el('stage').style.display='none'; el('waiting').style.display='none'; fresh(); };
   window.setInterval(clock, 250); window.addEventListener('beforeunload', function () { stopped = true; window.clearTimeout(timer); });
   gameKey = keyFrom(window.location.hash.slice(1));
+  el('celebration-label').textContent = text('VINH DANH', 'PODIUM');
+  el('celebration-title').textContent = text('Chúc mừng cả lớp!', 'Well done, everyone!');
+  el('question-results-title').textContent = text('Tổng hợp kết quả câu hỏi', 'Question results');
+  el('student-results-title').textContent = text('Kết quả từng em', 'Student answers');
+  el('answer-chart').setAttribute('aria-label', text('Số học sinh chọn từng đáp án', 'Number of students per answer'));
+  el('result-legend').textContent = text('Xanh: Đúng · Đỏ: Sai · —: Chưa trả lời', 'Green: Correct · Red: Incorrect · —: No answer');
   if (/^(localhost|127\.0\.0\.1)$/.test(window.location.hostname)) api = window.location.origin + '/api/v1';
   if (en) { document.title='Quizzz · Game display';document.querySelector('.brand').textContent='QUIZZZ · CARD SCAN';el('setup-hint').textContent='Paste a saved game display link to attach it to this slide.';document.querySelector('label[for="game-link"]').textContent='Game display link';document.querySelector('#setup-form button').textContent='Attach game';el('qr').alt='Scanner connection QR';el('ranking-title').textContent='Leaderboard';el('waiting-title').textContent='Scan the QR with your phone';el('waiting-hint').textContent='Enter the 6-digit control PIN, then press Start on the phone.';el('pair-link').textContent='Open pairing page';el('new-display').textContent='Prepare a new run'; }
   if (gameKey) begin(); else {
