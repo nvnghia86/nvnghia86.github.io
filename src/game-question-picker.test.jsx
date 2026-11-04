@@ -193,4 +193,27 @@ describe('game question picker', () => {
     expect(checkbox(dialog, 'Toán lớp bốn')).toBeChecked();
     expect(within(dialog).getByRole('button', { name: 'Xóa bộ lọc' })).toBeDisabled();
   });
+
+  it('selects and deselects by clicking lesson text or row space without closing during the native label focus transfer', async () => {
+    fixture(); const { dialog } = await openPicker();
+    const group = await openLessons(dialog);
+    const option = await within(group).findByRole('checkbox', { name: 'Toán học 4 — Bài một · Lớp 4 · Toán học' });
+    const row = option.closest('label'), text = row.querySelector('span');
+    const search = within(dialog).getByRole('searchbox', { name: 'Tìm bài học' });
+    // A non-focusable label loses search focus before the browser forwards its click to the checkbox.
+    fireEvent.blur(search, { relatedTarget: null });
+    fireEvent.click(text);
+    expect(option).toBeChecked();
+    expect(group).toBeInTheDocument();
+    fireEvent.click(text);
+    expect(option).not.toBeChecked();
+    expect(group).toBeInTheDocument();
+    fireEvent.click(row);
+    expect(option).toBeChecked();
+    fireEvent.click(option);
+    expect(option).not.toBeChecked();
+    fireEvent.blur(search, { relatedTarget: within(dialog).getByRole('button', { name: 'Đóng', exact: true }) });
+    expect(within(dialog).queryByRole('group')).toBeNull();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
 });

@@ -38,7 +38,7 @@ function LessonMultiSelect({ lessons, value, onChange, labelFor, t }) {
   }, [open]);
   const toggle = id => onChange(value.includes(id) ? value.filter(item => item !== id) : [...value, id]);
   return <div className="field game-lesson-select" ref={root}
-    onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) close(); }}
+    onBlur={event => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) close(); }}
     onKeyDown={event => { if (open && event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(true); } }}>
     <span id={labelId}>{t('gameQuestionPicker.lesson')}</span>
     <button type="button" className="game-lesson-trigger" ref={trigger} disabled={!lessons.length} aria-labelledby={`${labelId} ${valueId}`} aria-expanded={open} aria-controls={open ? popupId : undefined} onClick={() => open ? close() : setOpen(true)}>
