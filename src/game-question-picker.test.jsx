@@ -22,6 +22,7 @@ function fixture({ mode = 'card-scan', curriculum } = {}) {
   const api = vi.fn(async (path, request) => {
     if (path.startsWith('/quiz-sets')) return { items: [] };
     if (path === '/questions') return { items: questions };
+    if (path === '/card-games') return { items: [] };
     if (path === '/classes') return { items: [{ id: 'class4', name: '4A', studentCount: 33 }] };
     if (path.startsWith('/curriculum?')) return curriculum ? curriculum(path) : catalog(path);
     if (request?.method === 'POST') return { room: { id: 'created-room' } };

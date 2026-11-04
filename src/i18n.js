@@ -1,4 +1,5 @@
 import i18n from 'i18next';
+import { preparedGames } from './prepared-game-i18n';
 import { initReactI18next } from 'react-i18next';
 import { videoStudioTranslations } from './video-studio-i18n';
 import { examTranslations } from './exam-i18n';
@@ -124,6 +125,8 @@ const cardScanAdditions = {
     enlargeQr: 'Phóng to mã QR',
     enlargeQrHint: 'Mở camera điện thoại và quét mã QR để kết nối máy quét thẻ.',
     questionResult: 'Kết quả câu {{current}}',
+    endQuestion: 'Kết thúc câu', next: 'Câu tiếp theo', questionClosed: 'Đã kết thúc câu', questionClosedHint: 'Đã chốt đáp án. Bấm chuyển câu khi sẵn sàng.', optionCount: '{{count}} học sinh chọn',
+    waitingNext: 'Chờ chuyển câu',
     correctAnswer: 'Đáp án đúng',
     studentRoster: 'Danh sách học sinh',
     currentAnswered: 'Đã trả lời · {{answer}}',
@@ -139,6 +142,8 @@ const cardScanAdditions = {
     enlargeQr: 'Enlarge QR code',
     enlargeQrHint: 'Open your phone camera and scan this QR code to connect the card scanner.',
     questionResult: 'Question {{current}} result',
+    endQuestion: 'End question', next: 'Next question', questionClosed: 'Question ended', questionClosedHint: 'Answers are final. Move to the next question when ready.', optionCount: '{{count}} students selected', optionCount_one: '{{count}} student selected',
+    waitingNext: 'Waiting for the next question',
     correctAnswer: 'Correct answer',
     studentRoster: 'Student roster',
     currentAnswered: 'Answered · {{answer}}',
@@ -193,6 +198,8 @@ const gameAudioTranslations = {
 };
 
 for (const locale of supportedLocales) {
+  resources[locale].preparedGames = preparedGames[locale];
+  resources[locale].translation.preparedGames = preparedGames[locale];
   resources[locale].translation.gameQuestionPicker = gameQuestionPickerTranslations[locale];
   resources[locale].translation.gameAudio = gameAudioTranslations[locale];
   resources[locale].translation.navigation.videoStudio = videoStudioTranslations[locale].nav;

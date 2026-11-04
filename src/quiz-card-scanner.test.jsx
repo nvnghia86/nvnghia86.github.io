@@ -31,6 +31,24 @@ beforeEach(async () => {
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe('scanner game completion', () => {
+  it('starts a prepared game only after the teacher presses Start on the connected phone', async () => {
+    const lobby = { ...playing, status: 'lobby', version: 0, currentQuestionData: null };
+    const api = vi.fn(async (_path, options) => options?.method === 'POST' ? playing : lobby);
+    render(<QuizCardScanner {...props(api)} allowStart />);
+    const start = await screen.findByRole('button', { name: 'Bắt đầu', exact: true });
+    expect(api.mock.calls.some(([, options]) => options?.method === 'POST')).toBe(false);
+    expect(scan.active).toBe(false);
+    fireEvent.click(start);
+    await screen.findByRole('button', { name: 'Kết thúc câu' });
+    expect(api.mock.calls.filter(([, options]) => options?.method === 'POST').map(([path]) => path)).toEqual([`/quiz-sessions/room/scanner/start?token=${'a'.repeat(48)}`]);
+    expect(screen.queryByRole('button', { name: 'Bắt đầu', exact: true })).toBeNull();
+  });
+
+  it('keeps the legacy scanner lobby under web host control by default', async () => {
+    render(<QuizCardScanner {...props(vi.fn(async () => ({ ...playing, status:'lobby', currentQuestionData:null })))} />);
+    await screen.findByText('Quiz lớp 4A');
+    expect(screen.queryByRole('button', { name: 'Bắt đầu', exact: true })).toBeNull();
+  });
   it('unmounts the camera, stops recognition/test mode and shows final results when the host finishes', async () => {
     render(<QuizCardScanner {...props(vi.fn(async () => playing))} />);
     fireEvent.click(await screen.findAllByRole('button', { name: 'Mở camera', exact: true }).then(items => items[0]));
@@ -90,9 +108,44 @@ describe('scanner game completion', () => {
     const api = vi.fn().mockResolvedValueOnce(playing).mockResolvedValue(finished);
     render(<QuizCardScanner {...props(api)} />);
     await screen.findAllByRole('button', { name: 'Mở camera', exact: true });
-    act(() => document.dispatchEvent(new Event('visibilitychange')));
+    await act(async () => { await Promise.resolve(); document.dispatchEvent(new Event('visibilitychange')); });
     await screen.findByRole('heading', { name: 'Trò chơi đã kết thúc' });
     await act(async () => i18n.changeLanguage('en'));
     expect(screen.getByRole('heading', { name: 'The game has ended' })).toBeInTheDocument();
+  });
+
+  it('ends a question from the phone, shows the correct answer counts and waits for an explicit next action', async () => {
+    const closed = { ...playing, questionStatus: 'closed', version: 6, questionSummary: {questionId:'q1',position:0,correctAnswer:'B',counts:{A:0,B:1,C:0,D:0},answeredCount:1}, players: [{...playing.players[0],answer:'B',score:2,correctCount:2}] };
+    const next = {...playing,currentQuestion:1,questionStatus:'open',version:7,questionStartedAt:new Date().toISOString(),currentQuestionData:{...playing.currentQuestionData,id:'q2'}};
+    const api=vi.fn(async path=>path.includes('/scanner/close?')?closed:path.includes('/scanner/next?')?next:playing);
+    const {container}=render(<QuizCardScanner {...props(api)} />);
+    fireEvent.click((await screen.findAllByRole('button',{name:'Mở camera',exact:true}))[0]);
+    const end=screen.getByRole('button',{name:'Kết thúc câu'}), advance=screen.getByRole('button',{name:'Chuyển sang câu tiếp theo'});
+    expect(end).toBeEnabled();expect(advance).toBeDisabled();expect(scan.active).toBe(true);
+    fireEvent.click(end);
+    await screen.findByRole('heading',{name:'Kết quả câu 1'});
+    expect(api).toHaveBeenCalledWith('/quiz-sessions/room/scanner/close?token='+ 'a'.repeat(48),{method:'POST',body:JSON.stringify({questionId:'q1'})});
+    expect(end).toBeDisabled();expect(advance).toBeEnabled();expect(scan.active).toBe(false);
+    expect(container.querySelector('.scanner-answer-counts .is-correct')).toHaveTextContent('B1');
+    expect(screen.getByTestId('camera')).toBeInTheDocument();
+    act(()=>scan.detect({markerId:1,answer:'A'}));expect(scan.send).not.toHaveBeenCalled();
+    act(()=>scan.update({...playing,version:99}));expect(end).toBeDisabled();
+    fireEvent.click(advance);
+    await waitFor(()=>expect(end).toBeEnabled());
+    expect(api).toHaveBeenCalledWith('/quiz-sessions/room/scanner/next?token='+ 'a'.repeat(48),{method:'POST',body:JSON.stringify({questionId:'q1'})});
+    expect(advance).toBeDisabled();await waitFor(()=>expect(scan.active).toBe(true));expect(container.querySelector('.scanner-answer-counts .is-correct')).toBeNull();
+  });
+
+  it('stops accepting scanned answers after the deadline without advancing the question', async () => {
+    vi.useFakeTimers();const now=Date.now();
+    const api=vi.fn(async()=>({...playing,timeLimitSeconds:1,questionStartedAt:new Date(now).toISOString()}));
+    await act(async()=>render(<QuizCardScanner {...props(api)} />));
+    fireEvent.click(screen.getAllByRole('button',{name:'Mở camera',exact:true})[0]);
+    expect(scan.active).toBe(true);
+    await act(async()=>vi.advanceTimersByTimeAsync(1500));
+    expect(scan.active).toBe(false);
+    act(()=>scan.detect({markerId:1,answer:'A'}));expect(scan.send).not.toHaveBeenCalled();
+    expect(api.mock.calls.some(([path])=>path.includes('/next'))).toBe(false);
+    expect(screen.getByRole('button',{name:'Chuyển sang câu tiếp theo'})).toBeDisabled();
   });
 });

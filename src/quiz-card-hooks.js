@@ -12,6 +12,7 @@ export function mergeCardSession(previous, incoming) {
   if (incoming.status === 'finished') return incoming;
   if (previous.status === 'playing' && incoming.status === 'lobby') return previous;
   if (Number(incoming.currentQuestion) < Number(previous.currentQuestion)) return previous;
+  if (previous.currentQuestionData?.id === incoming.currentQuestionData?.id && previous.questionStatus === 'closed' && incoming.questionStatus !== 'closed') return previous;
   if (incoming.currentQuestion === previous.currentQuestion && Number(incoming.version) < Number(previous.version)) return previous;
   return incoming;
 }
@@ -52,7 +53,7 @@ export function useQuizSocket(apiBase, sessionId, role, onUpdate, enabled = true
     };
     socket.on('connect', join);
     socket.on('disconnect', () => setConnection('disconnected'));
-    for (const name of ['question_started', 'session_finished']) socket.on(name, state => updateRef.current(state));
+    for (const name of ['question_started', 'question_closed', 'session_finished']) socket.on(name, state => updateRef.current(state));
     socket.on('student_answered', answer => updateRef.current(null, answer));
     socket.on('connect_error', () => { setConnection('error'); setError('Mất kết nối tới máy chủ. Đang thử lại…'); });
     return () => { socket.disconnect(); socketRef.current = null; };
