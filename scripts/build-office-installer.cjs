@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const folder = path.join(__dirname, '../public/office');
+require('./validate-office-manifest.cjs').validateManifest(fs.readFileSync(path.join(folder, 'quizzz-manifest.xml'), 'utf8'));
 const powershell = fs.readFileSync(path.join(folder, 'install-windows.ps1'), 'utf8').trimEnd();
 const wrapper = `@echo off
 setlocal

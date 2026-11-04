@@ -34,6 +34,13 @@ try {
         if (!$id -or $id.InnerText -ne $addinId -or !$source -or $source.GetAttribute('DefaultValue') -ne 'https://nvnghia86.github.io/office/card-game.html') {
             throw 'Unexpected manifest. Download the installer and manifest from the official Quizzz setup page.'
         }
+        foreach ($dimension in @('RequestedWidth', 'RequestedHeight')) {
+            $size = $xml.SelectSingleNode(('/o:OfficeApp/o:DefaultSettings/o:' + $dimension), $namespaces)
+            $number = 0
+            if (!$size -or ![int]::TryParse($size.InnerText, [ref]$number) -or $number -lt 32 -or $number -gt 1000) {
+                throw ($dimension + ' must be between 32 and 1000. Remove the old XML beside this installer, then retry to download the corrected manifest.')
+            }
+        }
         [System.IO.Directory]::CreateDirectory($installFolder) | Out-Null
         [System.IO.File]::WriteAllText($manifestPath, $content, (New-Object System.Text.UTF8Encoding($false)))
     } finally {

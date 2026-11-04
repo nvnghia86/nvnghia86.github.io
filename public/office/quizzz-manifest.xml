@@ -5,7 +5,7 @@
   <IconUrl DefaultValue="https://nvnghia86.github.io/office/icon.png"/><SupportUrl DefaultValue="https://nvnghia86.github.io/office/setup.html"/>
   <AppDomains><AppDomain>https://nvnghia86.github.io</AppDomain><AppDomain>https://quized.net</AppDomain></AppDomains>
   <Hosts><Host Name="Presentation"/></Hosts>
-  <DefaultSettings><SourceLocation DefaultValue="https://nvnghia86.github.io/office/card-game.html"/><RequestedWidth>1280</RequestedWidth><RequestedHeight>720</RequestedHeight></DefaultSettings>
+  <DefaultSettings><SourceLocation DefaultValue="https://nvnghia86.github.io/office/card-game.html"/><RequestedWidth>960</RequestedWidth><RequestedHeight>540</RequestedHeight></DefaultSettings>
   <Permissions>ReadDocument</Permissions>
   <AllowSnapshot>true</AllowSnapshot>
 </OfficeApp>
