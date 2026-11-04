@@ -5,6 +5,8 @@ import i18n from './i18n';
 
 const DEFAULT_BOX = [-6, 6, 6, -6];
 const colors = { strokeColor: '#16aee5', fillColor: '#dff6ff', fillOpacity: 0.35 };
+const plainText = { display: 'internal', parse: false };
+const pointCoords = value => Array.isArray(value) && value.length === 2 && value.every(Number.isFinite);
 
 function attrs(element) {
   return {
@@ -21,9 +23,9 @@ function attrs(element) {
 
 function createElement(board, element, points) {
   const options = attrs(element);
-  const refs = (element.points || []).map(id => points.get(id)).filter(Boolean);
-  if (element.type === 'point' && Array.isArray(element.coords)) {
-    const point = board.create('point', element.coords, { ...options, name: element.label || element.id, withLabel: Boolean(element.label), size: 3 });
+  const refs = Array.isArray(element.points) ? element.points.map(id => points.get(id)).filter(Boolean) : [];
+  if (element.type === 'point' && pointCoords(element.coords)) {
+    const point = board.create('point', element.coords, { ...options, name: String(element.label || element.id || ''), label: plainText, size: 3 });
     points.set(element.id, point);
     return point;
   }
@@ -35,7 +37,9 @@ function createElement(board, element, points) {
     const center = points.get(element.center) || refs[0];
     if (center) return board.create('circle', [center, Number(element.radius) || 1], options);
   }
-  if (element.type === 'text' && Array.isArray(element.coords)) return board.create('text', [...element.coords.slice(0, 2), String(element.text || '')], { ...options, fixed: true });
+  if (element.type === 'text' && pointCoords(element.coords)) {
+    return board.create('text', [...element.coords, String(element.text || '')], { ...options, ...plainText });
+  }
   return null;
 }
 

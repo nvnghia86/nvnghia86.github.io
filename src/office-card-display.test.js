@@ -5,8 +5,9 @@ import { readFileSync } from 'node:fs';
 const { JSDOM } = createRequire(import.meta.url)('jsdom');
 const html=readFileSync(new URL('../public/office/card-game.html',import.meta.url),'utf8');
 const script=readFileSync(new URL('../public/office/card-game.js',import.meta.url),'utf8');
-function display({query='',status='playing',closed=false}={}) {
-  const dom=new JSDOM(html,{url:`https://quiz.example/office/card-game.html${query}#game=${'a'.repeat(48)}`,runScripts:'outside-only',pretendToBeVisual:true}),window=dom.window,requests=[];
+function display({query='',status='playing',closed=false,run='',saved={}}={}) {
+  const dom=new JSDOM(html,{url:`https://quiz.example/office/card-game.html${query}#game=${'a'.repeat(48)}${run ? '&run='+run : ''}`,runScripts:'outside-only',pretendToBeVisual:true}),window=dom.window,requests=[];
+  for (const [suffix, value] of Object.entries(saved)) window.localStorage.setItem(`quizzz.card-display.${'a'.repeat(48)}${suffix}`, JSON.stringify(value));
   window.localStorage.setItem('quizzz.locale','en');Object.defineProperty(window.navigator,'language',{value:'en-US'});
   window.setTimeout=()=>1;window.setInterval=()=>1;
   window.XMLHttpRequest=class {
@@ -24,4 +25,17 @@ it('keeps correct answer counts/highlights in Vietnamese and supports explicitly
 });
 it('keeps waiting and finished messages in Vietnamese',()=>{
   for(const status of ['lobby','finished']){const view=display({status});try{expect(view.document.querySelector('#notice').textContent).toBe(status==='lobby'?'Đã kết nối. Chờ bấm Bắt đầu trên điện thoại.':'Trò chơi đã kết thúc.');}finally{view.close();}}
+});
+it('opens a fresh replay instead of resuming the finished display, and resumes that replay on refresh', () => {
+  const run = '11111111-1111-4111-8111-111111111111';
+  const saved = { '': { id: 'finished', displayToken: 'old' } };
+  const first = display({ run, saved });
+  try {
+    expect(first.requests[0][0]).toBe('POST');
+    expect(JSON.parse(first.window.localStorage.getItem(`quizzz.card-display.${'a'.repeat(48)}`))).toEqual(saved['']);
+    saved['.' + run] = JSON.parse(first.window.localStorage.getItem(`quizzz.card-display.${'a'.repeat(48)}.${run}`));
+  } finally { first.close(); }
+  const resumed = display({ run, saved });
+  try { expect(resumed.requests[0]).toEqual(['GET', expect.stringContaining('/displays/display?token=')]); }
+  finally { resumed.close(); }
 });

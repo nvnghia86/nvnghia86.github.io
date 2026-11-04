@@ -3,6 +3,27 @@ export const preparedGames = {
   en: { retry:'Retry', setup:'PowerPoint add-in setup and instructions', eyebrow:'PREPARE YOUR LESSON', savedTitle:'Saved card-scan games', savedHint:'Open the display or export PowerPoint. The game runs only after Start is pressed on the phone.', playNow:'Play now on the web', prepare:'Save for later / PowerPoint', save:'Save game for later', pin:'6-digit control PIN', pinHint:'Set exactly 6 digits. The phone enters this PIN after scanning the QR; no login is needed.', loading:'Loading…', game:'Game', class:'Class', questions:'Questions', actions:'Actions', present:'Open display', export:'Export PowerPoint', exportError:'Could not export PowerPoint.', addin:'Download PowerPoint add-in', empty:'No prepared games yet.', pairTitle:'Connect card scanner', pairHint:'Enter the teacher’s control PIN to connect. The game has not started.', connect:'Connect', connectedHint:'Connected to the display. Press Start when the class is ready.', finishConfirm:'End the game and save the current results?' },
 };
 
+preparedGames.vi.sharing = {
+  replay: 'Chơi lại', title: 'Chia sẻ quiz', start: 'Chia sẻ vào kho dùng chung', stop: 'Dừng chia sẻ',
+  privateHint: 'Giáo viên khác có thể sao chép bộ câu hỏi để chơi với lớp của họ khi anh bật chia sẻ.',
+  activeHint: 'Giáo viên khác có thể tạo bản sao từ kho dùng chung. Các bản sao đã tạo vẫn dùng được sau khi dừng chia sẻ.',
+  shared: 'Đang chia sẻ', published: 'Quiz đã có trong kho dùng chung.', unpublished: 'Đã dừng chia sẻ quiz.',
+  library: 'Kho quiz quét thẻ dùng chung', libraryHint: 'Dùng bộ câu hỏi do giáo viên khác chia sẻ với lớp của anh.',
+  browse: 'Mở kho dùng chung', hide: 'Đóng kho dùng chung', author: 'Người chia sẻ', empty: 'Chưa có quiz từ giáo viên khác.',
+  use: 'Dùng quiz này', copyHint: 'Chọn lớp và đặt PIN riêng để lưu một bản sao vào danh sách của anh.',
+  chooseClass: 'Chọn lớp học', noClasses: 'Anh cần có một lớp đang hoạt động để dùng quiz này.', saveCopy: 'Lưu bản sao', cancel: 'Hủy',
+};
+preparedGames.en.sharing = {
+  replay: 'Play again', title: 'Share quiz', start: 'Share to the library', stop: 'Stop sharing',
+  privateHint: 'When sharing is enabled, other teachers can copy the questions and play with their own classes.',
+  activeHint: 'Other teachers can copy this quiz from the library. Existing copies remain available after sharing ends.',
+  shared: 'Shared', published: 'The quiz is now in the shared library.', unpublished: 'Quiz sharing stopped.',
+  library: 'Shared card-scan quizzes', libraryHint: 'Use questions shared by other teachers with your class.',
+  browse: 'Open shared library', hide: 'Close shared library', author: 'Shared by', empty: 'No quizzes shared by other teachers yet.',
+  use: 'Use this quiz', copyHint: 'Choose a class and set a separate PIN to save a copy to your list.',
+  chooseClass: 'Choose a class', noClasses: 'You need an active class to use this quiz.', saveCopy: 'Save a copy', cancel: 'Cancel',
+};
+
 preparedGames.vi.detail = {
   statsError:'Không tải được thống kê. Bấm Làm mới để thử lại.', reload:'Tải lại bản mới nhất', conflictHint:'Quiz đã được sửa ở nơi khác. Anh có thể sao chép nội dung đang nhập trước khi tải lại bản mới nhất để tiếp tục chỉnh sửa.', back:'Quay lại game quét thẻ', view:'Xem chi tiết', edit:'Chỉnh sửa quiz', statistics:'Thống kê lượt chơi', status:'Trạng thái', notStarted:'Chưa diễn ra', playing:'Đang chơi', played:'Đã diễn ra', finished:'Đã kết thúc', runCount:'{{count}} lượt chơi', runLabel:'Lượt {{number}}', run:'Chọn lượt chơi', noRuns:'Chưa có lượt chơi. Thống kê sẽ xuất hiện sau khi bấm Bắt đầu.',
   refresh:'Làm mới', liveHint:'Game đang diễn ra. Thống kê chỉ tính các câu đã kết thúc; bấm Làm mới để cập nhật.', students:'Học sinh', closedQuestions:'Câu đã kết thúc', accuracy:'Tỉ lệ trả lời đúng', averageScore:'Điểm trung bình', studentResults:'Kết quả học sinh', rank:'Hạng', student:'Học sinh / thẻ', score:'Điểm', correct:'Đúng', incorrect:'Sai', unanswered:'Chưa trả lời', questionResults:'Thống kê từng câu', questionNumber:'Câu {{number}}', closed:'Đã kết thúc câu', inProgress:'Đang trả lời', notAsked:'Chưa diễn ra', selectedCount:'{{count}} chọn', correctAnswer:'Đáp án đúng', responseSummary:'Đã trả lời: {{answered}} · Chưa trả lời: {{unanswered}}',

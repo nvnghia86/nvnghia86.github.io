@@ -13,6 +13,9 @@ afterEach(()=>{cleanup();vi.restoreAllMocks();});
 function setup({game=original,rejectSave=false,afterFailure,entry='/teacher/card-scan/games/game'}={}){
  let current=structuredClone(game);
  const api=vi.fn(async(path,request)=>{
+  if(path==='/card-games/game/sharing'){
+   const {isShared}=JSON.parse(request.body);current={...current,isShared};return {isShared};
+  }
   if(path==='/card-games/game'&&request?.method==='PATCH'){
    if(rejectSave){if(afterFailure)current=afterFailure;throw new Error('Game đã diễn ra, không thể chỉnh sửa nội dung.');}
    const input=JSON.parse(request.body);current={...current,...input,version:current.version+1,questions:input.questionEdits.map(edit=>({...current.questions.find(q=>q.id===edit.id),...edit})),questionCount:input.questionIds.length};return current;
@@ -81,4 +84,39 @@ it('offers details, edit and results icons according to saved game state',async(
  const api=vi.fn(async()=>({items:[original,{...original,id:'played',canEdit:false,runCount:1,playStatus:'played'}]}));
  render(<MemoryRouter><PreparedCardGames api={api} API="/api/v1" onError={vi.fn()}/></MemoryRouter>);
  await screen.findAllByRole('button',{name:'Xem chi tiết'});expect(screen.getAllByRole('button',{name:'Chỉnh sửa quiz'})).toHaveLength(1);expect(screen.getAllByRole('button',{name:'Thống kê lượt chơi'})).toHaveLength(1);
+});
+
+it('opens a distinct replay and lets the owner share or unshare a finished quiz', async () => {
+ const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+ const {api} = setup({game:{...original,canEdit:false,playStatus:'played'}});
+ const replay = await screen.findByRole('button',{name:'Chơi lại'});
+ fireEvent.click(replay);fireEvent.click(replay);
+ expect(open.mock.calls[0][0]).toMatch(/#game=abc&run=[a-f0-9-]{36}$/);
+ expect(open.mock.calls[0][0]).not.toBe(open.mock.calls[1][0]);
+ fireEvent.click(screen.getByRole('button',{name:'Chia sẻ vào kho dùng chung'}));
+ fireEvent.click(await screen.findByRole('button',{name:'Dừng chia sẻ'}));
+ await screen.findByText('Đã dừng chia sẻ quiz.');
+ expect(api.mock.calls.filter(([path])=>path.endsWith('/sharing')).map(([,request])=>JSON.parse(request.body).isShared)).toEqual([true,false]);
+});
+
+it('copies a library quiz into the chosen class with a separate PIN', async () => {
+ const api = vi.fn(async (path, request) => {
+  if(path==='/card-games')return {items:[]};
+  if(path==='/card-games/shared')return {items:[{id:'shared',title:'Quiz của đồng nghiệp',authorName:'Giáo viên B',questionCount:2,timeLimitSeconds:20}]};
+  if(path==='/card-games/shared/shared/copies'&&request.method==='POST')return {id:'copied'};
+  throw new Error(path);
+ });
+ render(<MemoryRouter><Routes>
+   <Route path="/" element={<PreparedCardGames api={api} API="/api/v1" onError={vi.fn()} classes={[{id:'class4b',name:'4B'}]} />} />
+   <Route path="/teacher/card-scan/games/copied" element={<h1>Đã mở bản sao</h1>} />
+ </Routes></MemoryRouter>);
+ fireEvent.click(screen.getByRole('button',{name:'Mở kho dùng chung'}));
+ fireEvent.click(await screen.findByRole('button',{name:'Dùng quiz này'}));
+ expect(screen.getByRole('button',{name:'Lưu bản sao'})).toBeDisabled();
+ fireEvent.change(screen.getByLabelText('Lớp'),{target:{value:'class4b'}});
+ fireEvent.change(screen.getByLabelText('Mã điều khiển 6 số'),{target:{value:'012345'}});
+ fireEvent.click(screen.getByRole('button',{name:'Lưu bản sao'}));
+ await screen.findByRole('heading',{name:'Đã mở bản sao'});
+ const [,request] = api.mock.calls.find(([path])=>path.endsWith('/copies'));
+ expect(JSON.parse(request.body)).toEqual({classId:'class4b',pin:'012345',copyId:expect.stringMatching(/^[a-f0-9-]{36}$/)});
 });

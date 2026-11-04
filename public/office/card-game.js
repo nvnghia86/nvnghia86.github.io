@@ -2,6 +2,7 @@
 (function () {
   'use strict';
   var api = document.documentElement.getAttribute('data-api'), current = null, credential = null, gameKey = '', stopped = false, timer = null, generation = 0, signature = '';
+  var replay = /(?:^|&)run=([a-f0-9-]{36})(?:&|$)/i.exec(window.location.hash.slice(1));
   // Slides default to Vietnamese regardless of the Office/browser language.
   // Keep English available through an explicit ?lang=en display URL.
   var en = /(?:^|[?&])lang=en(?:&|$)/i.test(window.location.search);
@@ -19,8 +20,9 @@
     xhr.onerror = xhr.ontimeout = function () { done(new Error(text('Mất kết nối. Đang thử lại…', 'Connection lost. Retrying…'))); };
     xhr.send(body ? JSON.stringify(body) : null);
   }
-  function remember(value) { credential = value; try { localStorage.setItem('quizzz.card-display.' + gameKey, JSON.stringify(value)); } catch (ignore) {} }
-  function loadSaved() { try { return JSON.parse(localStorage.getItem('quizzz.card-display.' + gameKey)); } catch (ignore) { return null; } }
+  function storageKey() { return 'quizzz.card-display.' + gameKey + (replay ? '.' + replay[1] : ''); }
+  function remember(value) { credential = value; try { localStorage.setItem(storageKey(), JSON.stringify(value)); } catch (ignore) {} }
+  function loadSaved() { try { return JSON.parse(localStorage.getItem(storageKey())); } catch (ignore) { return null; } }
   function begin() {
     generation++; signature = ''; window.clearTimeout(timer); stopped = false; credential = loadSaved();
     el('setup').style.display = 'none'; el('display').style.display = 'flex';
@@ -48,6 +50,7 @@
   function span(className, value) { var element = document.createElement('span'); element.className = className; element.textContent = value; return element; }
   function render(value) {
     var session = value.session, waiting = !session || session.status === 'lobby', finished = session && session.status === 'finished';
+    el('new-display').textContent = finished ? text('Chơi lại', 'Play again') : text('Chuẩn bị lượt chơi mới', 'Prepare a new run');
     el('title').textContent = value.title; el('subtitle').textContent = value.className + (session && !waiting ? ' · ' + text('Câu ', 'Question ') + Math.min(session.currentQuestion + 1, session.questionCount) + ' / ' + session.questionCount : ' · ' + value.questionCount + text(' câu hỏi', ' questions'));
     el('notice').textContent = waiting ? value.paired ? text('Đã kết nối. Chờ bấm Bắt đầu trên điện thoại.', 'Connected. Waiting for Start on the phone.') : text('Chưa bắt đầu. Chờ điện thoại kết nối.', 'Not started. Waiting for the phone.') : finished ? text('Trò chơi đã kết thúc.', 'The game has ended.') : session.questionStatus === 'closed' ? text('Đã chốt câu. Giáo viên chủ động chuyển câu trên điện thoại.', 'Question ended. Continue from the phone when ready.') : '';
     el('waiting').style.display = waiting ? 'flex' : 'none'; el('stage').style.display = waiting ? 'none' : 'flex';

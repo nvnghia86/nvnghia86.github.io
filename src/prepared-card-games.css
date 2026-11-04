@@ -10,3 +10,8 @@ html[data-theme=dark] .prepared-detail .prepared-question,html[data-theme=dark] 
 @media(max-width:480px){.prepared-answer-grid{grid-template-columns:minmax(0,1fr)}.prepared-detail{gap:16px}.prepared-summary{gap:8px}.prepared-summary>div{padding:12px}.prepared-detail .panel{padding:14px}.prepared-question{padding:12px}.prepared-edit .panel-heading h3{font-size:16px}}
 
 .prepared-edit .prepared-answer-grid{margin-top:14px}.prepared-detail>.text-button{color:#087fb7}.prepared-statistics .table-scroll{max-height:480px;overscroll-behavior:contain}.prepared-statistics .management-table th{position:sticky;top:0;z-index:1}html[data-theme=dark] .prepared-detail>.text-button{color:#6bd4fc}
+
+.prepared-sharing .panel-heading,.prepared-game-list>.panel-heading{gap:12px;flex-wrap:wrap}
+.prepared-sharing .panel-heading p,.shared-card-copy h3{margin:0}
+.shared-card-copy{margin-top:16px}
+.shared-card-copy h3{overflow-wrap:anywhere}

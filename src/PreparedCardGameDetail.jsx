@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import TableAction from './TableAction';
 import QuestionMedia from './QuestionMedia';
 import GameQuestionPicker from './GameQuestionPicker';
+import { cardDisplayUrl, replayCardGame } from './card-game-display';
 import './prepared-card-games.css';
 
 const letters = ['A', 'B', 'C', 'D'];
@@ -52,6 +53,7 @@ export default function PreparedCardGameDetail({ api }) {
   const { t } = useTranslation('preparedGames');
   const [game, setGame] = useState(null), [error, setError] = useState(''), [message, setMessage] = useState('');
   const [draft, setDraft] = useState(null), [busy, setBusy] = useState(false), [loadFailed, setLoadFailed] = useState(false);
+  const [sharingBusy, setSharingBusy] = useState(false);
   const [classes, setClasses] = useState([]), [bank, setBank] = useState([]), [bankLoading, setBankLoading] = useState(false), [picker, setPicker] = useState(false);
   const requestedEdit = useRef(false);
   const edit = item => { setDraft({ ...item, pin: '', questions: item.questions.map(question => ({ ...question, options: [...question.options] })) }); setMessage(''); };
@@ -85,6 +87,19 @@ export default function PreparedCardGameDetail({ api }) {
   async function refresh() {
     try { const data = await api(`/card-games/${gameId}`, { silent: true }); setGame(data); setLoadFailed(false); }
     catch (failure) { setError(failure.message); setLoadFailed(true); }
+  }
+  async function setSharing(isShared) {
+    setSharingBusy(true);
+    setError('');
+    setMessage('');
+    try {
+      const result = await api(`/card-games/${gameId}/sharing`, {
+        method: 'PATCH', body: JSON.stringify({ isShared }), silent: true,
+      });
+      setGame(previous => previous?.id === gameId ? { ...previous, isShared: result.isShared } : previous);
+      setMessage(result.isShared ? 'sharing.published' : 'sharing.unpublished');
+    } catch (failure) { setError(failure.message); }
+    finally { setSharingBusy(false); }
   }
   async function save(event) {
     event.preventDefault(); if (busy || !draft.questions.length) return;
@@ -124,8 +139,17 @@ export default function PreparedCardGameDetail({ api }) {
         {draft.version !== game.version && <p className="prepared-info">{t('detail.conflictHint')} <button type="button" className="text-button" onClick={() => { edit(game); setError(''); }}>{t('detail.reload')}</button></p>}
         <div className="prepared-detail-actions"><button className="primary-button" disabled={busy || !draft.questions.length || draft.version !== game.version} type="submit">{busy ? t('loading') : t('detail.saveChanges')}</button><button className="secondary-button" type="button" onClick={() => { setDraft(null); setParams({}, { replace: true }); }}>{t('detail.cancel')}</button></div></fieldset>
       </form> : <>
-        <div className="prepared-detail-actions">{game.canEdit && <button className="primary-button" onClick={() => edit(game)}>{t('detail.edit')}</button>}<a className="secondary-button" href={`${import.meta.env.BASE_URL}office/card-game.html#game=${game.presentationKey}`} target="_blank" rel="noreferrer">{t('present')}</a><button className="secondary-button" onClick={refresh}>{t('detail.refresh')}</button></div>
+        <div className="prepared-detail-actions">
+          {game.canEdit && <button className="primary-button" onClick={() => edit(game)}>{t('detail.edit')}</button>}
+          {game.playStatus === 'played' && <button className="primary-button" onClick={() => replayCardGame(game)}>{t('sharing.replay')}</button>}
+          <a className="secondary-button" href={cardDisplayUrl(game)} target="_blank" rel="noreferrer">{t('present')}</a>
+          <button className="secondary-button" onClick={refresh}>{t('detail.refresh')}</button>
+        </div>
         <p className="muted-copy">{t(game.canEdit ? 'detail.editableHint' : 'detail.lockedHint')}</p>
+        <section className="panel prepared-sharing"><div className="panel-heading">
+          <div><h2>{t('sharing.title')}</h2><p className="muted-copy">{t(game.isShared ? 'sharing.activeHint' : 'sharing.privateHint')}</p></div>
+          <button type="button" className="secondary-button" disabled={sharingBusy} aria-busy={sharingBusy} onClick={() => setSharing(!game.isShared)}>{t(game.isShared ? 'sharing.stop' : 'sharing.start')}</button>
+        </div></section>
         <section className="panel"><h2>{t('detail.content')}</h2><div className="prepared-question-list">{game.questions.map((question, index) => <article className="prepared-question" key={question.id}><p className="eyebrow">{t('detail.questionNumber', { number: index + 1 })}</p><h3>{question.question}</h3><QuestionMedia question={question} /><div className="prepared-answer-grid">{question.options.map((option, optionIndex) => <div key={optionIndex} className={question.answer === optionIndex ? 'is-correct' : ''}><span><b>{letters[optionIndex]}.</b> {option}</span>{question.answer === optionIndex && <small>{t('detail.correctAnswer')}</small>}</div>)}</div></article>)}</div></section>
         <RunStatistics api={api} game={game} refresh={refresh} key={gameId} />
       </>}

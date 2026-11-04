@@ -3,14 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Presentation } from 'lucide-react';
 import TableAction from './TableAction';
+import SharedCardGames from './SharedCardGames';
+import { cardDisplayUrl, replayCardGame } from './card-game-display';
 import './prepared-card-games.css';
 
-export function PreparedCardGames({ api, API, onError, revision = 0 }) {
+export function PreparedCardGames({ api, API, onError, revision = 0, classes = [] }) {
   const { t } = useTranslation('preparedGames');
   const [games, setGames] = useState(null), [busy, setBusy] = useState('');
   const navigate = useNavigate();
   useEffect(() => { let active = true; api('/card-games').then(data => { if (active) setGames(data.items || []); }).catch(error => { if (active) { setGames([]); onError(error.message); } }); return () => { active = false; }; }, [api, revision]);
-  const displayUrl = game => `${window.location.origin}${import.meta.env.BASE_URL}office/card-game.html#game=${game.presentationKey}`;
   async function download(game) {
     setBusy(game.id);
     try {
@@ -20,10 +21,29 @@ export function PreparedCardGames({ api, API, onError, revision = 0 }) {
       anchor.href = url; anchor.download = `${game.title.replace(/[<>:"/\\|?*]/g, '-')}.pptx`; document.body.append(anchor); anchor.click(); anchor.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (error) { onError(error.message); } finally { setBusy(''); }
   }
-  return <section className="dashboard-panel prepared-game-list"><div className="panel-heading"><div><p className="eyebrow">{t('eyebrow')}</p><h2>{t('savedTitle')}</h2><p className="muted-copy">{t('savedHint')}</p></div><a className="text-button" href={`${import.meta.env.BASE_URL}office/quizzz-manifest.xml`} download>{t('addin')}</a></div>
+  return <><section className="dashboard-panel prepared-game-list"><div className="panel-heading"><div><p className="eyebrow">{t('eyebrow')}</p><h2>{t('savedTitle')}</h2><p className="muted-copy">{t('savedHint')}</p></div><a className="text-button" href={`${import.meta.env.BASE_URL}office/quizzz-manifest.xml`} download>{t('addin')}</a></div>
     <p className="muted-copy"><a href={`${import.meta.env.BASE_URL}office/setup.html`} target="_blank" rel="noreferrer">{t('setup')}</a></p>
-    {games === null ? <p role="status">{t('loading')}</p> : games.length ? <div className="table-scroll"><table className="management-table"><thead><tr><th>{t('game')}</th><th>{t('class')}</th><th>{t('questions')}</th><th>{t('detail.status')}</th><th>{t('actions')}</th></tr></thead><tbody>{games.map(game => <tr key={game.id}><td><Link to={`/teacher/card-scan/games/${game.id}`}><strong>{game.title}</strong></Link><small>{game.timeLimitSeconds}s</small></td><td>{game.className}</td><td>{game.questionCount}</td><td><span className={`prepared-status ${game.playStatus || "notStarted"}`}>{t(`detail.${game.playStatus || "notStarted"}`)}</span><small>{t("detail.runCount", { count: game.runCount || 0 })}</small></td><td><div className="prepared-game-actions"><TableAction action="view" label={t("detail.view")} onClick={() => navigate(`/teacher/card-scan/games/${game.id}`)} />{game.canEdit && <TableAction action="edit" label={t("detail.edit")} onClick={() => navigate(`/teacher/card-scan/games/${game.id}?edit=1`)} />}{game.runCount > 0 && <TableAction action="results" label={t("detail.statistics")} onClick={() => navigate(`/teacher/card-scan/games/${game.id}?tab=statistics`)} />}<a className="table-icon-button" href={displayUrl(game)} target="_blank" rel="noreferrer" aria-label={t('present')} title={t('present')}><Presentation size={18} strokeWidth={1.8} aria-hidden="true" /></a><TableAction action="download" label={busy === game.id ? t('loading') : t('export')} disabled={busy === game.id} aria-busy={busy === game.id} onClick={() => download(game)} /></div></td></tr>)}</tbody></table></div> : <p className="empty-state compact">{t('empty')}</p>}
-  </section>;
+    {games === null ? <p role="status">{t('loading')}</p> : games.length ? <div className="table-scroll"><table className="management-table">
+      <thead><tr><th>{t('game')}</th><th>{t('class')}</th><th>{t('questions')}</th><th>{t('detail.status')}</th><th>{t('actions')}</th></tr></thead>
+      <tbody>{games.map(game => {
+        const detailUrl = `/teacher/card-scan/games/${game.id}`;
+        const status = game.playStatus || 'notStarted';
+        return <tr key={game.id}>
+          <td><Link to={detailUrl}><strong>{game.title}</strong></Link><small>{t('detail.seconds', { count: game.timeLimitSeconds })}</small></td>
+          <td>{game.className}</td><td>{game.questionCount}</td>
+          <td><span className={`prepared-status ${status}`}>{t(`detail.${status}`)}</span><small>{t('detail.runCount', { count: game.runCount || 0 })}</small>{game.isShared && <small>{t('sharing.shared')}</small>}</td>
+          <td><div className="prepared-game-actions">
+            <TableAction action="view" label={t('detail.view')} onClick={() => navigate(detailUrl)} />
+            {game.canEdit && <TableAction action="edit" label={t('detail.edit')} onClick={() => navigate(`${detailUrl}?edit=1`)} />}
+            {game.runCount > 0 && <TableAction action="results" label={t('detail.statistics')} onClick={() => navigate(`${detailUrl}?tab=statistics`)} />}
+            {status === 'played' && <TableAction action="replay" label={t('sharing.replay')} onClick={() => replayCardGame(game)} />}
+            <a className="table-icon-button" href={cardDisplayUrl(game)} target="_blank" rel="noreferrer" aria-label={t('present')} title={t('present')}><Presentation size={18} strokeWidth={1.8} aria-hidden="true" /></a>
+            <TableAction action="download" label={busy === game.id ? t('loading') : t('export')} disabled={busy === game.id} aria-busy={busy === game.id} onClick={() => download(game)} />
+          </div></td>
+        </tr>;
+      })}</tbody>
+    </table></div> : <p className="empty-state compact">{t('empty')}</p>}
+  </section><SharedCardGames api={api} classes={classes} onError={onError} /></>;
 }
 
 export function CardGamePair({ api }) {
