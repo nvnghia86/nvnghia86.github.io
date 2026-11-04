@@ -40,6 +40,11 @@ async function openPicker() {
 }
 const filter = (dialog, name, value) => fireEvent.change(within(dialog).getByRole('combobox', { name }), { target: { value } });
 const checkbox = (dialog, name) => within(dialog).getByRole('checkbox', { name: new RegExp(name) });
+async function openLessons(dialog) {
+  fireEvent.click(within(dialog).getByRole('button', { name: /^Bài học trong mục lục/ }));
+  return within(dialog).getByRole('group', { name: 'Bài học trong mục lục' });
+}
+function closeLessons(dialog) { fireEvent.click(within(dialog).getByRole('button', { name: 'Xong', exact: true })); }
 
 beforeEach(async () => { await i18n.changeLanguage('vi'); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); window.location.hash = ''; });
@@ -48,8 +53,10 @@ describe('game question picker', () => {
   it('combines grade, subject, type and scoped curriculum lessons, retaining hidden selections in the submitted room', async () => {
     const { api, onError, container } = fixture();
     let { dialog } = await openPicker();
-    await waitFor(() => expect(within(dialog).getByRole('option', { name: 'Toán học 4 — Bài một · Lớp 4 · Toán học' })).toBeInTheDocument());
-    expect(within(dialog).queryByRole('option', { name: /Bài chưa gắn/ })).toBeNull();
+    let lessonOptions = await openLessons(dialog);
+    await within(lessonOptions).findByRole('checkbox', { name: 'Toán học 4 — Bài một · Lớp 4 · Toán học' });
+    expect(within(lessonOptions).queryByRole('checkbox', { name: /Bài chưa gắn/ })).toBeNull();
+    closeLessons(dialog);
     fireEvent.click(checkbox(dialog, 'Toán lớp bốn'));
     filter(dialog, 'Lọc theo khối lớp', '5');
     expect(within(dialog).queryByText('Toán lớp bốn')).toBeNull();
@@ -58,9 +65,9 @@ describe('game question picker', () => {
     filter(dialog, 'Lọc theo khối lớp', '4');
     filter(dialog, 'Lọc theo môn học', 'Toán học');
     filter(dialog, 'Loại câu hỏi', 'multiple-choice');
-    const lesson = within(dialog).getByRole('combobox', { name: 'Bài học trong mục lục' });
-    const option = await within(lesson).findByRole('option', { name: 'Toán học 4 — Bài một' });
-    fireEvent.change(lesson, { target: { value: option.value } });
+    lessonOptions = await openLessons(dialog);
+    fireEvent.click(await within(lessonOptions).findByRole('checkbox', { name: 'Toán học 4 — Bài một' }));
+    closeLessons(dialog);
     expect(within(dialog).getAllByRole('checkbox')).toHaveLength(1);
     expect(checkbox(dialog, 'Toán lớp bốn')).toBeChecked();
     expect(within(dialog).getByText('Đã chọn 2 câu')).toBeInTheDocument();
@@ -85,15 +92,15 @@ describe('game question picker', () => {
 
   it('keeps separate lesson options for matching IDs across grades and subjects', async () => {
     fixture(); const { dialog } = await openPicker();
-    const lesson = within(dialog).getByRole('combobox', { name: 'Bài học trong mục lục' });
-    const option = await within(lesson).findByRole('option', { name: 'Tiếng Việt 4 — Bài một · Lớp 4 · Tiếng Việt' });
-    fireEvent.change(lesson, { target: { value: option.value } });
+    const lesson = within(dialog).getByRole('button', { name: /^Bài học trong mục lục/ });
+    const lessonOptions = await openLessons(dialog);
+    fireEvent.click(await within(lessonOptions).findByRole('checkbox', { name: 'Tiếng Việt 4 — Bài một · Lớp 4 · Tiếng Việt' }));
+    closeLessons(dialog);
     expect(within(dialog).getAllByRole('checkbox')).toHaveLength(1);
     expect(checkbox(dialog, 'Đọc hiểu tiếng Việt')).toBeInTheDocument();
     filter(dialog, 'Lọc theo môn học', 'Khoa học');
-    expect(lesson).toHaveValue('');
     expect(lesson).toBeDisabled();
-    expect(within(dialog).getByRole('option', { name: 'Chưa có câu hỏi gắn với bài học' })).toBeInTheDocument();
+    expect(lesson).toHaveTextContent('Chưa có câu hỏi gắn với bài học');
     expect(checkbox(dialog, 'Quan sát cây xanh')).toBeInTheDocument();
   });
 
@@ -128,10 +135,14 @@ describe('game question picker', () => {
     const { dialog } = await openPicker();
     fireEvent.click(checkbox(dialog, 'Toán lớp bốn'));
     await within(dialog).findByText(/Chưa tải được mục lục/);
-    expect(within(dialog).getByRole('option', { name: /Tên bài cũ/ })).toBeInTheDocument();
+    let lessonOptions = await openLessons(dialog);
+    expect(within(lessonOptions).getByRole('checkbox', { name: /Tên bài cũ/ })).toBeInTheDocument();
+    closeLessons(dialog);
     fail = false;
     fireEvent.click(within(dialog).getByRole('button', { name: 'Thử lại' }));
-    await within(dialog).findByRole('option', { name: /Toán học 4 — Bài một/ });
+    lessonOptions = await openLessons(dialog);
+    await within(lessonOptions).findByRole('checkbox', { name: /Toán học 4 — Bài một/ });
+    closeLessons(dialog);
     expect(checkbox(dialog, 'Toán lớp bốn')).toBeChecked();
     await act(async () => { await i18n.changeLanguage('en'); });
     expect(screen.getByRole('dialog', { name: 'Choose game questions' })).toBeInTheDocument();
@@ -147,5 +158,39 @@ describe('game question picker', () => {
     filter(dialog, 'Lọc theo khối lớp', '5');
     expect(within(dialog).getByText('Không có câu hỏi phù hợp với bộ lọc.')).toBeInTheDocument();
     expect(within(dialog).getByText('Đã chọn 1 câu')).toBeInTheDocument();
+  });
+
+  it('combines multiple lessons with OR, keeps hidden question selections and preserves selected lessons during search', async () => {
+    fixture(); const { dialog } = await openPicker();
+    let group = await openLessons(dialog);
+    fireEvent.click(await within(group).findByRole('checkbox', { name: 'Toán học 4 — Bài một · Lớp 4 · Toán học' }));
+    fireEvent.click(within(group).getByRole('checkbox', { name: 'Toán học 5 — Bài một · Lớp 5 · Toán học' }));
+    closeLessons(dialog);
+    expect(within(dialog).getByRole('button', { name: 'Bài học trong mục lục Đã chọn 2 bài học' })).toBeInTheDocument();
+    expect(within(dialog).getAllByRole('checkbox')).toHaveLength(2);
+    expect(within(dialog).queryByText('Đọc hiểu tiếng Việt')).toBeNull();
+    fireEvent.click(checkbox(dialog, 'Toán lớp bốn'));
+    group = await openLessons(dialog);
+    const search = within(dialog).getByRole('searchbox', { name: 'Tìm bài học' });
+    fireEvent.change(search, { target: { value: 'Tiếng Việt' } });
+    expect(within(group).getAllByRole('checkbox')).toHaveLength(1);
+    fireEvent.click(within(group).getByRole('checkbox', { name: /Tiếng Việt 4/ }));
+    fireEvent.change(search, { target: { value: '' } });
+    expect(within(group).getAllByRole('checkbox').filter(item => item.checked)).toHaveLength(3);
+    fireEvent.click(within(group).getByRole('checkbox', { name: 'Toán học 4 — Bài một · Lớp 4 · Toán học' }));
+    fireEvent.keyDown(search, { key: 'Escape' });
+    expect(within(dialog).queryByRole('group')).toBeNull();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Toán lớp bốn')).toBeNull();
+    expect(within(dialog).getByText(/1 câu đã chọn nằm ngoài bộ lọc/)).toBeInTheDocument();
+    group = await openLessons(dialog);
+    fireEvent.pointerDown(within(dialog).getByRole('heading'));
+    expect(within(dialog).queryByRole('group')).toBeNull();
+    group = await openLessons(dialog);
+    expect(within(group).getAllByRole('checkbox').filter(item => item.checked)).toHaveLength(2);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Bỏ lọc bài học' }));
+    closeLessons(dialog);
+    expect(checkbox(dialog, 'Toán lớp bốn')).toBeChecked();
+    expect(within(dialog).getByRole('button', { name: 'Xóa bộ lọc' })).toBeDisabled();
   });
 });

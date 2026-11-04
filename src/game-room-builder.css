@@ -14,6 +14,20 @@
 .game-picker-filters .field{display:grid;gap:6px;font-size:13px;font-weight:600;min-width:0}
 .game-picker-filters select{min-width:0;min-height:42px;padding:9px 10px;border:1px solid #cddfe9;border-radius:10px;background:#fff;color:#183244;font:inherit;text-overflow:ellipsis}
 .game-picker-filters select:disabled{background:#f3f7f9;color:#607d8b}
+.game-lesson-select{position:relative}
+.game-lesson-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0;min-height:42px;padding:9px 10px;border:1px solid #cddfe9;border-radius:10px;background:#fff;color:#183244;font:inherit;text-align:left;cursor:pointer}
+.game-lesson-trigger>span:first-child{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.game-lesson-trigger:disabled{background:#f3f7f9;color:#607d8b;cursor:default}
+.game-lesson-popup{position:absolute;top:100%;left:0;right:0;z-index:5;display:flex;flex-direction:column;gap:8px;padding:10px;margin-top:4px;border:1px solid #cddfe9;border-radius:12px;background:#fff;color:#183244;box-shadow:0 12px 28px #18324426;min-width:0;max-height:var(--lesson-popup-height,320px);overflow:hidden;box-sizing:border-box}
+.game-lesson-popup.is-above{top:auto;bottom:calc(100% + 4px);margin-top:0}
+.game-lesson-popup input[type=search]{flex-shrink:0;width:100%;min-width:0;min-height:40px;box-sizing:border-box}
+.game-lesson-options{flex:1;max-height:200px;min-height:0;overflow:auto;overscroll-behavior:contain}
+.game-lesson-option{display:flex;align-items:flex-start;gap:8px;padding:9px 7px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:400;line-height:1.5}
+.game-lesson-option.selected,.game-lesson-option:hover{background:#edf9ff}
+.game-lesson-option input[type=checkbox]{flex-shrink:0;width:17px;height:17px;min-height:0;padding:0;margin:2px 0 0;accent-color:#087fb7}
+.game-lesson-option span{min-width:0;overflow-wrap:anywhere}
+.game-lesson-actions{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #dce8ef;padding-top:6px}
+.game-lesson-actions button{white-space:nowrap}
 .game-picker-summary{display:flex;flex-shrink:0;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #dce8ef}
 .game-picker-summary>div{display:grid;gap:4px;min-width:0}
 .game-picker-summary strong{color:#087fb7;font-size:14px}
@@ -37,6 +51,9 @@ html[data-theme=dark] .game-picker-modal{background:#132636;color:#eaf5fa}
 html[data-theme=dark] .game-picker-modal :is(.muted-copy,small,.game-picker-catalog-note,.modal-close,.field){color:#b3cbdc}
 html[data-theme=dark] .game-picker-modal .text-button{color:#7ddcff}
 html[data-theme=dark] .game-picker-filters select{background:#0d1c29;border-color:#385467;color:#eaf5fa}
+html[data-theme=dark] :is(.game-lesson-trigger,.game-lesson-popup){background:#0d1c29;border-color:#385467;color:#eaf5fa}
+html[data-theme=dark] .game-lesson-option.selected,html[data-theme=dark] .game-lesson-option:hover{background:#153f56}
+html[data-theme=dark] .game-lesson-actions{border-color:#385467}
 html[data-theme=dark] .game-picker-item{border-color:#385467}
 html[data-theme=dark] .game-picker-item.selected{background:#153f56;border-color:#36bfea}
 html[data-theme=dark] .game-picker-item.unavailable{background:#192f40}
@@ -50,6 +67,7 @@ html[data-theme=dark] .game-picker-modal .modal-close:hover{background:#203e52}
   .game-picker-modal h2{font-size:20px}
   .game-picker-filters{gap:10px;margin-top:12px}
   .game-picker-filters select{font-size:13px}
+  .game-lesson-popup{left:auto;right:0;width:min(360px,calc(100vw - 52px))}
   .game-picker-modal .modal-actions button{width:100%;min-height:44px}
 }
 @media(max-height:520px){
