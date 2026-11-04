@@ -56,6 +56,7 @@ it('uses the final leaderboard order for the podium, including tied scores and s
     expect(view.document.querySelector('#stage')).toHaveProperty('className', 'is-finished');
     expect([...view.document.querySelectorAll('.podium-name')].map(node => node.textContent)).toEqual(['Hà', 'An', 'Lan']);
     expect(view.document.querySelector('.podium-1 .podium-score').textContent).toBe('5 điểm');
+    expect(view.document.querySelector('#replay-display').textContent).toBe('Chơi lại trên PowerPoint');
     expect(view.document.querySelectorAll('.rank-row')).toHaveLength(4);
   } finally { view.close(); }
   const small = display({ status: 'finished', query: '?lang=en', players: players.slice(0, 1) });
@@ -63,6 +64,23 @@ it('uses the final leaderboard order for the podium, including tied scores and s
     expect(small.document.querySelectorAll('.podium-place')).toHaveLength(1);
     expect(small.document.querySelector('#celebration-title').textContent).toBe('Well done, everyone!');
   } finally { small.close(); }
+});
+it('automatically creates a fresh QR when a downloaded PowerPoint reopens a finished display', () => {
+  const saved = { '': { id: 'finished-display', displayToken: 'old-token' } };
+  const view = display({ status: 'finished', saved });
+  try {
+    expect(view.requests.map(([method]) => method)).toEqual(['GET', 'POST', 'GET']);
+    expect(view.requests[0][1]).toContain('/displays/finished-display?token=old-token');
+    expect(JSON.parse(view.window.localStorage.getItem(`quizzz.card-display.${'a'.repeat(48)}`))).toEqual({ id: 'display', displayToken: 'b'.repeat(48) });
+  } finally { view.close(); }
+});
+it('starts another run from the PowerPoint celebration without downloading the file again', () => {
+  const view = display({ status: 'finished' });
+  try {
+    expect(view.requests.filter(([method]) => method === 'POST')).toHaveLength(1);
+    view.document.querySelector('#replay-display').click();
+    expect(view.requests.filter(([method]) => method === 'POST')).toHaveLength(2);
+  } finally { view.close(); }
 });
 it('opens a fresh replay instead of resuming the finished display, and resumes that replay on refresh', () => {
   const run = '11111111-1111-4111-8111-111111111111';

@@ -1,7 +1,7 @@
 /* The Office display deliberately uses ES5 + XHR so Office 2016 does not load the React application. */
 (function () {
   'use strict';
-  var api = document.documentElement.getAttribute('data-api'), current = null, credential = null, gameKey = '', stopped = false, timer = null, generation = 0, signature = '';
+  var api = document.documentElement.getAttribute('data-api'), current = null, credential = null, gameKey = '', stopped = false, timer = null, generation = 0, signature = '', checkingSavedDisplay = false;
   var replay = /(?:^|&)run=([a-f0-9-]{36})(?:&|$)/i.exec(window.location.hash.slice(1));
   // Slides default to Vietnamese regardless of the Office/browser language.
   // Keep English available through an explicit ?lang=en display URL.
@@ -24,11 +24,12 @@
   function remember(value) { credential = value; try { localStorage.setItem(storageKey(), JSON.stringify(value)); } catch (ignore) {} }
   function loadSaved() { try { return JSON.parse(localStorage.getItem(storageKey())); } catch (ignore) { return null; } }
   function begin() {
-    generation++; signature = ''; window.clearTimeout(timer); stopped = false; credential = loadSaved();
+    generation++; signature = ''; window.clearTimeout(timer); stopped = false; credential = loadSaved(); checkingSavedDisplay = Boolean(credential && credential.id && credential.displayToken);
     el('setup').style.display = 'none'; el('display').style.display = 'flex';
     if (credential && credential.id && credential.displayToken) poll(); else fresh();
   }
   function fresh() {
+    checkingSavedDisplay = false;
     var activeGeneration = generation;
     request('POST', '/card-games/presentations/' + gameKey + '/displays', {}, function (failure, value) {
       if (stopped || activeGeneration !== generation) return;
@@ -43,7 +44,14 @@
     request('GET', '/card-games/displays/' + credential.id + '?token=' + encodeURIComponent(credential.displayToken), null, function (failure, value) {
       if (stopped || activeGeneration !== generation) return;
       if (failure) { if (failure.status === 410 || failure.status === 403) { remember(null); fresh(); return; } error(failure.message); }
-      else { error(''); current = value; var stable = JSON.parse(JSON.stringify(value)); if (stable.session) delete stable.session.timeRemaining; var nextSignature = JSON.stringify(stable); if (signature !== nextSignature) { signature = nextSignature; render(value); } }
+      else {
+        error('');
+        if (checkingSavedDisplay) {
+          checkingSavedDisplay = false;
+          if (value.session && value.session.status === 'finished') { remember(null); current = null; signature = ''; fresh(); return; }
+        }
+        current = value; var stable = JSON.parse(JSON.stringify(value)); if (stable.session) delete stable.session.timeRemaining; var nextSignature = JSON.stringify(stable); if (signature !== nextSignature) { signature = nextSignature; render(value); }
+      }
       timer = window.setTimeout(poll, failure ? 3000 : 900);
     });
   }
@@ -138,6 +146,7 @@
     var stage = el('stage'), newlyFinished = finished && stage.className !== 'is-finished';
     stage.className = finished ? 'is-finished' : reviewing ? 'is-reviewing' : '';
     el('new-display').textContent = finished ? text('Chơi lại', 'Play again') : text('Chuẩn bị lượt chơi mới', 'Prepare a new run');
+    el('new-display').style.display = finished ? 'none' : '';
     el('title').textContent = value.title; el('subtitle').textContent = value.className + (session && !waiting ? ' · ' + text('Câu ', 'Question ') + Math.min(session.currentQuestion + 1, session.questionCount) + ' / ' + session.questionCount : ' · ' + value.questionCount + text(' câu hỏi', ' questions'));
     el('notice').textContent = waiting ? value.paired ? text('Đã kết nối. Chờ bấm Bắt đầu trên điện thoại.', 'Connected. Waiting for Start on the phone.') : text('Chưa bắt đầu. Chờ điện thoại kết nối.', 'Not started. Waiting for the phone.') : finished ? text('Trò chơi đã kết thúc.', 'The game has ended.') : session.questionStatus === 'closed' ? text('Đã chốt câu. Giáo viên chủ động chuyển câu trên điện thoại.', 'Question ended. Continue from the phone when ready.') : '';
     el('waiting').style.display = waiting ? 'flex' : 'none'; stage.style.display = waiting ? 'none' : 'flex';
@@ -201,11 +210,17 @@
     if (window.Office && Office.context && Office.context.document) { Office.context.document.settings.set('quizzz.presentationKey', gameKey); Office.context.document.settings.saveAsync(); }
     begin();
   };
-  el('new-display').onclick = function () { if (!window.confirm(text('Mở màn ghép nối mới? Lượt chơi cũ vẫn được lưu.', 'Open a new pairing display? Previous results are kept.'))) return; generation++; signature=''; window.clearTimeout(timer); current = null; remember(null); el('notice').textContent=text('Đang tạo QR mới…','Creating a new QR…'); el('stage').style.display='none'; el('waiting').style.display='none'; fresh(); };
+  function replayDisplay(confirmFirst) {
+    if (confirmFirst && !window.confirm(text('Mở màn ghép nối mới? Lượt chơi cũ vẫn được lưu.', 'Open a new pairing display? Previous results are kept.'))) return;
+    generation++; signature=''; window.clearTimeout(timer); current = null; remember(null); el('notice').textContent=text('Đang tạo QR mới…','Creating a new QR…'); el('stage').style.display='none'; el('waiting').style.display='none'; fresh();
+  }
+  el('new-display').onclick = function () { replayDisplay(!(current && current.session && current.session.status === 'finished')); };
+  el('replay-display').onclick = function () { replayDisplay(false); };
   window.setInterval(clock, 250); window.addEventListener('beforeunload', function () { stopped = true; window.clearTimeout(timer); });
   gameKey = keyFrom(window.location.hash.slice(1));
   el('celebration-label').textContent = text('VINH DANH', 'PODIUM');
   el('celebration-title').textContent = text('Chúc mừng cả lớp!', 'Well done, everyone!');
+  el('replay-display').textContent = text('Chơi lại trên PowerPoint', 'Play again in PowerPoint');
   el('question-results-title').textContent = text('Tổng hợp kết quả câu hỏi', 'Question results');
   el('student-results-title').textContent = text('Kết quả từng em', 'Student answers');
   el('answer-chart').setAttribute('aria-label', text('Số học sinh chọn từng đáp án', 'Number of students per answer'));

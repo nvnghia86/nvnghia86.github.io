@@ -43,6 +43,7 @@ footer{flex-shrink:0;text-align:right;padding-top:8px}#new-display{background:#f
 }
 #podium:empty{display:none}
 #celebration-empty{margin:0 0 auto}
+#replay-display{margin:14px 0 0;flex-shrink:0;font-size:16px;font-weight:bold}
 .podium-place{
   display:flex;flex:0 1 30%;min-width:0;max-width:250px;flex-direction:column;
   margin:0 5px;padding:14px 6px 0;overflow:hidden;
@@ -71,6 +72,7 @@ footer{flex-shrink:0;text-align:right;padding-top:8px}#new-display{background:#f
   .podium-place{padding-top:8px}.podium-medal{font-size:28px}.podium-name{font-size:19px}
   .podium-rank{margin:4px 0}.podium-score{margin:5px 0 7px}
   .podium-step{height:30px}.podium-1 .podium-step{height:44px}.podium-3 .podium-step{height:23px}
+  #replay-display{margin-top:8px;padding:8px 14px;font-size:14px}
 }
 @media(max-width:700px){
   #celebration{margin:0 0 10px;padding:10px 5px}.celebration-heading{margin-bottom:12px}
