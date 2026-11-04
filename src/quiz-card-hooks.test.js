@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AR, answerFromCorners, cardDictionary } from './quiz-card-hooks';
+import { AR, answerFromCorners, cardDictionary, mergeCardSession } from './quiz-card-hooks';
 
 function renderCard(id, turns = 0) {
   const cells = 11;
@@ -38,5 +38,17 @@ describe('printed ARUCO cards and scanner orientation', () => {
       expect(marker).toBeDefined();
       expect(answerFromCorners(marker.corners)).toBe('ADCB'[turns]);
     }
+  });
+});
+
+describe('room snapshot ordering', () => {
+  it('keeps completion terminal even though the final backend snapshot resets its version to zero', () => {
+    const playing = { id: 'room', status: 'playing', currentQuestion: 2, version: 9 };
+    const finished = { ...playing, status: 'finished', version: 0 };
+    expect(mergeCardSession(playing, finished)).toBe(finished);
+    expect(mergeCardSession(finished, { ...playing, version: 99 })).toBe(finished);
+    expect(mergeCardSession(playing, { ...playing, currentQuestion: 1, version: 100 })).toBe(playing);
+    expect(mergeCardSession(playing, { ...playing, version: 8 })).toBe(playing);
+    expect(mergeCardSession(finished, { id: 'other', status: 'lobby' }).id).toBe('other');
   });
 });

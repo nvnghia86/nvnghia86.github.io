@@ -6,6 +6,16 @@ import aruco from 'js-aruco2';
 export const AR = aruco.AR || globalThis.AR;
 export const cardDictionary = new AR.Dictionary('ARUCO');
 
+export function mergeCardSession(previous, incoming) {
+  if (!incoming || !previous || previous.id !== incoming.id) return incoming || previous;
+  if (previous.status === 'finished' && incoming.status !== 'finished') return previous;
+  if (incoming.status === 'finished') return incoming;
+  if (previous.status === 'playing' && incoming.status === 'lobby') return previous;
+  if (Number(incoming.currentQuestion) < Number(previous.currentQuestion)) return previous;
+  if (incoming.currentQuestion === previous.currentQuestion && Number(incoming.version) < Number(previous.version)) return previous;
+  return incoming;
+}
+
 export function answerFromCorners(corners) {
   if (!Array.isArray(corners) || corners.length !== 4) return null;
   const dx = corners[1].x - corners[0].x;

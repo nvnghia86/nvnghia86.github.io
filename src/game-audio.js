@@ -1,11 +1,11 @@
 export const GAME_AUDIO_KEY = 'quizzz.game-audio.v1';
-export const DEFAULT_AUDIO_SETTINGS = { enabled: true, music: true, volume: .5 };
+export const DEFAULT_AUDIO_SETTINGS = { enabled: true, music: true, volume: .8 };
 
 export function audioSettings(value = {}) {
   return {
     enabled: typeof value?.enabled === 'boolean' ? value.enabled : true,
     music: typeof value?.music === 'boolean' ? value.music : true,
-    volume: typeof value?.volume === 'number' && Number.isFinite(value.volume) ? Math.max(0, Math.min(1, value.volume)) : .5,
+    volume: typeof value?.volume === 'number' && Number.isFinite(value.volume) ? Math.max(0, Math.min(1, value.volume)) : DEFAULT_AUDIO_SETTINGS.volume,
   };
 }
 
@@ -89,7 +89,7 @@ export function createGameAudio({ createContext = () => {
         context = createContext();
         if (!context) return false;
         master = context.createGain(); musicBus = context.createGain(); effectsBus = context.createGain();
-        master.gain.value = settings.volume; musicBus.gain.value = .4; effectsBus.gain.value = 1;
+        master.gain.value = settings.volume; musicBus.gain.value = .7; effectsBus.gain.value = 1.25;
         musicBus.connect(master); effectsBus.connect(master); master.connect(context.destination);
       }
       resuming = (async () => {

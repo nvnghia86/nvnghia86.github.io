@@ -86,10 +86,11 @@ describe('game sound lifecycle', () => {
   });
 
   it('validates stored volume without enabling malformed preferences', () => {
-    expect(audioSettings(null)).toEqual({ enabled: true, music: true, volume: .5 });
+    expect(audioSettings(null)).toEqual({ enabled: true, music: true, volume: .8 });
     expect(audioSettings({ volume: 500, enabled: false, music: false })).toEqual({ volume: 1, enabled: false, music: false });
     expect(audioSettings({ volume: -2 }).volume).toBe(0);
-    expect(audioSettings({ volume: NaN }).volume).toBe(.5);
+    expect(audioSettings({ volume: NaN }).volume).toBe(.8);
+    expect(audioSettings({ volume: .2, enabled: false, music: false })).toEqual({ volume: .2, enabled: false, music: false });
   });
 });
 

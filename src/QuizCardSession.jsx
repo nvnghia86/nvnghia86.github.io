@@ -2,11 +2,11 @@ import QuestionMedia from './QuestionMedia';
 import GameAudioControls from './GameAudioControls';
 import { useGameAudio } from './use-game-audio';
 import { cardAudioCue, cardAudioSnapshot } from './game-audio';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ScannerConnect from './ScannerConnect';
 import Webcam from 'react-webcam';
 import { useTranslation } from 'react-i18next';
-import { cardDictionary, useAruco, useCamera, useQuizSocket } from './quiz-card-hooks';
+import { cardDictionary, mergeCardSession, useAruco, useCamera, useQuizSocket } from './quiz-card-hooks';
 import './quiz-card-session.css';
 import './quiz-card-scanner-mobile.css';
 import './quiz-card-host-enhanced.css';
@@ -24,7 +24,7 @@ function useSession(api, sessionId, onError, enabled = true, endpoint = `/quiz-s
     let active = true;
     api(endpoint).then(data => {
       if (!active) return;
-      setSession(data);
+      setSession(previous => mergeCardSession(previous, data));
       setError('');
     }).catch(failure => {
       if (!active) return;
@@ -116,9 +116,25 @@ function CelebrationModal({ players, onClose, t }) {
 
 export function ScannerRoster({ players, questionId, t }) {
   const listRef = useRef(null);
-  const ordered = useMemo(() => questionId ? [...players.filter(player => !player.answer), ...players.filter(player => player.answer)] : players, [players, questionId]);
+  const { ordered, pending } = useMemo(() => {
+    if (!questionId) return { ordered: players, pending: [] };
+    const pending = players.filter(player => !player.answer);
+    return { pending, ordered: [...pending, ...players.filter(player => player.answer)] };
+  }, [players, questionId]);
   useEffect(() => { if (listRef.current) listRef.current.scrollTop = 0; }, [questionId]);
-  return <section className="dashboard-panel scanner-student-roster"><div className="scanner-roster-heading"><div><h2>{t('cardScan.studentRoster')}</h2><small>{t('cardScan.students', { count: players.length })}</small></div><strong>{players.length}</strong></div><div className="scanner-roster-list" ref={listRef}>{ordered.map(player => <article key={player.id}><span className="scanner-roster-marker">#{player.markerId}</span><strong>{player.nickname}</strong><span className="scanner-roster-score">{player.score || 0} {t('cardScan.points')}</span><small><b>{t('cardScan.correct')}: {player.correctCount || 0}</b><b>{t('cardScan.incorrect')}: {player.incorrectCount || 0}</b><span>{t('cardScan.answeredCount', { count: player.answeredCount || 0 })}</span></small></article>)}</div></section>;
+  return <section className="dashboard-panel scanner-student-roster">
+    <div className="scanner-roster-heading"><div><h2>{t('cardScan.studentRoster')}</h2><small aria-live="polite">{questionId ? t('cardScan.pendingAnswerCount', { count: pending.length }) : t('cardScan.students', { count: players.length })}</small></div><strong>{players.length}</strong></div>
+    <div className="scanner-roster-list" ref={listRef}>{ordered.map(player => {
+      const answered = Boolean(player.answer);
+      return <article key={player.id} className={questionId ? answered ? 'has-current-answer' : 'is-awaiting-answer' : undefined}>
+        <span className="scanner-roster-marker">#{player.markerId}</span>
+        <strong>{player.nickname}</strong>
+        <span className="scanner-roster-score">{player.score || 0} {t('cardScan.points')}</span>
+        {questionId && <span className={`scanner-roster-answer-status ${answered ? 'is-answered' : 'is-pending'}`}>{answered ? t('cardScan.currentAnswered', { answer: player.answer }) : t('cardScan.currentUnanswered')}</span>}
+        <small><b>{t('cardScan.correct')}: {player.correctCount || 0}</b><b>{t('cardScan.incorrect')}: {player.incorrectCount || 0}</b><span>{t('cardScan.answeredCount', { count: player.answeredCount || 0 })}</span></small>
+      </article>;
+    })}</div>
+  </section>;
 }
 
 export function QuizCardHost({ api, API, sessionId, onError }) {
@@ -133,7 +149,7 @@ export function QuizCardHost({ api, API, sessionId, onError }) {
   const hostRef = useRef(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(hostRef);
   const onUpdate = (snapshot, answer) => {
-    if (snapshot) setSession(snapshot);
+    if (snapshot) setSession(previous => mergeCardSession(previous, snapshot));
     if (answer) setSession(previous => previous && previous.currentQuestionData?.id === answer.questionId && answer.version > previous.version ? { ...previous, version: answer.version, players: previous.players.map(player => player.markerId === answer.markerId ? { ...player, answer: answer.answer } : player) } : previous);
   };
   const socket = useQuizSocket(API, sessionId, 'host', onUpdate);
@@ -141,7 +157,7 @@ export function QuizCardHost({ api, API, sessionId, onError }) {
     setBusy(true);
     try {
       const state = await api(`/quiz-sessions/${sessionId}/${path}`, { method: 'POST' });
-      setSession(state);
+      setSession(previous => mergeCardSession(previous, state));
       return state;
     } catch (error) {
       onError(error.message);
@@ -192,20 +208,42 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError }) 
   const lastAttempt = useRef(new Map());
   const scannerRef = useRef(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(scannerRef);
-  const updateScannerSession = (snapshot, answer) => {
+  const updateScannerSession = useCallback((snapshot, answer) => {
     if (snapshot) {
       if (snapshot.previousQuestionSummary) setLastQuestionSummary(snapshot.previousQuestionSummary);
-      setSession(snapshot);
+      setSession(previous => mergeCardSession(previous, snapshot));
     }
-    if (answer) setSession(previous => previous && previous.currentQuestionData?.id === answer.questionId && answer.version > previous.version
+    if (answer) setSession(previous => previous?.status === 'playing' && previous.currentQuestionData?.id === answer.questionId && answer.version > previous.version
       ? { ...previous, version: answer.version, players: previous.players.map(player => player.markerId === answer.markerId ? { ...player, answer: answer.answer } : player) }
       : previous);
-  };
+  }, [setSession]);
   const socket = useQuizSocket(API, sessionId, 'scanner', updateScannerSession, hasAccess, scannerToken);
-  const questionId = session?.currentQuestionData?.id;
+  const finished = session?.status === 'finished';
+  const questionId = session?.status === 'playing' ? session.currentQuestionData?.id : null;
   const seconds = useSessionCountdown(session);
-  const openCamera = () => { camera.prepareCamera(); setCameraEnabled(true); };
+  const openCamera = () => { if (!finished) { camera.prepareCamera(); setCameraEnabled(true); } };
   const closeCamera = () => { camera.resetCamera(); setCameraEnabled(false); };
+  useEffect(() => {
+    if (!finished) return;
+    setCameraEnabled(false); setTestMode(false); setTestResults([]); setRecent([]);
+    camera.resetCamera();
+    sent.current.clear(); pending.current.clear(); lastAttempt.current.clear();
+  }, [finished]);
+  useEffect(() => {
+    if (!hasAccess || !session || finished) return undefined;
+    let active = true, fetching = false;
+    const refresh = async () => {
+      if (!active || fetching || document.hidden) return;
+      fetching = true;
+      try { const state = await api(scannerEndpoint); if (active) updateScannerSession(state); }
+      catch { /* Realtime reports connection errors; retry without repeated toasts. */ }
+      finally { fetching = false; }
+    };
+    const visible = () => { if (!document.hidden) void refresh(); };
+    const timer = socket.connection !== 'connected' ? window.setInterval(refresh, 5000) : null;
+    document.addEventListener('visibilitychange', visible); window.addEventListener('online', refresh);
+    return () => { active = false; window.clearInterval(timer); document.removeEventListener('visibilitychange', visible); window.removeEventListener('online', refresh); };
+  }, [api, scannerEndpoint, hasAccess, session?.status, finished, socket.connection, updateScannerSession]);
   const activeQuestion = useRef(questionId);
   activeQuestion.current = questionId;
   async function advanceQuestion() {
@@ -217,6 +255,7 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError }) 
   }
   useEffect(() => { sent.current.clear(); pending.current.clear(); lastAttempt.current.clear(); setRecent([]); }, [questionId]);
   const onDetected = ({ markerId, answer }) => {
+    if (finished) return;
     if (testMode) {
       setTestResults(previous => [{ markerId, answer, detectedAt: Date.now() }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 12));
       return;
@@ -234,12 +273,17 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError }) 
       const recordedAnswer = response.answer || answer;
       sent.current.set(markerId, recordedAnswer);
       setRecent(previous => [{ markerId, answer: recordedAnswer }, ...previous.filter(item => item.markerId !== markerId)].slice(0, 8));
-    }).catch(error => onError(error.message)).finally(() => pending.current.delete(pendingKey));
+    }).catch(error => { if (activeQuestion.current === questionId) onError(error.message); }).finally(() => pending.current.delete(pendingKey));
   };
-  const { seen, error: detectorError, diagnostics } = useAruco(camera.webcamRef, Boolean(hasAccess && cameraEnabled && (testMode || questionId)), onDetected, testMode ? 'test' : questionId || 'idle');
+  const { seen, error: detectorError, diagnostics } = useAruco(camera.webcamRef, Boolean(hasAccess && !finished && cameraEnabled && (testMode || questionId)), onDetected, testMode ? 'test' : questionId || 'idle');
   if (!hasAccess) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><div className="dashboard-panel card-scanner-welcome"><span className="card-scanner-welcome-icon">⌁</span><h2>{t('cardScan.invalidScanLink')}</h2><p>{t('cardScan.invalidScanLinkHint')}</p></div></section>;
   if (!session) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className={sessionError ? 'error' : 'muted-copy'}>{sessionError || t('common.loading')}</p></section>;
-  const statusLabel = session.status === 'playing' ? t('cardScan.sessionPlaying') : session.status === 'finished' ? t('cardScan.finished') : t('cardScan.sessionWaiting');
+  if (finished) return <section className="content-page card-session-page card-scanner-page">
+    <div className="dashboard-heading card-scanner-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{session.title} · {session.className}</p></div></div>
+    <div className="dashboard-panel card-scanner-finished" role="status"><span aria-hidden="true">🏁</span><h2>{t('cardScan.scannerFinishedTitle')}</h2><p>{t('cardScan.scannerFinishedHint')}</p></div>
+    <ScannerRoster players={session.players} t={t} />
+  </section>;
+  const statusLabel = session.status === 'playing' ? t('cardScan.sessionPlaying') : t('cardScan.sessionWaiting');
   const latestScan = testMode ? testResults[0] : recent[0];
   const cameraStatus = testMode ? t('cardScan.testing') : questionId ? t('cardScan.scanning') : t('cardScan.waitingQuestion');
   const answerStats = ['A', 'B', 'C', 'D'].map(answer => ({ answer, count: session.players.filter(player => player.answer === answer).length }));

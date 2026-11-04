@@ -20,10 +20,17 @@ describe('scanner roster for the current question', () => {
   it('puts unscanned students first, preserves order in each group and leaves source data intact', () => {
     const { container, rerender } = render(<ScannerRoster players={players} questionId="q1" t={t} />);
     expect(names(container)).toEqual(['Bình', 'Dũng', 'An', 'Chi']);
+    expect(screen.getAllByText('Chưa trả lời')).toHaveLength(2);
+    expect(screen.getByText('Đã trả lời · A')).toBeInTheDocument();
+    expect(screen.getByText('Đã trả lời · D')).toBeInTheDocument();
+    expect(screen.getByText('2 học sinh chưa trả lời câu này')).toBeInTheDocument();
     expect(players.map(player => player.nickname)).toEqual(['An', 'Bình', 'Chi', 'Dũng']);
     const updated = players.map(player => player.id === 'b' ? { ...player, answer: 'C' } : player);
     rerender(<ScannerRoster players={updated} questionId="q1" t={t} />);
     expect(names(container)).toEqual(['Dũng', 'An', 'Bình', 'Chi']);
+    expect(screen.getAllByText('Chưa trả lời')).toHaveLength(1);
+    expect(screen.getByText('Đã trả lời · C')).toBeInTheDocument();
+    expect(screen.getByText('1 học sinh chưa trả lời câu này')).toBeInTheDocument();
     // Historical answer totals must not mark a student as scanned in this question.
     expect(within(container.querySelector('article')).getByText('3 câu đã trả lời')).toBeInTheDocument();
   });
@@ -32,9 +39,21 @@ describe('scanner roster for the current question', () => {
     const list = container.querySelector('.scanner-roster-list'); list.scrollTop = 200;
     rerender(<ScannerRoster players={players.map(player => ({ ...player, answer: null }))} questionId="q2" t={t} />);
     expect(names(container)).toEqual(['An', 'Bình', 'Chi', 'Dũng']);
+    expect(screen.getAllByText('Chưa trả lời')).toHaveLength(4);
+    expect(screen.queryByText(/Đã trả lời ·/)).toBeNull();
     expect(list.scrollTop).toBe(0);
     rerender(<ScannerRoster players={[]} questionId="q2" t={t} />);
     expect(names(container)).toEqual([]);
+  });
+  it('uses translated current-question status and hides it while no question is open', async () => {
+    await i18n.changeLanguage('en');
+    const { rerender } = render(<ScannerRoster players={players} questionId="q1" t={t} />);
+    expect(screen.getAllByText('Not answered')).toHaveLength(2);
+    expect(screen.getByText('Answered · A')).toBeInTheDocument();
+    expect(screen.getByText('2 unanswered for this question')).toBeInTheDocument();
+    rerender(<ScannerRoster players={players} t={t} />);
+    expect(screen.queryByText('Not answered')).toBeNull();
+    expect(screen.queryByText('Answered · A')).toBeNull();
   });
 });
 
