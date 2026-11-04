@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   var api = document.documentElement.getAttribute('data-api'), current = null, credential = null, gameKey = '', stopped = false, timer = null, generation = 0, signature = '';
-  var locale = ''; try { locale = localStorage.getItem('quizzz.locale') || ''; } catch (ignore) {}
-  var en = /^en/i.test(locale || navigator.language || 'vi');
+  // Slides default to Vietnamese regardless of the Office/browser language.
+  // Keep English available through an explicit ?lang=en display URL.
+  var en = /(?:^|[?&])lang=en(?:&|$)/i.test(window.location.search);
   document.documentElement.lang = en ? 'en' : 'vi';
   function text(vi, english) { return en ? english : vi; }
   function el(id) { return document.getElementById(id); }
@@ -59,7 +60,7 @@
         media(question);
         for (var index = 0; index < question.options.length; index++) {
           var letter = 'ABCD'.charAt(index), box = document.createElement('div'); box.className = 'option' + (closed && summary && summary.correctAnswer === letter ? ' correct' : '');
-          var badge = document.createElement('b'); badge.textContent = letter; box.appendChild(badge); box.appendChild(span('', question.options[index]));
+          var badge = document.createElement('b'); badge.textContent = letter + '.'; box.appendChild(badge); box.appendChild(span('', question.options[index]));
           if (closed && summary) { var count = document.createElement('small'); count.textContent = (summary.counts[letter] || 0) + text(' học sinh chọn', ' students selected') + (summary.correctAnswer === letter ? text(' · Đáp án đúng', ' · Correct answer') : ''); box.appendChild(count); }
           el('options').appendChild(box);
         }

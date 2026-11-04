@@ -285,7 +285,7 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError, al
   if (!session) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className={sessionError ? 'error' : 'muted-copy'}>{sessionError || t('common.loading')}</p></section>;
   if (finished) return <section className="content-page card-session-page card-scanner-page">
     <div className="dashboard-heading card-scanner-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{session.title} · {session.className}</p></div></div>
-    <div className="dashboard-panel card-scanner-finished" role="status"><span aria-hidden="true">🏁</span><h2>{t('cardScan.scannerFinishedTitle')}</h2><p>{t('cardScan.scannerFinishedHint')}</p></div>
+    <div className="dashboard-panel card-scanner-finished" role="status"><span aria-hidden="true">🏁</span><h2>{t(session.endedReason === 'game_updated' ? 'preparedGames.detail.updatedTitle' : 'cardScan.scannerFinishedTitle')}</h2><p>{t(session.endedReason === 'game_updated' ? 'preparedGames.detail.updatedHint' : 'cardScan.scannerFinishedHint')}</p></div>
     <ScannerRoster players={session.players} t={t} />
   </section>;
   const statusLabel = session.status === 'playing' ? questionClosed ? t('cardScan.questionClosed') : t('cardScan.sessionPlaying') : t('cardScan.sessionWaiting');

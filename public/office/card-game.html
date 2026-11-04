@@ -4,6 +4,6 @@
 <body><div id="setup"><h1>Quizzz</h1><p id="setup-hint">Dán link trình chiếu của game đã lưu để gắn với slide này.</p><form id="setup-form"><label for="game-link">Link trình chiếu</label><input id="game-link" type="text" required autocomplete="off"><button type="submit">Gắn game</button></form></div>
 <main id="display" style="display:none"><header><div><span class="brand">QUIZZZ · QUÉT THẺ</span><h1 id="title"></h1><p id="subtitle"></p></div><strong id="clock"></strong></header><p id="notice" role="status"></p>
 <div id="waiting"><img id="qr" alt="QR kết nối máy quét"><div><h2 id="waiting-title">Quét QR bằng điện thoại</h2><p id="waiting-hint">Nhập mã điều khiển 6 số, rồi bấm Bắt đầu trên điện thoại khi lớp đã sẵn sàng.</p><a id="pair-link" target="_blank" rel="noreferrer">Mở trang kết nối</a></div></div>
-<div id="stage"><section id="question-panel"><h2 id="question"></h2><div id="media"></div><div id="options"></div><p id="review-hint"></p></section><aside><h2 id="ranking-title">Bảng xếp hạng</h2><div id="ranking"></div></aside></div>
+<div id="stage"><section id="question-panel"><h2 id="question"></h2><div id="media"></div><div id="options"></div><p id="review-hint"></p></section><aside><h2 id="ranking-title">Bảng xếp hạng</h2><div id="ranking" tabindex="0" role="region" aria-labelledby="ranking-title"></div></aside></div>
 <footer><button id="new-display" type="button">Chuẩn bị lượt chơi mới</button></footer></main><p id="error" role="alert"></p>
 <script src="card-game.js"></script></body></html>

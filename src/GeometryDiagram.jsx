@@ -35,7 +35,7 @@ function createElement(board, element, points) {
     const center = points.get(element.center) || refs[0];
     if (center) return board.create('circle', [center, Number(element.radius) || 1], options);
   }
-  if (element.type === 'text' && Array.isArray(element.coords)) return board.create('text', element.coords, String(element.text || ''), { ...options, fixed: true });
+  if (element.type === 'text' && Array.isArray(element.coords)) return board.create('text', [...element.coords.slice(0, 2), String(element.text || '')], { ...options, fixed: true });
   return null;
 }
 
