@@ -161,6 +161,15 @@ describe('game question picker', () => {
     expect(within(dialog).getByText('Đã chọn 1 câu')).toBeInTheDocument();
   });
 
+  it('allows only multiple-choice questions with exactly four options for body-pose games', async () => {
+    fixture({ mode: 'body-pose' }); const { dialog } = await openPicker();
+    expect(checkbox(dialog, 'Toán lớp bốn')).toBeEnabled();
+    expect(checkbox(dialog, 'Câu có hai lựa chọn')).toBeDisabled();
+    expect(checkbox(dialog, 'Bài toán tự luận')).toBeDisabled();
+    expect(within(dialog).getAllByText(/Không dùng được cho game cử chỉ/)).toHaveLength(2);
+    expect(within(dialog).getByRole('combobox', { name: 'Loại câu hỏi' }).querySelectorAll('option')).toHaveLength(2);
+  });
+
   it('combines multiple lessons with OR, keeps hidden question selections and preserves selected lessons during search', async () => {
     fixture(); const { dialog } = await openPicker();
     let group = await openLessons(dialog);

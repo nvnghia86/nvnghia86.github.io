@@ -3,6 +3,7 @@ import { preparedGames } from './prepared-game-i18n';
 import { initReactI18next } from 'react-i18next';
 import { videoStudioTranslations } from './video-studio-i18n';
 import { examTranslations } from './exam-i18n';
+import poseArenaTranslations from './pose-arena-i18n';
 
 const supportedLocales = ['vi', 'en'];
 const savedLocale = localStorage.getItem('quizzz.locale');
@@ -163,6 +164,7 @@ const gameQuestionPickerTranslations = {
     hint: 'Lọc kho câu hỏi và chọn các câu muốn sử dụng. Các câu đã chọn được giữ khi đổi bộ lọc.',
     cardHint: 'Quét thẻ dùng câu trắc nghiệm có 4 đáp án A–D. Các câu đã chọn được giữ khi đổi bộ lọc.',
     comparisonHint: 'Đang hiển thị câu hỏi so sánh. Các câu đã chọn được giữ khi đổi bộ lọc.',
+    poseHint: 'Game cử chỉ dùng câu trắc nghiệm có đúng 4 đáp án A–D. Các câu đã chọn được giữ khi đổi bộ lọc.',
     grade: 'Lọc theo khối lớp', gradeName: 'Lớp {{grade}}', allGrades: 'Tất cả khối lớp',
     subject: 'Lọc theo môn học', allSubjects: 'Tất cả môn học', type: 'Loại câu hỏi', allTypes: 'Tất cả loại câu hỏi',
     types: { 'multiple-choice': 'Trắc nghiệm', essay: 'Tự luận', comparison: 'So sánh' },
@@ -170,7 +172,7 @@ const gameQuestionPickerTranslations = {
     lessonsSelected: 'Đã chọn {{count}} bài học', searchLessons: 'Tìm bài học', noLessonMatches: 'Không có bài học phù hợp.', clearLessons: 'Bỏ lọc bài học', lessonsDone: 'Xong',
     loadingLessons: 'Đang tải mục lục bài học…', catalogError: 'Chưa tải được mục lục. Vẫn có thể lọc theo bài học đã gắn với câu hỏi.', retry: 'Thử lại',
     selected: 'Đã chọn {{count}} câu', showing: 'Hiển thị {{count}} câu', hiddenSelected: '{{count}} câu đã chọn nằm ngoài bộ lọc',
-    clearFilters: 'Xóa bộ lọc', cardUnavailable: 'Không dùng được cho quét thẻ: cần câu trắc nghiệm có 4 đáp án A–D.',
+    clearFilters: 'Xóa bộ lọc', cardUnavailable: 'Không dùng được cho quét thẻ: cần câu trắc nghiệm có 4 đáp án A–D.', poseUnavailable: 'Không dùng được cho game cử chỉ: cần câu trắc nghiệm có đúng 4 đáp án A–D.',
     empty: 'Không có câu hỏi phù hợp với bộ lọc.', done: 'Xong · {{count}} câu',
   },
   en: {
@@ -178,6 +180,7 @@ const gameQuestionPickerTranslations = {
     hint: 'Filter the question bank and choose questions. Selections are kept when filters change.',
     cardHint: 'Card scanning uses multiple-choice questions with four A–D options. Selections are kept when filters change.',
     comparisonHint: 'Showing comparison questions. Selections are kept when filters change.',
+    poseHint: 'Gesture games use multiple-choice questions with exactly four A–D options. Selections are kept when filters change.',
     grade: 'Filter by grade', gradeName: 'Grade {{grade}}', allGrades: 'All grades',
     subject: 'Filter by subject', allSubjects: 'All subjects', type: 'Question type', allTypes: 'All question types',
     types: { 'multiple-choice': 'Multiple choice', essay: 'Essay', comparison: 'Comparison' },
@@ -186,7 +189,7 @@ const gameQuestionPickerTranslations = {
     loadingLessons: 'Loading curriculum lessons…', catalogError: 'Could not load the curriculum. You can still filter by lessons linked to questions.', retry: 'Retry',
     selected: '{{count}} questions selected', showing: 'Showing {{count}} questions', hiddenSelected: '{{count}} selected questions outside these filters',
     selected_one: '{{count}} question selected', showing_one: 'Showing {{count}} question', hiddenSelected_one: '{{count}} selected question outside these filters',
-    clearFilters: 'Clear filters', cardUnavailable: 'Unavailable for card scanning: requires multiple choice with four A–D options.',
+    clearFilters: 'Clear filters', cardUnavailable: 'Unavailable for card scanning: requires multiple choice with four A–D options.', poseUnavailable: 'Unavailable for gesture games: requires multiple choice with exactly four A–D options.',
     empty: 'No questions match these filters.', done: 'Done · {{count}} questions',
     done_one: 'Done · {{count}} question',
   },
@@ -202,6 +205,8 @@ for (const locale of supportedLocales) {
   resources[locale].translation.preparedGames = preparedGames[locale];
   resources[locale].translation.gameQuestionPicker = gameQuestionPickerTranslations[locale];
   resources[locale].translation.gameAudio = gameAudioTranslations[locale];
+  resources[locale].translation.poseArena = poseArenaTranslations[locale];
+  resources[locale].poseArena = poseArenaTranslations[locale];
   resources[locale].translation.navigation.videoStudio = videoStudioTranslations[locale].nav;
   resources[locale].translation.videoStudio = videoStudioTranslations[locale];
   Object.assign(resources[locale].translation.master.telegram.actions, telegramStudioTranslations[locale].actions);

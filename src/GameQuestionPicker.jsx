@@ -8,6 +8,7 @@ const scopeOf = question => JSON.stringify([gradeOf(question), question.subject]
 const lessonOf = question => JSON.stringify([gradeOf(question), question.subject, question.lessonId]);
 const typeOf = question => question.type || 'multiple-choice';
 const supportsCards = question => typeOf(question) === 'multiple-choice' && question.options?.length === 4;
+const supportsBodyPose = question => typeOf(question) === 'multiple-choice' && question.options?.length === 4;
 
 function LessonMultiSelect({ lessons, value, onChange, labelFor, t }) {
   const [open, setOpen] = useState(false), [query, setQuery] = useState('');
@@ -57,7 +58,7 @@ function LessonMultiSelect({ lessons, value, onChange, labelFor, t }) {
   </div>;
 }
 
-export default function GameQuestionPicker({ questions, selected, onToggle, onClose, api, cardScan = false, headTilt = false, loading = false }) {
+export default function GameQuestionPicker({ questions, selected, onToggle, onClose, api, cardScan = false, headTilt = false, bodyPose = false, loading = false }) {
   const { t, i18n } = useTranslation();
   const [filters, setFilters] = useState(emptyFilters);
   const [catalogs, setCatalogs] = useState({});
@@ -132,13 +133,13 @@ export default function GameQuestionPicker({ questions, selected, onToggle, onCl
   return createPortal(<div className="game-picker-overlay" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
     <section className="game-picker-modal" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={hintId} ref={modal} onKeyDown={keyDown}>
       <div className="modal-heading">
-        <div><p className="eyebrow">{t('gameQuestionPicker.eyebrow')}</p><h2 id={titleId}>{t('gameQuestionPicker.title')}</h2><p id={hintId} className="muted-copy">{t(`gameQuestionPicker.${cardScan ? 'cardHint' : headTilt ? 'comparisonHint' : 'hint'}`)}</p></div>
+        <div><p className="eyebrow">{t('gameQuestionPicker.eyebrow')}</p><h2 id={titleId}>{t('gameQuestionPicker.title')}</h2><p id={hintId} className="muted-copy">{t(`gameQuestionPicker.${cardScan ? 'cardHint' : headTilt ? 'comparisonHint' : bodyPose ? 'poseHint' : 'hint'}`)}</p></div>
         <button ref={closeButton} className="modal-close" type="button" aria-label={t('common.close')} onClick={onClose}>×</button>
       </div>
       <div className="game-picker-filters form-grid">
         <label className="field">{t('gameQuestionPicker.grade')}<select value={filters.grade} onChange={event => update('grade', event.target.value)}><option value="">{t('gameQuestionPicker.allGrades')}</option>{grades.map(grade => <option key={grade} value={grade}>{t('gameQuestionPicker.gradeName', { grade })}</option>)}</select></label>
         <label className="field">{t('gameQuestionPicker.subject')}<select value={filters.subject} onChange={event => update('subject', event.target.value)}><option value="">{t('gameQuestionPicker.allSubjects')}</option>{subjects.map(subject => <option key={subject} value={subject}>{subject}</option>)}</select></label>
-        <label className="field">{t('gameQuestionPicker.type')}<select value={filters.type} onChange={event => update('type', event.target.value)}><option value="">{t('gameQuestionPicker.allTypes')}</option>{(headTilt ? ['comparison'] : ['multiple-choice', 'essay', ...(questions.some(question => question.type === 'comparison') ? ['comparison'] : [])]).map(type => <option key={type} value={type}>{t(`gameQuestionPicker.types.${type}`)}</option>)}</select></label>
+        <label className="field">{t('gameQuestionPicker.type')}<select value={filters.type} onChange={event => update('type', event.target.value)}><option value="">{t('gameQuestionPicker.allTypes')}</option>{(headTilt ? ['comparison'] : bodyPose ? ['multiple-choice'] : ['multiple-choice', 'essay', ...(questions.some(question => question.type === 'comparison') ? ['comparison'] : [])]).map(type => <option key={type} value={type}>{t(`gameQuestionPicker.types.${type}`)}</option>)}</select></label>
         <LessonMultiSelect lessons={lessons} value={filters.lessons} onChange={value => update('lessons', value)} labelFor={lessonLabel} t={t} />
       </div>
       {catalogState === 'loading' && <p className="game-picker-catalog-note" role="status">{t('gameQuestionPicker.loadingLessons')}</p>}
@@ -146,10 +147,10 @@ export default function GameQuestionPicker({ questions, selected, onToggle, onCl
       <div className="game-picker-summary" role="status"><div><strong>{t('gameQuestionPicker.selected', { count: selected.length })}</strong><small>{t('gameQuestionPicker.showing', { count: visible.length })}{hiddenSelected > 0 && ` · ${t('gameQuestionPicker.hiddenSelected', { count: hiddenSelected })}`}</small></div><button className="text-button" type="button" disabled={!Object.values(filters).some(value => Array.isArray(value) ? value.length > 0 : Boolean(value))} onClick={() => setFilters(emptyFilters)}>{t('gameQuestionPicker.clearFilters')}</button></div>
       <div className="game-picker-list">
         {visible.map(question => {
-          const disabled = cardScan && !supportsCards(question);
+          const disabled = (cardScan && !supportsCards(question)) || (bodyPose && !supportsBodyPose(question));
           return <label className={`game-picker-item ${selected.includes(question.id) ? 'selected' : ''} ${disabled ? 'unavailable' : ''}`} key={question.id}>
             <input type="checkbox" disabled={disabled} checked={selected.includes(question.id)} onChange={() => onToggle(question.id)} />
-            <span><b>{question.question}</b><small>{[question.subject, question.grade, t(`gameQuestionPicker.types.${typeOf(question)}`)].filter(Boolean).join(' · ')}</small>{question.lessonId && <small>{catalogs[scopeOf(question)]?.find(lesson => lesson.id === question.lessonId)?.title || question.lessonTitle || question.lessonId}</small>}{disabled && <small className="game-picker-unavailable">{t('gameQuestionPicker.cardUnavailable')}</small>}</span>
+            <span><b>{question.question}</b><small>{[question.subject, question.grade, t(`gameQuestionPicker.types.${typeOf(question)}`)].filter(Boolean).join(' · ')}</small>{question.lessonId && <small>{catalogs[scopeOf(question)]?.find(lesson => lesson.id === question.lessonId)?.title || question.lessonTitle || question.lessonId}</small>}{disabled && <small className="game-picker-unavailable">{t(`gameQuestionPicker.${bodyPose ? 'poseUnavailable' : 'cardUnavailable'}`)}</small>}</span>
           </label>;
         })}
         {loading ? <div className="empty-state compact" role="status"><small>{t('common.loading')}</small></div> : !visible.length && <div className="empty-state compact"><small>{t('gameQuestionPicker.empty')}</small></div>}

@@ -74,3 +74,4 @@ html[data-theme=dark] .game-picker-modal .modal-close:hover{background:#203e52}
   .game-picker-overlay .game-picker-modal{display:block;overflow:auto}
   .game-picker-overlay .game-picker-list{overflow:visible}
 }
+.game-live-gestures{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}.game-live-gestures span{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:#fff;color:#3a4a57;border:1px solid var(--gesture-color,#d9e7ef);font-size:12px;font-weight:800;box-shadow:0 2px 6px #2b4d651a}.game-live-gestures b{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--gesture-color,#e6f7fd);color:#20394a;font-size:12px}html[data-theme=dark] .game-live-gestures span{background:#13222d;color:#dff1fa;border-color:#345260}

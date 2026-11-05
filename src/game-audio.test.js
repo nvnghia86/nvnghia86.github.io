@@ -28,6 +28,8 @@ describe('game sound lifecycle', () => {
     expect(audio.play('launch')).toBe(false);
     expect(await audio.unlock()).toBe(true);
     expect(audio.play('launch')).toBe(true);
+    context.currentTime += 1;
+    expect(audio.play('correct')).toBe(true);
     audio.dispose();
     expect(context.close).toHaveBeenCalledOnce();
     expect(await audio.unlock()).toBe(false);
