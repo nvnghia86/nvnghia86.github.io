@@ -6,6 +6,8 @@ Giáo viên mở **Quét thẻ đáp án** trong menu, chọn bộ quiz hoặc c
 
 Thẻ dùng dictionary `ARUCO` của `js-aruco2` (lưới 7×7); thẻ từ dictionary khác sẽ không được nhận diện. Khi cầm thẻ, cạnh A ở trên, B bên phải, C ở dưới và D bên trái. Scanner chỉ xử lý khung hình trên điện thoại và gửi ID thẻ cùng đáp án qua Socket.IO. URL QR dùng `/#/quiz/<sessionId>/scan` để tương thích với `HashRouter` và GitHub Pages.
 
+Trong khung camera, scanner vẽ viền và tên học sinh theo vị trí thẻ ARUCO. Thẻ chuyển xanh lá khi đáp án của câu hiện tại đã được máy chủ ghi nhận; trạng thái này được khôi phục từ snapshot phiên khi mở lại máy quét. Nhãn AR chỉ bám theo thẻ còn nhìn thấy trong camera, còn danh sách học sinh bên dưới giữ trạng thái trả lời của cả lớp. Chế độ quét thử không gửi đáp án.
+
 Backend cần PostgreSQL và `REDIS_URL` hoạt động cho chế độ này. Camera trên điện thoại cần HTTPS (hoặc localhost khi phát triển). Có thể kiểm tra logic in và nhận diện thẻ bằng `npm test` trong thư mục frontend.
 
 React/Vite frontend for Quizzz. This folder is intentionally deployable as an independent repository.

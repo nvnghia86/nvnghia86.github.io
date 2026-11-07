@@ -106,8 +106,10 @@ describe('scanner game completion', () => {
 
   it('refreshes after returning to a visible tab and translates the final state', async () => {
     const api = vi.fn().mockResolvedValueOnce(playing).mockResolvedValue(finished);
+    const addEventListener = vi.spyOn(document, 'addEventListener');
     render(<QuizCardScanner {...props(api)} />);
     await screen.findAllByRole('button', { name: 'Mở camera', exact: true });
+    await waitFor(() => expect(addEventListener.mock.calls.some(([event]) => event === 'visibilitychange')).toBe(true));
     await act(async () => { await Promise.resolve(); document.dispatchEvent(new Event('visibilitychange')); });
     await screen.findByRole('heading', { name: 'Trò chơi đã kết thúc' });
     await act(async () => i18n.changeLanguage('en'));
@@ -120,12 +122,14 @@ describe('scanner game completion', () => {
     const api=vi.fn(async path=>path.includes('/scanner/close?')?closed:path.includes('/scanner/next?')?next:playing);
     const {container}=render(<QuizCardScanner {...props(api)} />);
     fireEvent.click((await screen.findAllByRole('button',{name:'Mở camera',exact:true}))[0]);
+    expect(screen.getByText('Đã quét 0/1')).toBeInTheDocument();
     const end=screen.getByRole('button',{name:'Kết thúc câu'}), advance=screen.getByRole('button',{name:'Chuyển sang câu tiếp theo'});
     expect(end).toBeEnabled();expect(advance).toBeDisabled();expect(scan.active).toBe(true);
     fireEvent.click(end);
     await screen.findByRole('heading',{name:'Kết quả câu 1'});
+    expect(screen.getByText('Đã quét 1/1')).toBeInTheDocument();
     expect(api).toHaveBeenCalledWith('/quiz-sessions/room/scanner/close?token='+ 'a'.repeat(48),{method:'POST',body:JSON.stringify({questionId:'q1'})});
-    expect(end).toBeDisabled();expect(advance).toBeEnabled();expect(scan.active).toBe(false);
+    expect(end).toBeDisabled();expect(advance).toBeEnabled();expect(scan.active).toBe(true);
     expect(container.querySelector('.scanner-answer-counts .is-correct')).toHaveTextContent('B1');
     expect(screen.getByTestId('camera')).toBeInTheDocument();
     act(()=>scan.detect({markerId:1,answer:'A'}));expect(scan.send).not.toHaveBeenCalled();
@@ -143,7 +147,7 @@ describe('scanner game completion', () => {
     fireEvent.click(screen.getAllByRole('button',{name:'Mở camera',exact:true})[0]);
     expect(scan.active).toBe(true);
     await act(async()=>vi.advanceTimersByTimeAsync(1500));
-    expect(scan.active).toBe(false);
+    expect(scan.active).toBe(true);
     act(()=>scan.detect({markerId:1,answer:'A'}));expect(scan.send).not.toHaveBeenCalled();
     expect(api.mock.calls.some(([path])=>path.includes('/next'))).toBe(false);
     expect(screen.getByRole('button',{name:'Chuyển sang câu tiếp theo'})).toBeDisabled();

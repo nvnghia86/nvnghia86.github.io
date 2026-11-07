@@ -45,6 +45,18 @@
 .camera-guide-corner.bottom-left{align-self:end;border-width:0 0 3px 3px;border-radius:0 0 0 11px}
 .camera-guide-corner.bottom-right{justify-self:end;align-self:end;border-width:0 3px 3px 0;border-radius:0 0 11px}
 .card-camera.is-scanning .camera-guide-corner{border-color:#7be3ff;animation:scanner-guide-pulse 1.6s ease-in-out infinite}
+.card-scan-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+.card-scan-marker polygon{fill:#16aee51c;stroke:#7be3ff;stroke-width:3;vector-effect:non-scaling-stroke}
+.card-scan-marker rect{fill:#123446ed;stroke:#7be3ff;stroke-width:1.5}
+.card-scan-marker.is-recorded polygon{fill:#20b87922;stroke:#65e6a1}
+.card-scan-marker.is-recorded rect{fill:#0e4a37ed;stroke:#65e6a1}
+.card-scan-marker.is-unassigned polygon{fill:#f1b34a22;stroke:#ffd285}
+.card-scan-marker.is-unassigned rect{fill:#654313ed;stroke:#ffd285}
+.card-scan-marker text{fill:#fff;font-family:inherit;paint-order:stroke;stroke:none}
+.card-scan-name{font-size:13px;font-weight:800}
+.card-scan-status{font-size:11px;font-weight:700}
+.card-scan-progress{position:absolute;top:12px;left:12px;padding:8px 11px;border:1px solid #ffffff55;border-radius:999px;background:#122936dc;color:#fff;font-size:12px;font-weight:800;pointer-events:none}
+.card-camera:fullscreen .card-scan-progress{top:64px}
 .scanner-live-feedback{position:absolute;left:12px;right:76px;bottom:12px;display:flex;align-items:center;gap:9px;min-height:40px;padding:7px 10px;border:1px solid #ffffff42;border-radius:11px;background:#122936dc;color:#fff;backdrop-filter:blur(8px);pointer-events:none}
 .scanner-live-feedback small,.scanner-live-feedback b,.scanner-live-feedback strong{display:block}.scanner-live-feedback small{font-size:10px;font-weight:700;line-height:1.2;opacity:.78}.scanner-live-feedback b,.scanner-live-feedback strong{margin-top:2px;font-size:13px;line-height:1.2}.scanner-live-indicator{width:9px;height:9px;flex:0 0 auto;border-radius:50%;background:#c1d1d8}.scanner-live-feedback.has-result{border-color:#74e0ac;background:#0e4a37e6}.scanner-live-feedback.has-result .scanner-live-indicator{background:#65e6a1;box-shadow:0 0 0 4px #65e6a136}
 @keyframes scanner-guide-pulse{50%{opacity:.58;transform:scale(.94)}}

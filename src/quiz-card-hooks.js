@@ -127,7 +127,7 @@ export function useAruco(webcamRef, active, onDetected, resetKey = '') {
           if (!Number.isInteger(marker.id) || marker.id < 1 || marker.id > 40) continue;
           const answer = answerFromCorners(marker.corners);
           if (!answer) continue;
-          observations.push({ markerId: marker.id, answer });
+          observations.push({ markerId: marker.id, answer, corners: marker.corners.map(({ x, y }) => ({ x, y })), frameWidth: width, frameHeight: height });
           const previous = stable.get(marker.id);
           const count = previous?.answer === answer ? previous.count + 1 : 1;
           const lastNotified = previous?.answer === answer ? previous.lastNotified || 0 : 0;
