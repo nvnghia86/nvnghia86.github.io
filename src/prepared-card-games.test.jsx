@@ -3,7 +3,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { cleanup, fireEvent, render, screen, waitFor, act } from '@testing-library/react';
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import i18n from './i18n';
-import { CardGamePair } from './PreparedCardGames';
+import { CardGamePair, PreparedCardGames } from './PreparedCardGames';
 import { GameRoomBuilder } from './GameRoomBuilder';
 
 beforeEach(async () => { await i18n.changeLanguage('vi'); window.location.hash=''; });
@@ -57,4 +57,20 @@ it('offers retry after a pairing page load fails instead of leaving an endless l
  render(<MemoryRouter initialEntries={['/card-pair/key']}><Routes><Route path="/card-pair/:pairKey" element={<CardGamePair api={api}/>}/></Routes></MemoryRouter>);
  await screen.findByRole('alert');expect(screen.queryByRole('status')).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Thử lại'}));await screen.findByLabelText('Mã điều khiển 6 số');expect(api).toHaveBeenCalledTimes(2);
+});
+it('force finishes an active saved game after confirmation and refreshes its status',async()=>{
+ let playing=true;
+ const game={id:'saved',title:'Bài dạy',className:'4A',questionCount:2,timeLimitSeconds:20,presentationKey:'a'.repeat(48),runCount:1,playStatus:'playing'};
+ const api=vi.fn(async(path,request)=>{
+  if(path==='/card-games/saved/force-finish'&&request?.method==='POST'){playing=false;return{finishedCount:1};}
+  if(path==='/card-games')return{items:[{...game,playStatus:playing?'playing':'played'}]};
+  throw new Error(path);
+ });
+ vi.spyOn(window,'confirm').mockReturnValue(true);
+ render(<MemoryRouter><PreparedCardGames api={api} API="/api/v1" onError={vi.fn()}/></MemoryRouter>);
+ fireEvent.click(await screen.findByRole('button',{name:'Buộc kết thúc'}));
+ await waitFor(()=>expect(screen.getByText('Đã diễn ra')).toBeInTheDocument());
+ expect(window.confirm).toHaveBeenCalledWith('Buộc kết thúc tất cả lượt đang chơi của game này và lưu kết quả hiện tại?');
+ expect(api).toHaveBeenCalledWith('/card-games/saved/force-finish',{method:'POST'});
+ expect(screen.queryByRole('button',{name:'Buộc kết thúc'})).toBeNull();
 });

@@ -9,17 +9,27 @@ import './prepared-card-games.css';
 
 export function PreparedCardGames({ api, API, onError, revision = 0, classes = [] }) {
   const { t } = useTranslation('preparedGames');
-  const [games, setGames] = useState(null), [busy, setBusy] = useState('');
+  const [games, setGames] = useState(null), [exportingId, setExportingId] = useState(''), [finishingId, setFinishingId] = useState('');
   const navigate = useNavigate();
   useEffect(() => { let active = true; api('/card-games').then(data => { if (active) setGames(data.items || []); }).catch(error => { if (active) { setGames([]); onError(error.message); } }); return () => { active = false; }; }, [api, revision]);
   async function download(game) {
-    setBusy(game.id);
+    setExportingId(game.id);
     try {
       const response = await fetch(`${API}/card-games/${game.id}/presentation.pptx`, { credentials: 'include' });
       if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error?.message || data.message || t('exportError')); }
       const url = URL.createObjectURL(await response.blob()); const anchor = document.createElement('a');
       anchor.href = url; anchor.download = `${game.title.replace(/[<>:"/\\|?*]/g, '-')}.pptx`; document.body.append(anchor); anchor.click(); anchor.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) { onError(error.message); } finally { setBusy(''); }
+    } catch (error) { onError(error.message); } finally { setExportingId(''); }
+  }
+  async function forceFinish(game) {
+    if (finishingId || !window.confirm(t('forceQuitConfirm'))) return;
+    setFinishingId(game.id);
+    try {
+      await api(`/card-games/${game.id}/force-finish`, { method: 'POST' });
+      const data = await api('/card-games');
+      setGames(data.items || []);
+    } catch (error) { onError(error.message); }
+    finally { setFinishingId(''); }
   }
   return <><section className="dashboard-panel prepared-game-list"><div className="panel-heading"><div><p className="eyebrow">{t('eyebrow')}</p><h2>{t('savedTitle')}</h2><p className="muted-copy">{t('savedHint')}</p></div><a className="text-button" href={`${import.meta.env.BASE_URL}office/quizzz-manifest.xml`} download>{t('addin')}</a></div>
     <p className="muted-copy"><a href={`${import.meta.env.BASE_URL}office/setup.html`} target="_blank" rel="noreferrer">{t('setup')}</a></p>
@@ -37,8 +47,9 @@ export function PreparedCardGames({ api, API, onError, revision = 0, classes = [
             {game.canEdit && <TableAction action="edit" label={t('detail.edit')} onClick={() => navigate(`${detailUrl}?edit=1`)} />}
             {game.runCount > 0 && <TableAction action="results" label={t('detail.statistics')} onClick={() => navigate(`${detailUrl}?tab=statistics`)} />}
             {status === 'played' && <TableAction action="replay" label={t('sharing.replay')} onClick={() => replayCardGame(game)} />}
+            {status === 'playing' && <TableAction action="close" danger label={finishingId === game.id ? t('forceQuitting') : t('forceQuit')} disabled={Boolean(finishingId)} aria-busy={finishingId === game.id} onClick={() => forceFinish(game)} />}
             <a className="table-icon-button" href={cardDisplayUrl(game)} target="_blank" rel="noreferrer" aria-label={t('present')} title={t('present')}><Presentation size={18} strokeWidth={1.8} aria-hidden="true" /></a>
-            <TableAction action="download" label={busy === game.id ? t('loading') : t('export')} disabled={busy === game.id} aria-busy={busy === game.id} onClick={() => download(game)} />
+            <TableAction action="download" label={exportingId === game.id ? t('loading') : t('export')} disabled={exportingId === game.id} aria-busy={exportingId === game.id} onClick={() => download(game)} />
           </div></td>
         </tr>;
       })}</tbody>
