@@ -6,6 +6,7 @@ import './exam-builder.css';
 const STRANDS_BY_SUBJECT = {
   'Toán học': ['numbers', 'geometry', 'statistics'],
   'Tiếng Việt': ['reading', 'orthography', 'vocabulary', 'word-meaning', 'communication'],
+  'Tiếng Anh': ['listening', 'reading', 'writing'],
 };
 const LEVELS = [1, 2, 3];
 const TYPES = ['multiple-choice', 'essay'];
@@ -58,9 +59,11 @@ export default function ExamBuilder({ api, apiBase, onError }) {
 
   function resetGenerated() { setQuestions([]); setPassage(null); setWriting(null); setNotice(''); }
   function updateForm(field, value) {
-    if (field === 'subject') {
-      setSelectedLessons([]); setLessons([]); setMapping(initialMapping(value)); setCells(initialCells(value));
-      setTypeTotals({ 'multiple-choice': 0, essay: 0 }); setPassageLessonId(''); setWritingLessonId('');
+    if (field === 'subject' || field === 'grade') {
+      const nextSubject = field === 'subject' ? value : form.subject;
+      setSelectedLessons([]); setLessons([]); setMapping(initialMapping(nextSubject));
+      if (field === 'subject') { setCells(initialCells(nextSubject)); setTypeTotals({ 'multiple-choice': 0, essay: 0 }); }
+      setPassageLessonId(''); setWritingLessonId('');
     }
     setForm(previous => ({ ...previous, [field]: value })); resetGenerated();
   }
@@ -96,7 +99,7 @@ export default function ExamBuilder({ api, apiBase, onError }) {
       const link = document.createElement('a');
       const objectUrl = URL.createObjectURL(blob);
       link.href = objectUrl;
-      link.download = `de-kiem-tra-${isVietnamese ? 'tieng-viet' : 'toan'}-lop-4-${form.academic_year.replace(/\s+/g, '')}.docx`;
+      link.download = `de-kiem-tra-${isVietnamese ? 'tieng-viet' : form.subject === 'Tiếng Anh' ? 'tieng-anh' : 'toan'}-lop-${form.grade}-${form.academic_year.replace(/\s+/g, '')}.docx`;
       document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
       setNotice(t('exam.exported'));
@@ -109,8 +112,8 @@ export default function ExamBuilder({ api, apiBase, onError }) {
     <form onSubmit={generate}>
       <div className="panel form-grid exam-setup">
         <label className="field">{t('exam.semester')}<select value={form.semester} onChange={event => updateForm('semester', event.target.value)}>{['Giữa học kỳ I', 'Cuối học kỳ I', 'Giữa học kỳ II', 'Cuối học kỳ II'].map((value, index) => <option key={value} value={value}>{t(`exam.semesters.${index}`)}</option>)}</select></label>
-        <label className="field">{t('exam.grade')}<select value={form.grade} onChange={event => updateForm('grade', event.target.value)}><option value="4">{t('exam.gradeFour')}</option></select></label>
-        <label className="field">{t('exam.subject')}<select value={form.subject} onChange={event => updateForm('subject', event.target.value)}><option value="Toán học">{t('exam.math')}</option><option value="Tiếng Việt">{t('exam.vietnamese')}</option></select></label>
+        <label className="field">{t('exam.grade')}<select value={form.grade} onChange={event => updateForm('grade', event.target.value)}>{['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>{t(`exam.grades.${g}`)}</option>)}</select></label>
+        <label className="field">{t('exam.subject')}<select value={form.subject} onChange={event => updateForm('subject', event.target.value)}><option value="Toán học">{t('exam.math')}</option><option value="Tiếng Việt">{t('exam.vietnamese')}</option><option value="Tiếng Anh">{t('exam.english')}</option></select></label>
         <label className="field">{t('exam.academicYear')}<input required value={form.academic_year} onChange={event => updateForm('academic_year', event.target.value)} placeholder="2026–2027" /></label>
         <p className="muted-copy wide exam-scope">{t(isVietnamese ? 'exam.scopeVietnamese' : 'exam.scope')}</p>
       </div>
