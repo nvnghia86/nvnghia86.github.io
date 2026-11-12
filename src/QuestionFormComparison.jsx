@@ -16,6 +16,7 @@ const initialForm = {
   lessonTitle: '',
   geometry: null,
   imageUrl: '',
+  isActive: true,
 };
 const API = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
@@ -56,6 +57,7 @@ function buildFormState(initial) {
     lessonTitle: source.lessonTitle || '',
     geometry: source.geometry || null,
     imageUrl: source.imageUrl || source.geometry?.imageUrl || '',
+    isActive: source.isActive !== false,
   };
 }
 
@@ -164,12 +166,22 @@ export default function QuestionFormComparison({ initial, onSaved, onCancel, onE
           ))}
         </select>
       </label>
-      <label className="field wide">
+      <label className="field">
         Hình thức câu hỏi
         <select value={form.type} onChange={event => setType(event.target.value)}>
           <option value="multiple-choice">Trắc nghiệm</option>
           <option value="comparison">{'So sánh · <, >, ='}</option>
           <option value="essay">Tự luận</option>
+        </select>
+      </label>
+      <label className="field">
+        Trạng thái câu hỏi
+        <select
+          value={form.isActive !== false ? 'active' : 'inactive'}
+          onChange={event => update('isActive', event.target.value === 'active')}
+        >
+          <option value="active">Đang hoạt động (Active)</option>
+          <option value="inactive">Chờ duyệt / Tạm ẩn (Inactive)</option>
         </select>
       </label>
       <label className="field wide">

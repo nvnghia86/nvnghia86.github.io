@@ -737,3 +737,238 @@ html[data-theme='dark'] .student-meadow-shell .auth-card {
 }
 
 html[data-theme='dark'] .auth-card h2 { color: #f2fff9; }
+
+/* Master Bulk AI Generator & Question Inactive Status */
+.master-bulk-ai-container {
+  display: grid;
+  gap: 18px;
+}
+
+.bulk-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.bulk-chip {
+  padding: 8px 14px;
+  border: 1px solid var(--brand-border, #c7d2fe);
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  color: var(--ink-secondary, #374151);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.bulk-chip:hover:not(:disabled) {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #3730a3;
+}
+
+.bulk-chip.active,
+.bulk-chip.selected {
+  border-color: #4f46e5;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(79, 70, 229, 0.25);
+}
+
+.bulk-chip input[type='checkbox'],
+.bulk-chip input[type='radio'] {
+  accent-color: #fff;
+  margin-right: 6px;
+}
+
+.bulk-chip:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bulk-lesson-combo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.bulk-lesson-combo-card {
+  padding: 12px;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 14px;
+  background: var(--surface-subtle, #f8fafc);
+}
+
+.bulk-lesson-combo-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.bulk-lesson-scroll {
+  display: grid;
+  gap: 6px;
+  max-height: 180px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.bulk-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.bulk-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.bulk-workers-section {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--brand-border, #c7d2fe);
+  border-radius: 16px;
+  background: var(--surface-subtle, #f8fafc);
+}
+
+.bulk-worker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.bulk-worker-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.bulk-worker-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line, #e2e8f0);
+}
+
+.bulk-provider-keys-box {
+  padding: 14px;
+  border: 1px dashed var(--brand-border, #a5b4fc);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+}
+
+.bulk-provider-keys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+html[data-theme='dark'] .bulk-workers-section {
+  background: #171d36;
+  border-color: #3b4675;
+}
+
+html[data-theme='dark'] .bulk-worker-card,
+html[data-theme='dark'] .bulk-provider-keys-box {
+  background: #1e2547;
+  border-color: #3b4675;
+}
+
+.bulk-summary-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid #c7d2fe;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+}
+
+.bulk-summary-banner small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted, #64748b);
+}
+
+.bulk-progress-bar-track {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.bulk-progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4f46e5, #10b981);
+  transition: width 0.3s ease;
+}
+
+.bulk-progress-actions,
+.ai-mode-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ai-mode-switcher {
+  margin: 0 0 18px;
+}
+
+.status-pill.inactive {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.secondary-button.danger {
+  border-color: #fecaca !important;
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+}
+
+html[data-theme='dark'] .bulk-chip {
+  background: #1e2547;
+  border-color: #3b4675;
+  color: #e0e7ff;
+}
+
+html[data-theme='dark'] .bulk-summary-banner {
+  background: #1e2547;
+  border-color: #4338ca;
+}
+
+html[data-theme='dark'] .status-pill.inactive {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
