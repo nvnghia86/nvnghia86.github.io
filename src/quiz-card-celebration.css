@@ -5,7 +5,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(8, 31, 44, .72);
+  background: rgba(15, 23, 42, .68);
   backdrop-filter: blur(8px);
   animation: card-celebration-fade .24s ease-out;
 }
@@ -18,8 +18,8 @@
   padding: 30px 34px 26px;
   border: 1px solid rgba(255, 255, 255, .7);
   border-radius: 26px;
-  background: linear-gradient(155deg, #ffffff 0%, #eefaff 58%, #fff8e4 100%);
-  box-shadow: 0 30px 90px rgba(3, 29, 43, .38);
+  background: linear-gradient(155deg, #ffffff 0%, #eef2ff 58%, #fff8e4 100%);
+  box-shadow: 0 30px 90px rgba(15, 23, 42, .38);
   text-align: center;
   overflow-y: auto;
   animation: card-celebration-rise .38s cubic-bezier(.2, .9, .25, 1.15);
@@ -35,10 +35,10 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid #d5e8ef;
+  border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(255, 255, 255, .82);
-  color: #476675;
+  background: rgba(255, 255, 255, .88);
+  color: var(--muted);
   font: inherit;
   font-size: 24px;
   line-height: 1;
@@ -67,7 +67,7 @@
 
 .card-celebration-heading p {
   margin: 0 0 4px;
-  color: #0c8bbf;
+  color: var(--ocean);
   font-size: 11px;
   font-weight: 900;
   letter-spacing: .14em;
@@ -75,7 +75,7 @@
 
 .card-celebration-heading h2 {
   margin: 0;
-  color: #173f52;
+  color: var(--ink);
   font-size: clamp(28px, 5vw, 44px);
   line-height: 1.12;
 }
@@ -83,7 +83,7 @@
 .card-celebration-heading small {
   max-width: 520px;
   margin-top: 8px;
-  color: #6b8490;
+  color: var(--muted);
   font-size: 13px;
 }
 
@@ -122,11 +122,11 @@
   margin: 5px 0 8px;
   border: 4px solid #fff;
   border-radius: 18px;
-  background: linear-gradient(145deg, #dff5fd, #aee4f7);
-  color: #087fb7;
+  background: linear-gradient(145deg, #e0e7ff, #c7d2fe);
+  color: var(--ocean-dark);
   font-size: 20px;
   font-weight: 900;
-  box-shadow: 0 8px 24px rgba(8, 127, 183, .18);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, .18);
 }
 
 .podium-1 .card-podium-avatar {
@@ -141,20 +141,20 @@
 .card-podium-place > strong {
   overflow: hidden;
   width: 100%;
-  color: #234b5d;
+  color: var(--ink);
   font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .card-podium-place > small {
-  color: #8197a2;
+  color: var(--muted);
   font-size: 10px;
 }
 
 .card-podium-place > b {
   margin: 5px 0 9px;
-  color: #087fb7;
+  color: var(--ocean-dark);
   font-size: 13px;
 }
 
@@ -165,7 +165,7 @@
   height: 64px;
   padding-top: 10px;
   border-radius: 14px 14px 6px 6px;
-  background: linear-gradient(180deg, #bfeafa, #73cceb);
+  background: linear-gradient(180deg, #c7d2fe, #818cf8);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7);
 }
 
@@ -185,8 +185,8 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, .82);
-  color: #214c60;
+  background: rgba(255, 255, 255, .86);
+  color: var(--ink);
   font-size: 14px;
   font-weight: 900;
 }
@@ -219,11 +219,11 @@
   animation: card-confetti-fall 3.6s var(--delay) ease-in infinite;
 }
 
-.card-confetti i:nth-child(5n+1) { --color: #16aee5; --rotate: 18deg; }
+.card-confetti i:nth-child(5n+1) { --color: #6366f1; --rotate: 18deg; }
 .card-confetti i:nth-child(5n+2) { --color: #ffcc46; --rotate: -24deg; }
 .card-confetti i:nth-child(5n+3) { --color: #f26b75; --rotate: 46deg; }
-.card-confetti i:nth-child(5n+4) { --color: #42c890; --rotate: -55deg; }
-.card-confetti i:nth-child(5n) { --color: #9f76df; --rotate: 72deg; }
+.card-confetti i:nth-child(5n+4) { --color: #10b981; --rotate: -55deg; }
+.card-confetti i:nth-child(5n) { --color: #8b5cf6; --rotate: 72deg; }
 .card-confetti i:nth-child(1) { --left: 4%; --delay: -.4s; }
 .card-confetti i:nth-child(2) { --left: 10%; --delay: -2.1s; }
 .card-confetti i:nth-child(3) { --left: 17%; --delay: -1.2s; }
@@ -244,19 +244,19 @@
 .card-confetti i:nth-child(18) { --left: 98%; --delay: -.9s; }
 
 html[data-theme='dark'] .card-celebration-modal {
-  border-color: #315161;
-  background: linear-gradient(155deg, #142c39, #10232f 62%, #352f1c);
+  border-color: var(--line);
+  background: linear-gradient(155deg, #1b2242, #141a33 62%, #332c1b);
 }
 
 html[data-theme='dark'] .card-celebration-heading h2,
 html[data-theme='dark'] .card-podium-place > strong {
-  color: #e7f5fa;
+  color: var(--ink);
 }
 
 html[data-theme='dark'] .card-celebration-close {
-  border-color: #365260;
-  background: #183746;
-  color: #d7e9f0;
+  border-color: var(--line);
+  background: var(--surface-subtle);
+  color: var(--ink);
 }
 
 @keyframes card-celebration-fade {
@@ -275,57 +275,19 @@ html[data-theme='dark'] .card-celebration-close {
 }
 
 @media (max-width: 620px) {
-  .card-celebration-backdrop {
-    padding: 12px;
-  }
-
-  .card-celebration-modal {
-    max-height: calc(100svh - 24px);
-    padding: 24px 14px 18px;
-    border-radius: 20px;
-  }
-
-  .card-celebration-heading > span {
-    width: 56px;
-    height: 56px;
-    border-radius: 18px;
-    font-size: 31px;
-  }
-
-  .card-celebration-heading small {
-    font-size: 11px;
-  }
-
-  .card-podium {
-    gap: 6px;
-    margin-top: 20px;
-  }
-
-  .card-podium-avatar,
-  .podium-1 .card-podium-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 15px;
-    font-size: 17px;
-  }
-
-  .card-podium-place > strong {
-    font-size: 11px;
-  }
-
-  .card-podium-place > b {
-    font-size: 10px;
-  }
-
+  .card-celebration-backdrop { padding: 12px; }
+  .card-celebration-modal { max-height: calc(100svh - 24px); padding: 24px 14px 18px; border-radius: 20px; }
+  .card-celebration-heading > span { width: 56px; height: 56px; border-radius: 18px; font-size: 31px; }
+  .card-celebration-heading small { font-size: 11px; }
+  .card-podium { gap: 6px; margin-top: 20px; }
+  .card-podium-avatar, .podium-1 .card-podium-avatar { width: 45px; height: 45px; border-radius: 15px; font-size: 17px; }
+  .card-podium-place > strong { font-size: 11px; }
+  .card-podium-place > b { font-size: 10px; }
   .card-podium-step { height: 50px; }
   .podium-1 .card-podium-step { height: 72px; }
   .podium-3 .card-podium-step { height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card-celebration-backdrop,
-  .card-celebration-modal,
-  .card-confetti i {
-    animation: none;
-  }
+  .card-celebration-backdrop, .card-celebration-modal, .card-confetti i { animation: none; }
 }

@@ -1,5 +1,5 @@
 .card-session-page .card-host-side{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:stretch;justify-items:stretch;gap:18px;padding:16px;text-align:left;min-width:0}
-.card-scanner-connect-qr{display:grid;align-items:center;min-width:0;border:1px solid #dcecf3;border-radius:12px;background:#fff;overflow:hidden}
+.card-scanner-connect-qr{display:grid;align-items:center;min-width:0;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
 .card-session-page .card-scanner-connect-qr svg{display:block;width:100%;height:auto;aspect-ratio:1;padding:0}
 .card-scanner-connect-details{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:12px}
 .card-scanner-connect-details .card-scanner-connect-heading{margin:0}
@@ -10,16 +10,16 @@
 .card-scanner-connect-details .card-scanner-connect-actions{gap:8px}
 .card-scanner-connect-details .card-scanner-connect-actions button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 10px;font-size:12px;white-space:normal;line-height:1.4}
 .card-session-page .card-scanner-connect-actions svg{flex:0 0 16px;width:16px;height:16px;padding:0}
-.card-scanner-qr-dialog{box-sizing:border-box;width:min(800px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:clamp(16px,2vw,28px);border:1px solid #cce5ef;border-radius:20px;background:#fff;color:#173f52;box-shadow:0 24px 90px #102b4f44;overflow:auto}
-.card-scanner-qr-dialog::backdrop{background:#102a43b8;backdrop-filter:blur(4px)}
+.card-scanner-qr-dialog{box-sizing:border-box;width:min(800px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:clamp(16px,2vw,28px);border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);box-shadow:0 24px 90px rgba(15,23,42,.3);overflow:auto}
+.card-scanner-qr-dialog::backdrop{background:rgba(15,23,42,.65);backdrop-filter:blur(4px)}
 .card-scanner-qr-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
 .card-scanner-qr-dialog-heading h2{margin:0;font-size:clamp(18px,2.4vw,26px);line-height:1.4}
 .card-scanner-qr-dialog-heading button{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;padding:0}
 .card-session-page .card-scanner-qr-dialog-heading button svg{width:22px;height:22px;padding:0}
 .card-scanner-qr-large{display:grid;justify-items:center;min-width:0}
 .card-session-page .card-scanner-qr-large svg{display:block;width:min(100%,calc(100dvh - 200px),680px);height:auto;padding:0;aspect-ratio:1;background:#fff;border-radius:12px}
-.card-scanner-qr-dialog>p{margin:16px 0 0;text-align:center;font-size:14px;line-height:1.5;color:#577387}
-.card-scanner-connect-actions button:focus-visible,.card-scanner-qr-dialog button:focus-visible{outline:3px solid #16aee5;outline-offset:3px}
-html[data-theme=dark] .card-scanner-qr-dialog{background:#142b39;border-color:#294654;color:#e3f2f8}
-html[data-theme=dark] .card-scanner-qr-dialog>p{color:#b5cbd8}
-@media(max-width:600px){.card-session-page .card-host-side{grid-template-columns:minmax(108px,.9fr) minmax(0,1fr);gap:12px;padding:14px}.card-scanner-connect-details{gap:10px}.card-scanner-connect-details .card-scanner-connect-heading h3{font-size:14px}.card-scanner-connect-details .card-scanner-connect-actions button{font-size:11px;padding:8px;gap:5px}.card-scanner-qr-dialog{border-radius:14px}.card-scanner-qr-dialog-heading{gap:10px}.card-scanner-qr-dialog>p{font-size:12px}}
+.card-scanner-qr-dialog>p{margin:16px 0 0;text-align:center;font-size:14px;line-height:1.5;color:var(--muted)}
+.card-scanner-connect-actions button:focus-visible,.card-scanner-qr-dialog button:focus-visible{outline:3px solid var(--ocean);outline-offset:3px}
+html[data-theme=dark] .card-scanner-qr-dialog{background:var(--surface);border-color:var(--line);color:var(--ink)}
+html[data-theme=dark] .card-scanner-qr-dialog>p{color:var(--muted)}
+@media(max-width:600px){.card-session-page .card-host-side{grid-template-columns:minmax(108px,.9fr) minmax(0,1fr);gap:12px;padding:14px}.card-scanner-connect-details{gap:10px}.card-scanner-connect-details .card-scanner-connect-heading h3{font-size:14px}.card-scanner-connect-details .card-scanner-connect-actions button{font-size:11px;padding:8px;gap:5px}.card-scanner-qr-dialog{border-radius:16px}.card-scanner-qr-dialog-heading{gap:10px}.card-scanner-qr-dialog>p{font-size:12px}}

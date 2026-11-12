@@ -23,3 +23,23 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.question-form-media {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface-subtle, #f8f9ff);
+  border: 1.5px solid var(--line, #e2e6f3);
+}
+
+.question-form-media > span {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted, #64748b);
+  margin-bottom: 8px;
+}
+
+.question-list article.editing-active {
+  background: var(--ocean-soft, #eef2ff);
+  border-left: 4px solid var(--ocean, #4f46e5);
+}

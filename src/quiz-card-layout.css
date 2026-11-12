@@ -15,8 +15,8 @@
 .card-session-page .card-leader-score { flex-shrink: 0; }
 .card-session-page .card-host-rail { grid-template-rows: auto auto; align-content: start; }
 .card-session-page aside.card-host-rail { width: 100%; padding: 0; border: 0; background: transparent; position: static; flex: none; }
-.card-session-page .primary-button { background: #16aee5; color: #fff; box-shadow: 0 3px 0 #087fb7; }
-.card-session-page .primary-button:hover { background: #087fb7; }
+.card-session-page .primary-button { background: var(--ocean); color: #fff; box-shadow: 0 4px 0 var(--ocean-deep); }
+.card-session-page .primary-button:hover { background: #4338ca; }
 .card-session-page button:disabled { opacity: .55; cursor: wait; }
 .card-session-page .card-scanner-connect-body { grid-template-columns: 140px minmax(0, 1fr); }
 .card-session-page .card-scanner-connect-body svg { width: 140px; height: 140px; }
@@ -29,7 +29,7 @@
 .card-scanner-finished { display: grid; justify-items: center; gap: 10px; padding: 28px 20px; text-align: center; }
 .card-scanner-finished > span { font-size: 38px; }
 .card-scanner-finished h2 { margin: 0; font-size: clamp(21px, 4vw, 28px); line-height: 1.3; }
-.card-scanner-finished p { margin: 0; max-width: 480px; line-height: 1.6; color: #577387; }
+.card-scanner-finished p { margin: 0; max-width: 480px; line-height: 1.6; color: var(--muted); }
 .card-scanner-page .card-scanner-heading { position: static; margin: 0; padding: 0; box-shadow: none; background: transparent; }
 .card-scanner-page .scanner-room-summary { padding: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .card-scanner-page .scanner-room-summary > div { grid-column: auto; display: grid; padding: 6px; }
@@ -94,7 +94,7 @@
 .card-host-fullscreen:fullscreen .card-leader-name small,
 .card-host-fullscreen:fullscreen .card-leader-score small { font-size: clamp(12px, .9vw, 17px); }
 .card-host-fullscreen:fullscreen .card-leader-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; align-content: start; grid-auto-rows: max-content; padding-right: 4px; scrollbar-gutter: stable; }
-.card-host-fullscreen:fullscreen .card-leader-list:focus-visible { outline: 2px solid #16aee5; outline-offset: 2px; }
+.card-host-fullscreen:fullscreen .card-leader-list:focus-visible { outline: 2px solid var(--ocean); outline-offset: 2px; }
 .card-host-fullscreen:fullscreen .card-leader-medal { font-size: clamp(22px, 1.6vw, 30px); font-variant-numeric: tabular-nums; }
 
 @container card-host (max-width: 900px) {
@@ -124,18 +124,18 @@
   .card-session-page.card-host-fullscreen:fullscreen .card-host-layout { grid-template-columns: 1fr; flex: none; }
   .card-session-page.card-host-fullscreen:fullscreen .card-host-question { height: 70dvh; }
 }
-html[data-theme='dark'] .card-scanner-page .scanner-roster-list article { background: #142e3b; border-color: #294654; }
-html[data-theme='dark'] .card-scanner-finished p { color: #bed0da; }
+html[data-theme='dark'] .card-scanner-page .scanner-roster-list article { background: var(--surface-subtle); border-color: var(--line); }
+html[data-theme='dark'] .card-scanner-finished p { color: var(--muted); }
 html[data-theme='dark'] .card-scanner-page .scanner-roster-list article.is-awaiting-answer { background: #332e20; border-color: #75623c; }
 html[data-theme='dark'] .scanner-roster-answer-status.is-pending { color: #ffe1a1; background: #574321; }
 html[data-theme='dark'] .scanner-roster-answer-status.is-answered { color: #bcf3d5; background: #1b493d; }
 html[data-theme='dark'] .scanner-roster-heading small,
-html[data-theme='dark'] .card-scanner-page .scanner-roster-list article > small { color: #bed0da; }
+html[data-theme='dark'] .card-scanner-page .scanner-roster-list article > small { color: var(--muted); }
 html[data-theme='dark'] .card-scanner-page .scanner-roster-list article > small b:first-child { color: #82dcb1; }
 html[data-theme='dark'] .card-scanner-page .scanner-roster-list article > small b:nth-child(2) { color: #ffa7a7; }
-html[data-theme='dark'] .scanner-roster-score { color: #8bd9f4; }
+html[data-theme='dark'] .scanner-roster-score { color: #a5b4fc; }
 html[data-theme='dark'] .card-scanner-page .scanner-roster-list article > strong,
-html[data-theme='dark'] .card-scanner-page h2 { color: #e3f2f8; }
+html[data-theme='dark'] .card-scanner-page h2 { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .card-camera.is-scanning .camera-guide-corner { animation: none; } }
 .card-option-grid>div.is-correct{border:3px solid #159561;background:#e3faee!important;color:#125737}
 .card-option-grid>div.is-reviewed{opacity:.8}
