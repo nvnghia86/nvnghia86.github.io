@@ -152,4 +152,27 @@ describe('scanner game completion', () => {
     expect(api.mock.calls.some(([path])=>path.includes('/next'))).toBe(false);
     expect(screen.getByRole('button',{name:'Chuyển sang câu tiếp theo'})).toBeDisabled();
   });
+
+  it('shows the unscanned students list on the camera and toggles camera fullscreen reliably', async () => {
+    const { container } = render(<QuizCardScanner {...props(vi.fn(async () => playing))} />);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Mở camera', exact: true }))[0]);
+
+    // Shows unscanned student list on camera
+    expect(screen.getByText('Chưa quét (1)')).toBeInTheDocument();
+    expect(screen.getByText('#1 · Nguyễn Minh An')).toBeInTheDocument();
+
+    // Toggles camera fullscreen even when native requestFullscreen is unavailable
+    const fsBtn = screen.getByRole('button', { name: 'Toàn màn hình' });
+    fireEvent.click(fsBtn);
+    expect(container.querySelector('.card-camera.is-fullscreen')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thoát toàn màn hình' })).toBeInTheDocument();
+
+    // Scanning student #1 removes them from the unscanned list on the camera
+    await act(async () => { scan.detect({ markerId: 1, answer: 'A' }); });
+    expect(screen.getByText('✓ Đã quét đủ cả lớp')).toBeInTheDocument();
+
+    // Exiting fullscreen
+    fireEvent.click(screen.getByRole('button', { name: 'Thoát toàn màn hình' }));
+    expect(container.querySelector('.card-camera.is-fullscreen')).toBeNull();
+  });
 });

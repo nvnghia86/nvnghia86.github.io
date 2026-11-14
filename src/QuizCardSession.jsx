@@ -37,22 +37,78 @@ function useSession(api, sessionId, onError, enabled = true, endpoint = `/quiz-s
   return [session, setSession, error];
 }
 
+function getFullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
+}
+
 function useFullscreen(elementRef) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const nativeActiveRef = useRef(false);
   useEffect(() => {
-    const sync = () => setIsFullscreen(document.fullscreenElement === elementRef.current);
+    const sync = () => {
+      const active = getFullscreenElement();
+      if (active && active === elementRef.current) {
+        nativeActiveRef.current = true;
+        setIsFullscreen(true);
+      } else if (nativeActiveRef.current) {
+        nativeActiveRef.current = false;
+        setIsFullscreen(false);
+      }
+    };
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        nativeActiveRef.current = false;
+        setIsFullscreen(false);
+      }
+    };
     document.addEventListener('fullscreenchange', sync);
-    return () => document.removeEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('fullscreenchange', sync);
+      document.removeEventListener('webkitfullscreenchange', sync);
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, [elementRef]);
-  async function toggle() {
+  useEffect(() => {
+    if (!isFullscreen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isFullscreen]);
+  const exit = useCallback(async () => {
+    nativeActiveRef.current = false;
+    setIsFullscreen(false);
+    const active = getFullscreenElement();
+    if (!active) return;
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await elementRef.current?.requestFullscreen?.();
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
     } catch {
-      // Browsers can reject fullscreen outside a direct tap. Keep the normal camera view available.
+      // Ignore native exit errors; CSS fullscreen is already cleared.
     }
-  }
-  return { isFullscreen, toggle };
+  }, []);
+  const toggle = useCallback(async () => {
+    const element = elementRef.current;
+    const active = getFullscreenElement();
+    if (isFullscreen || (active && active === element)) {
+      await exit();
+      return;
+    }
+    setIsFullscreen(true);
+    if (!element) return;
+    try {
+      const request = element.requestFullscreen || element.webkitRequestFullscreen || element.msRequestFullscreen;
+      if (request) {
+        const result = request.call(element);
+        if (result && typeof result.then === 'function') await result;
+        if (getFullscreenElement() === element) nativeActiveRef.current = true;
+      }
+    } catch {
+      // Keep isFullscreen = true so CSS viewport fullscreen works on iOS Safari, WebViews, or when Fullscreen API is blocked.
+    }
+  }, [elementRef, exit, isFullscreen]);
+  return { isFullscreen, toggle, exit };
 }
 
 function useSessionCountdown(session, onElapsed) {
@@ -211,7 +267,7 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError, al
   const pending = useRef(new Set());
   const lastAttempt = useRef(new Map());
   const scannerRef = useRef(null);
-  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(scannerRef);
+  const { isFullscreen, toggle: toggleFullscreen, exit: exitFullscreen } = useFullscreen(scannerRef);
   const updateScannerSession = useCallback((snapshot, answer) => {
     if (snapshot) {
       if (snapshot.previousQuestionSummary) setLastQuestionSummary(snapshot.previousQuestionSummary);
@@ -228,13 +284,14 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError, al
   const seconds = useSessionCountdown(session);
   const acceptingAnswers = Boolean(questionId && !questionClosed && seconds > 0);
   const openCamera = () => { if (!finished) { camera.prepareCamera(); setCameraEnabled(true); } };
-  const closeCamera = () => { camera.resetCamera(); setCameraEnabled(false); };
+  const closeCamera = () => { void exitFullscreen(); camera.resetCamera(); setCameraEnabled(false); };
   useEffect(() => {
     if (!finished) return;
+    void exitFullscreen();
     setCameraEnabled(false); setTestMode(false); setTestResults([]); setRecent([]);
     camera.resetCamera();
     sent.current.clear(); pending.current.clear(); lastAttempt.current.clear();
-  }, [finished]);
+  }, [finished, exitFullscreen]);
   useEffect(() => {
     if (!hasAccess || !session || finished) return undefined;
     let active = true, fetching = false;
@@ -284,8 +341,7 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError, al
         : previous);
     }).catch(error => { if (activeQuestion.current === questionId) onError(error.message); }).finally(() => pending.current.delete(pendingKey));
   };
-  const resetKey = testMode ? 'test' : questionId || 'idle';
-  const { seen, anchored = [], error: detectorError, diagnostics } = useAruco(camera.webcamRef, Boolean(hasAccess && !finished && cameraEnabled && (testMode || questionId)), onDetected, resetKey);
+  const { seen, error: detectorError, diagnostics } = useAruco(camera.webcamRef, Boolean(hasAccess && !finished && cameraEnabled && (testMode || questionId)), onDetected, testMode ? 'test' : questionId || 'idle');
   if (!hasAccess) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><div className="dashboard-panel card-scanner-welcome"><span className="card-scanner-welcome-icon">⌁</span><h2>{t('cardScan.invalidScanLink')}</h2><p>{t('cardScan.invalidScanLinkHint')}</p></div></section>;
   if (!session) return <section className="content-page card-scanner-entry"><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className={sessionError ? 'error' : 'muted-copy'}>{sessionError || t('common.loading')}</p></section>;
   if (finished) return <section className="content-page card-session-page card-scanner-page">
@@ -302,5 +358,5 @@ export function QuizCardScanner({ api, API, sessionId, scannerToken, onError, al
   const previousQuestionSummary = lastQuestionSummary ? <section className="dashboard-panel scanner-closed-summary"><div><h2>{t('cardScan.questionResult', { current: lastQuestionSummary.position + 1 })}</h2><small>{t('cardScan.answersRecorded', { count: lastQuestionSummary.answeredCount })}</small></div><div className="scanner-answer-counts">{['A', 'B', 'C', 'D'].map(answer => <span className={answer === lastQuestionSummary.correctAnswer ? 'is-correct' : ''} key={answer}><b>{answer}</b><strong>{lastQuestionSummary.counts?.[answer] || 0}</strong></span>)}</div><p>{t('cardScan.correctAnswer')}: <b>{lastQuestionSummary.correctAnswer}</b></p></section> : null;
   const scannerQuestionControls = <>{allowStart && session.status === 'lobby' && <section className="dashboard-panel scanner-question-control"><p>{t('preparedGames.connectedHint')}</p><button className="primary-button" type="button" disabled={advancing || testMode} onClick={() => controlQuestion('start')}>{t('cardScan.start')}</button></section>}{session.status === 'playing' && questionId && <section className="dashboard-panel scanner-question-control"><div className="scanner-answer-summary"><div><h2>{questionClosed ? t('cardScan.questionResult', { current: session.currentQuestion + 1 }) : t('cardScan.answerSummary')}</h2><small>{t('cardScan.answersRecorded', { count: recordedAnswers })}</small></div><div className="scanner-answer-counts">{answerStats.map(item => <span className={questionClosed && item.answer === session.questionSummary?.correctAnswer ? 'is-correct' : ''} key={item.answer}><b>{item.answer}</b><strong>{item.count}</strong></span>)}</div></div>{questionClosed && <p className="card-question-closed-hint" role="status">{t('cardScan.correctAnswer')}: <b>{session.questionSummary?.correctAnswer}</b> · {t('cardScan.questionClosedHint')}</p>}<div className="scanner-question-buttons"><button className="secondary-button scanner-close-button" type="button" disabled={advancing || testMode || questionClosed} onClick={() => controlQuestion('close')}>{t('cardScan.endQuestion')}</button><button className="primary-button scanner-next-button" type="button" disabled={advancing || testMode || !questionClosed} onClick={() => controlQuestion('next')}>{advancing ? t('cardScan.advancing') : t('cardScan.scannerNext')}</button>{allowStart && <button className="secondary-button" type="button" disabled={advancing || testMode} onClick={() => { if (window.confirm(t('preparedGames.finishConfirm'))) controlQuestion('finish'); }}>{t('cardScan.finish')}</button>}</div></section>}{!questionClosed && previousQuestionSummary}</>;
 
-  return <section className={`content-page card-session-page card-scanner-page ${isFullscreen ? 'card-scanner-fullscreen' : ''}`}><div className="dashboard-heading card-scanner-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{session.title}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{statusLabel}</span>{questionId && <strong className="card-countdown">{seconds}s</strong>}</div></div><div className="dashboard-panel scanner-room-summary"><div><span>{t('cardScan.classInfo')}</span><strong>{session.className || '—'}</strong></div><div><span>{t('cardScan.students')}</span><strong>{session.players?.length || 0}</strong></div><div><span>{t('cardScan.connection')}</span><strong>{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</strong></div></div>{socket.error && <p className="error">{socket.error}</p>}{sessionError && <p className="error">{sessionError}</p>}{camera.cameraError && <p className="error">{camera.cameraError}</p>}{detectorError && <p className="error">{detectorError}</p>}{allowStart && session.status === 'lobby' && !isFullscreen && scannerQuestionControls}<div className="scanner-mode-actions"><button className={testMode ? 'secondary-button' : 'primary-button'} type="button" onClick={cameraEnabled ? closeCamera : openCamera}>{cameraEnabled ? t('cardScan.closeCamera') : t('cardScan.openCamera')}</button><button className={testMode ? 'primary-button' : 'secondary-button'} type="button" onClick={() => { setTestMode(value => !value); setTestResults([]); if (!cameraEnabled) openCamera(); }}>{testMode ? t('cardScan.stopTest') : t('cardScan.startTest')}</button></div>{testMode && <div className="scanner-test-banner"><b>{t('cardScan.testMode')}</b><span>{t('cardScan.testModeHint')}</span></div>}<div className="card-scanner-layout">{cameraEnabled ? <div className={`card-camera ${acceptingAnswers || testMode ? 'is-scanning' : ''}`} ref={scannerRef}><Webcam ref={camera.webcamRef} audio={false} mirrored={false} playsInline videoConstraints={{ facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }} onUserMedia={camera.onUserMedia} onUserMediaError={camera.onUserMediaError} /><CardScanOverlay seen={seen} anchored={anchored} players={session.players} recent={recent} testResults={testResults} testMode={testMode} resetKey={resetKey} t={t} /><div className="card-camera-guide" aria-hidden="true"><i className="camera-guide-corner top-left" /><i className="camera-guide-corner top-right" /><i className="camera-guide-corner bottom-left" /><i className="camera-guide-corner bottom-right" /></div>{questionId && !testMode && <div className="card-scan-progress">{t('cardScan.arProgress', { count: recordedAnswers, total: session.players.length })}</div>}{questionId && !testMode && session.players?.length > 0 && <div className={`card-scan-unscanned-hud ${unscannedPlayers.length === 0 ? 'all-scanned' : ''}`} aria-live="polite">{unscannedPlayers.length > 0 ? <><b>{t('cardScan.arUnscannedTitle', { count: unscannedPlayers.length })}</b><div className="card-scan-unscanned-list">{unscannedPlayers.slice(0, 8).map(player => <span className="card-unscanned-pill" key={player.id || player.markerId}>#{player.markerId} · {player.nickname}</span>)}{unscannedPlayers.length > 8 && <span className="card-unscanned-more">+{unscannedPlayers.length - 8}</span>}</div></> : <b>✓ {t('cardScan.arAllScanned')}</b>}</div>}<div className={`scanner-live-feedback ${latestScan ? 'has-result' : ''}`} aria-live="polite"><span className="scanner-live-indicator" /><div><small>{cameraStatus}</small>{latestScan ? <strong>#{latestScan.markerId} · {latestScan.answer}</strong> : <b>{questionClosed ? t('cardScan.waitingNext') : t('cardScan.detected')}</b>}</div></div><button className="card-camera-fullscreen" type="button" aria-label={isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')} title={isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')} onClick={toggleFullscreen} />{isFullscreen && <div className="scanner-camera-controls">{scannerQuestionControls}</div>}</div> : <div className="dashboard-panel card-camera-placeholder"><span>▣</span><h2>{t('cardScan.cameraReadyTitle')}</h2><p>{t('cardScan.cameraReadyHint')}</p><button className="primary-button" type="button" onClick={openCamera}>{t('cardScan.openCamera')}</button></div>}<aside className="dashboard-panel card-scanner-info"><div className="scanner-diagnostic"><span className={camera.cameraState === 'ready' ? 'ready' : ''} /><b>{camera.cameraState === 'ready' ? t('cardScan.cameraActive') : t('cardScan.cameraInactive')}</b><small>{t('cardScan.processedFrames', { count: diagnostics.frames })}</small></div><h2>{testMode ? t('cardScan.testResults') : questionClosed ? t('cardScan.questionClosed') : t('cardScan.detected')}</h2><p>{questionClosed ? t('cardScan.questionClosedHint') : t('cardScan.cameraHint')}</p><div className="card-detected">{seen.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div>{testMode ? <><h3>{t('cardScan.stableDetections')}</h3><div className="card-detected test-results">{testResults.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div>{!testResults.length && <small className="muted-copy">{t('cardScan.noTestDetection')}</small>}</> : <><h3>{t('cardScan.sent')}</h3><div className="card-detected">{recent.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div></>}</aside></div>{!isFullscreen && !(allowStart && session.status === 'lobby') && scannerQuestionControls}<ScannerRoster players={session.players} questionId={questionId} t={t} /></section>;
+  return <section className={`content-page card-session-page card-scanner-page ${isFullscreen ? 'card-scanner-fullscreen' : ''}`}><div className="dashboard-heading card-scanner-heading"><div><p className="eyebrow">{t('cardScan.eyebrow')}</p><h1>{t('cardScan.scannerTitle')}</h1><p className="muted-copy">{session.title}</p></div><div className="card-host-heading-actions"><span className="setup-badge">{statusLabel}</span>{questionId && <strong className="card-countdown">{seconds}s</strong>}</div></div><div className="dashboard-panel scanner-room-summary"><div><span>{t('cardScan.classInfo')}</span><strong>{session.className || '—'}</strong></div><div><span>{t('cardScan.students')}</span><strong>{session.players?.length || 0}</strong></div><div><span>{t('cardScan.connection')}</span><strong>{socket.connection === 'connected' ? t('cardScan.connected') : t('cardScan.disconnected')}</strong></div></div>{socket.error && <p className="error">{socket.error}</p>}{sessionError && <p className="error">{sessionError}</p>}{camera.cameraError && <p className="error">{camera.cameraError}</p>}{detectorError && <p className="error">{detectorError}</p>}{allowStart && session.status === 'lobby' && !isFullscreen && scannerQuestionControls}<div className="scanner-mode-actions"><button className={testMode ? 'secondary-button' : 'primary-button'} type="button" onClick={cameraEnabled ? closeCamera : openCamera}>{cameraEnabled ? t('cardScan.closeCamera') : t('cardScan.openCamera')}</button><button className={testMode ? 'primary-button' : 'secondary-button'} type="button" onClick={() => { setTestMode(value => !value); setTestResults([]); if (!cameraEnabled) openCamera(); }}>{testMode ? t('cardScan.stopTest') : t('cardScan.startTest')}</button></div>{testMode && <div className="scanner-test-banner"><b>{t('cardScan.testMode')}</b><span>{t('cardScan.testModeHint')}</span></div>}<div className="card-scanner-layout">{cameraEnabled ? <div className={`card-camera ${acceptingAnswers || testMode ? 'is-scanning' : ''} ${isFullscreen ? 'is-fullscreen' : ''}`} ref={scannerRef}><Webcam ref={camera.webcamRef} audio={false} mirrored={false} playsInline videoConstraints={{ facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }} onUserMedia={camera.onUserMedia} onUserMediaError={camera.onUserMediaError} /><CardScanOverlay seen={seen} players={session.players} recent={recent} testMode={testMode} t={t} /><div className="card-camera-guide" aria-hidden="true"><i className="camera-guide-corner top-left" /><i className="camera-guide-corner top-right" /><i className="camera-guide-corner bottom-left" /><i className="camera-guide-corner bottom-right" /></div>{questionId && !testMode && <div className="card-scan-progress">{t('cardScan.arProgress', { count: recordedAnswers, total: session.players.length })}</div>}{questionId && !testMode && session.players?.length > 0 && <div className={`card-scan-unscanned-hud ${unscannedPlayers.length === 0 ? 'all-scanned' : ''}`} aria-live="polite">{unscannedPlayers.length > 0 ? <><b>{t('cardScan.arUnscannedTitle', { count: unscannedPlayers.length })}</b><div className="card-scan-unscanned-list">{unscannedPlayers.map(player => <span className="card-unscanned-pill" key={player.id || player.markerId}>#{player.markerId} · {player.nickname}</span>)}</div></> : <b>✓ {t('cardScan.arAllScanned')}</b>}</div>}<div className={`scanner-live-feedback ${latestScan ? 'has-result' : ''}`} aria-live="polite"><span className="scanner-live-indicator" /><div><small>{cameraStatus}</small>{latestScan ? <strong>#{latestScan.markerId} · {latestScan.answer}</strong> : <b>{questionClosed ? t('cardScan.waitingNext') : t('cardScan.detected')}</b>}</div></div><button className={`card-camera-fullscreen ${isFullscreen ? 'is-active' : ''}`} type="button" aria-label={isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')} title={isFullscreen ? t('cardScan.exitFullscreen') : t('cardScan.fullscreen')} onClick={toggleFullscreen} />{isFullscreen && <div className="scanner-camera-controls">{scannerQuestionControls}</div>}</div> : <div className="dashboard-panel card-camera-placeholder"><span>▣</span><h2>{t('cardScan.cameraReadyTitle')}</h2><p>{t('cardScan.cameraReadyHint')}</p><button className="primary-button" type="button" onClick={openCamera}>{t('cardScan.openCamera')}</button></div>}<aside className="dashboard-panel card-scanner-info"><div className="scanner-diagnostic"><span className={camera.cameraState === 'ready' ? 'ready' : ''} /><b>{camera.cameraState === 'ready' ? t('cardScan.cameraActive') : t('cardScan.cameraInactive')}</b><small>{t('cardScan.processedFrames', { count: diagnostics.frames })}</small></div><h2>{testMode ? t('cardScan.testResults') : questionClosed ? t('cardScan.questionClosed') : t('cardScan.detected')}</h2><p>{questionClosed ? t('cardScan.questionClosedHint') : t('cardScan.cameraHint')}</p><div className="card-detected">{seen.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div>{testMode ? <><h3>{t('cardScan.stableDetections')}</h3><div className="card-detected test-results">{testResults.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div>{!testResults.length && <small className="muted-copy">{t('cardScan.noTestDetection')}</small>}</> : <><h3>{t('cardScan.sent')}</h3><div className="card-detected">{recent.map(item => <span key={item.markerId}>#{item.markerId} · {item.answer}</span>)}</div></>}</aside></div>{!isFullscreen && !(allowStart && session.status === 'lobby') && scannerQuestionControls}<ScannerRoster players={session.players} questionId={questionId} t={t} /></section>;
 }
