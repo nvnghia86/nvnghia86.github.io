@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AR, answerFromCorners, cardDictionary, mergeCardSession } from './quiz-card-hooks';
+import { AR, answerFromCorners, cardDictionary, estimateCameraMotion, mergeCardSession, shiftCornersInFrame } from './quiz-card-hooks';
 
 function renderCard(id, turns = 0) {
   const cells = 11;
@@ -50,5 +50,22 @@ describe('room snapshot ordering', () => {
     expect(mergeCardSession(playing, { ...playing, currentQuestion: 1, version: 100 })).toBe(playing);
     expect(mergeCardSession(playing, { ...playing, version: 8 })).toBe(playing);
     expect(mergeCardSession(finished, { id: 'other', status: 'lobby' }).id).toBe('other');
+  });
+
+  it('tracks spatial displacement across camera frames and clamps off-screen anchors inside the viewport', () => {
+    const prevObs = [{ markerId: 3, corners: [{ x: 200, y: 120 }, { x: 260, y: 120 }, { x: 260, y: 180 }, { x: 200, y: 180 }] }];
+    const currObs = [{ markerId: 3, corners: [{ x: 140, y: 135 }, { x: 200, y: 135 }, { x: 200, y: 195 }, { x: 140, y: 195 }] }];
+    const motion = estimateCameraMotion(prevObs, currObs, null, null, 640, 360);
+    expect(motion).toEqual({ dx: -60, dy: 15 });
+
+    const shifted = shiftCornersInFrame(
+      [{ x: 30, y: 80 }, { x: 90, y: 80 }, { x: 90, y: 140 }, { x: 30, y: 140 }],
+      -60,
+      15,
+      640,
+      360
+    );
+    expect(shifted.edgePinned).toBe(true);
+    expect(Math.min(...shifted.corners.map(c => c.x))).toBeGreaterThanOrEqual(12);
   });
 });

@@ -32,4 +32,55 @@ describe('scanner camera overlay', () => {
     expect(screen.getByText('Chưa gán cho lớp · B')).toBeInTheDocument();
     expect(container.querySelector('.is-unassigned')).toBeInTheDocument();
   });
+
+  it('keeps recognized student AR notification frames anchored in space when the camera pans away', () => {
+    const classPlayers = [
+      { markerId: 7, nickname: 'Nguyễn Minh An', answer: null },
+      { markerId: 8, nickname: 'Trần Bảo Ngọc', answer: null },
+    ];
+    const card7 = {
+      markerId: 7,
+      answer: 'B',
+      corners: [{ x: 40, y: 80 }, { x: 110, y: 80 }, { x: 110, y: 150 }, { x: 40, y: 150 }],
+      frameWidth: 640,
+      frameHeight: 360,
+    };
+    const card8 = {
+      markerId: 8,
+      answer: 'A',
+      corners: [{ x: 360, y: 120 }, { x: 430, y: 120 }, { x: 430, y: 190 }, { x: 360, y: 190 }],
+      frameWidth: 640,
+      frameHeight: 360,
+    };
+
+    const { container, rerender } = render(
+      <CardScanOverlay seen={[card7]} players={classPlayers} recent={[{ markerId: 7, answer: 'B' }]} resetKey="q1" testMode={false} t={t} />
+    );
+    expect(screen.getByText('#7 · Nguyễn Minh An')).toBeInTheDocument();
+    expect(screen.getByText('Đã ghi nhận · B')).toBeInTheDocument();
+
+    // Camera pans away so no card is currently in the live detector frame (seen = [])
+    rerender(
+      <CardScanOverlay seen={[]} players={classPlayers} recent={[{ markerId: 7, answer: 'B' }]} resetKey="q1" testMode={false} t={t} />
+    );
+    expect(screen.getByText('#7 · Nguyễn Minh An')).toBeInTheDocument();
+    expect(screen.getByText('Đã ghi nhận · B')).toBeInTheDocument();
+    expect(container.querySelector('.card-scan-marker.is-recorded.is-anchored')).toBeInTheDocument();
+    expect(container.querySelector('.card-scan-tether')).toBeInTheDocument();
+
+    // Camera now sees card #8 while card #7 is outside live detection: both #7 (anchored) and #8 (live) remain visible
+    rerender(
+      <CardScanOverlay seen={[card8]} players={classPlayers} recent={[{ markerId: 7, answer: 'B' }]} resetKey="q1" testMode={false} t={t} />
+    );
+    expect(screen.getByText('#7 · Nguyễn Minh An')).toBeInTheDocument();
+    expect(screen.getByText('Đã ghi nhận · B')).toBeInTheDocument();
+    expect(screen.getByText('#8 · Trần Bảo Ngọc')).toBeInTheDocument();
+    expect(screen.getByText('Đang nhận diện · A')).toBeInTheDocument();
+
+    // Advancing to next question (resetKey = 'q2') clears the previous spatial anchors
+    rerender(
+      <CardScanOverlay seen={[]} players={classPlayers} recent={[]} resetKey="q2" testMode={false} t={t} />
+    );
+    expect(container.querySelector('svg')).toBeNull();
+  });
 });
